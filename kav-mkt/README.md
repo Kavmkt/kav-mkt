@@ -28,7 +28,8 @@ kav-mkt/
 ├── assets/fonts/                   # fontes bold (Anton, Archivo Black) para a chamada na imagem
 ├── assets/logos/<cliente>.png      # logo do cliente (opcional — ver assets/logos/README.md)
 ├── data/<cliente>/produtos_usados.json   # controle de produtos já usados
-├── data/<cliente>/historico_manual.txt   # referências de posts anteriores (opcional)
+├── data/<cliente>/historico_manual.txt   # referências de posts anteriores — texto (opcional)
+├── data/<cliente>/referencias_layout/    # últimas imagens geradas, usadas como referência visual
 ├── logs/<cliente>/falhas_produto.log     # log de falhas na busca de produto
 ├── output/<cliente>/<AAAA-MM-DD>/        # artefatos gerados por execução
 ├── .streamlit/config.toml          # tema visual do app
@@ -215,14 +216,23 @@ O Agente de Design funciona em etapas, mas com uma única chamada de imagem por 
    já na primeira vez. **Esse brief pede uma cena 100% sem texto/tipografia** — IA de
    imagem erra texto com frequência (corta, embaralha letras, ou escreve em inglês por
    padrão), então isso é resolvido à parte no passo 3.
-2. **Se o produto tiver uma foto real** (você colou o link no formulário da etapa
-   Produto, e não caiu no fallback coringa), essa foto é baixada e enviada como
-   **referência** para o `gpt-image-2.5-sunburst`, que recria a cena preservando a
-   aparência real do produto (forma, cor, rótulo) em vez de "inventar" um genérico a
-   partir do nome. Se isso falhar por qualquer motivo (link não é uma imagem direta,
-   API recusa, etc.), cai automaticamente para a geração comum a partir do texto — sem
-   travar o fluxo. A tela mostra "✅ Gerada a partir da foto real do produto" quando a
-   referência foi usada de verdade.
+2. Duas fontes de referência visual são combinadas quando disponíveis, ambas enviadas
+   juntas numa única chamada de edição ao `gpt-image-2.5-sunburst` (a API aceita várias
+   imagens de referência ao mesmo tempo):
+   - **Layout**: as últimas imagens já geradas por este app para o cliente (até 3),
+     guardadas automaticamente em `data/<cliente>/referencias_layout/` — usadas para
+     manter um estilo/composição visual consistente entre os posts, sem precisar
+     configurar nada. Também dá pra alimentar essa pasta com posts antigos, enviando
+     pelo expansor **"🖼️ Referências de layout"** na barra lateral.
+   - **Produto**: se o produto tiver uma foto real (link colado no formulário da etapa
+     Produto, e não caiu no fallback coringa), ela é baixada e enviada como referência,
+     preservando a aparência real do produto (forma, cor, rótulo) em vez de "inventar"
+     um genérico a partir do nome.
+
+   Se nada disso estiver disponível, ou a tentativa falhar por qualquer motivo (link não
+   é imagem direta, API recusa, etc.), cai automaticamente para a geração comum a partir
+   do texto (`gpt-image-2.5-flare`) — nunca trava o fluxo. A tela mostra qual(is)
+   referência(s) foram usadas de verdade.
 3. A imagem é cortada/redimensionada em código para exatamente **1080x1440** (vertical);
    o logo do cliente é colado no canto superior direito, se existir em
    `assets/logos/<cliente>.png` (ver `assets/logos/README.md`); e a chamada (headline) —
@@ -250,10 +260,12 @@ simples de preencher, sem precisar organizar uma base de dados externa ainda.
 ## Limitações desta fase (de propósito)
 
 - Sem postagem automática em redes sociais — sempre manual.
-- Sem verificação de histórico de posts (estrutura pronta, ver seção acima).
 - Busca de produto na Shopee é manual (via formulário) ou cai no produto coringa — não é
   automática nesta fase.
-- Armazenamento do app gratuito não é permanente (ver nota acima).
+- Armazenamento do app gratuito não é permanente (ver nota acima) — isso inclui as
+  referências de layout e o histórico de texto: se o servidor gratuito reiniciar, elas
+  são perdidas e o "estilo" volta a ser aprendido do zero a partir do próximo post
+  gerado (ou você reenvia manualmente exemplos antigos).
 - A imagem é gerada numa única tentativa por execução — se não gostar do resultado, a
   forma de "tentar de novo" hoje é gerar um novo post inteiro (não há botão de
   "regerar só a imagem" ainda).

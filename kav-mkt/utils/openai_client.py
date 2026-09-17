@@ -107,18 +107,22 @@ def baixar_imagem_referencia(url: str) -> bytes:
     return resposta.content
 
 
-def gerar_imagem_com_referencia(prompt: str, foto_bytes: bytes) -> dict:
-    """Gera a imagem usando a FOTO REAL do produto como referência (edição/composição),
-    em vez de descrever o produto só por texto — preserva a aparência real dele.
+def gerar_imagem_com_referencias(prompt: str, imagens_bytes: list) -> dict:
+    """Gera a imagem usando uma ou mais imagens como referência (foto real do produto
+    e/ou layouts de posts anteriores), em vez de descrever tudo só por texto.
 
-    Faz UMA única chamada à API de edição de imagem da OpenAI.
+    Faz UMA única chamada à API de edição de imagem da OpenAI, com todas as referências
+    enviadas juntas (a API do GPT Image aceita até 16 imagens numa única edição).
     """
     client = get_client()
-    arquivo = BytesIO(foto_bytes)
-    arquivo.name = "produto_referencia.png"
+    arquivos = []
+    for indice, dados in enumerate(imagens_bytes):
+        arquivo = BytesIO(dados)
+        arquivo.name = f"referencia_{indice}.png"
+        arquivos.append(arquivo)
     resposta = client.images.edit(
         model=IMAGE_EDIT_MODEL,
-        image=[arquivo],
+        image=arquivos,
         prompt=prompt,
         size=IMAGE_SIZE,
         quality=IMAGE_QUALITY,
@@ -130,7 +134,6 @@ def gerar_imagem_com_referencia(prompt: str, foto_bytes: bytes) -> dict:
         "modelo": IMAGE_EDIT_MODEL,
         "tamanho": IMAGE_SIZE,
         "qualidade": IMAGE_QUALITY,
-        "com_referencia": True,
     }
 
 

@@ -14,7 +14,13 @@ from pathlib import Path
 
 import streamlit as st
 
-from agents.agente_design import gerar_imagem, gerar_prompt_imagem
+from agents.agente_design import (
+    carregar_referencias_layout,
+    gerar_imagem,
+    gerar_prompt_imagem,
+    limpar_referencias_layout,
+    salvar_referencia_layout,
+)
 from agents.agente_pauta import gerar_pauta
 from agents.agente_produto import buscar_produto, registrar_produto_usado
 from utils.skill_loader import carregar_skill, listar_clientes, nome_exibicao
@@ -169,6 +175,49 @@ with st.sidebar.expander("📚 Referências de posts anteriores (opcional)"):
         st.session_state[f"historico_{cliente}"] = historico_texto
         st.success("Salvo.")
 
+with st.sidebar.expander("🖼️ Referências de layout (visual)"):
+    st.caption(
+        "As últimas imagens geradas por este app já são reaproveitadas automaticamente "
+        "como referência de estilo/composição pro próximo post (até 3 mais recentes) — "
+        "isso ajuda a manter uma identidade visual consistente ao longo do tempo. Se "
+        "quiser já começar com um estilo definido, envie exemplos de posts antigos."
+    )
+    arquivos_referencia = st.file_uploader(
+        "Adicionar referências de layout",
+        type=["png", "jpg", "jpeg"],
+        accept_multiple_files=True,
+        label_visibility="collapsed",
+        key=f"upload_referencias_{cliente}",
+    )
+    if arquivos_referencia:
+        chave_processados = f"referencias_processadas_{cliente}"
+        processados = st.session_state.setdefault(chave_processados, set())
+        novos = 0
+        for arquivo in arquivos_referencia:
+            identificador = f"{arquivo.name}_{arquivo.size}"
+            if identificador not in processados:
+                salvar_referencia_layout(cliente, arquivo.getvalue())
+                processados.add(identificador)
+                novos += 1
+        if novos:
+            st.success(f"{novos} referência(s) adicionada(s).")
+
+    referencias_existentes = carregar_referencias_layout(cliente)
+    if referencias_existentes:
+        st.caption(f"{len(referencias_existentes)} referência(s) em uso agora:")
+        st.image(referencias_existentes, width=70)
+        if st.button("🗑️ Limpar referências", key=f"limpar_referencias_{cliente}"):
+            limpar_referencias_layout(cliente)
+            st.rerun()
+    else:
+        st.caption("Nenhuma referência ainda — a primeira imagem gerada já vira referência para a próxima.")
+
+    usar_referencias_layout = st.checkbox(
+        "Usar essas referências na próxima geração",
+        value=True,
+        key=f"usar_referencias_{cliente}",
+    )
+
 st.sidebar.divider()
 
 if _api_key_configurada():
@@ -236,7 +285,7 @@ if gerar:
 # ---------------------------------------------------------------------------
 
 st.title(nome_exibicao(skill["texto_completo"]))
-st.caption("Pauta → Produto (se necessário) → Design — gerado com OpenAI (gpt-4o-mini)")
+st.caption("Pauta → Produto (se necessário) → Design — texto com gpt-4o-mini, imagem com GPT Image 2.5")
 
 pauta = st.session_state.get("pauta")
 
@@ -322,7 +371,9 @@ if st.session_state.etapa == "design" and st.session_state.prompt_imagem is None
     if st.session_state.get("gerar_imagem_desta_vez", True):
         try:
             with st.spinner("Gerando a imagem (uma única chamada)..."):
-                resultado_imagem = gerar_imagem(prompt_imagem, pauta.get("headline_imagem"), skill, produto)
+                resultado_imagem = gerar_imagem(
+                    prompt_imagem, pauta.get("headline_imagem"), skill, produto, usar_referencias_layout
+                )
             if resultado_imagem.get("imagem_b64"):
                 imagem_bytes = base64.b64decode(resultado_imagem["imagem_b64"])
                 st.session_state.imagem = resultado_imagem
@@ -365,6 +416,8 @@ if st.session_state.get("prompt_imagem"):
                 st.image(imagem_info["imagem_url"], use_container_width=True)
             if imagem_info.get("com_referencia"):
                 st.caption("✅ Gerada a partir da foto real do produto (referência).")
+            if imagem_info.get("com_layout_referencia"):
+                st.caption("✅ Seguiu o estilo/layout dos últimos posts.")
             st.caption(f"Modelo: {imagem_info.get('modelo')} · {imagem_info.get('tamanho')} · qualidade {imagem_info.get('qualidade')}")
         elif st.session_state.get("imagem_erro"):
             st.error(

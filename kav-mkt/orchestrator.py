@@ -37,7 +37,12 @@ def _logger_execucao(cliente: str) -> logging.Logger:
     return logger
 
 
-def rodar(cliente: str, historico: Optional[str] = None, gerar_imagem_tambem: bool = True) -> Path:
+def rodar(
+    cliente: str,
+    historico: Optional[str] = None,
+    gerar_imagem_tambem: bool = True,
+    usar_referencias_layout: bool = True,
+) -> Path:
     load_dotenv()
     data_execucao = date.today().isoformat()
     pasta_saida = BASE_DIR / "output" / cliente / data_execucao
@@ -92,7 +97,9 @@ def rodar(cliente: str, historico: Optional[str] = None, gerar_imagem_tambem: bo
     imagem_gerada = False
     if gerar_imagem_tambem:
         try:
-            resultado_imagem = gerar_imagem(prompt_imagem, pauta.get("headline_imagem"), skill, produto)
+            resultado_imagem = gerar_imagem(
+                prompt_imagem, pauta.get("headline_imagem"), skill, produto, usar_referencias_layout
+            )
             if resultado_imagem.get("imagem_b64"):
                 (pasta_saida / "imagem.png").write_bytes(base64.b64decode(resultado_imagem["imagem_b64"]))
                 imagem_gerada = True
@@ -158,5 +165,15 @@ if __name__ == "__main__":
         action="store_true",
         help="Só gera o texto (pauta/brief), pula a chamada de geração de imagem (economiza crédito).",
     )
+    parser.add_argument(
+        "--sem-referencia-layout",
+        action="store_true",
+        help="Não usa as últimas imagens geradas como referência de estilo/layout para esta execução.",
+    )
     args = parser.parse_args()
-    rodar(cliente=args.cliente, historico=args.historico, gerar_imagem_tambem=not args.sem_imagem)
+    rodar(
+        cliente=args.cliente,
+        historico=args.historico,
+        gerar_imagem_tambem=not args.sem_imagem,
+        usar_referencias_layout=not args.sem_referencia_layout,
+    )
