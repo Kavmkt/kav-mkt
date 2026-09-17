@@ -1,6 +1,12 @@
 """Agente de Design: monta o brief de Key Visual (KV) do post — composição, direção de
-arte e cores da marca — gera a imagem base chamando o modelo de imagem da OpenAI
-(gpt-image-1) uma única vez por execução, e sobrepõe a chamada (headline) por código.
+arte e cores da marca — gera a imagem base chamando o modelo de imagem da OpenAI (GPT
+Image 2.5) uma única vez por execução, e sobrepõe a chamada (headline) por código.
+
+Quando o produto tem uma foto real (link colado no formulário, não um fallback coringa),
+a foto é baixada e usada como REFERÊNCIA na geração (edição de imagem), preservando a
+aparência real do produto em vez de descrevê-lo só por texto. Se isso falhar por
+qualquer motivo (link não é imagem direta, API recusa, etc.), cai automaticamente para a
+geração comum a partir do texto — nunca trava o fluxo.
 
 Não pedimos para o próprio modelo de imagem escrever texto na cena: IA de imagem erra
 texto com frequência (corta, embaralha letras, ou usa o idioma errado). Em vez disso o
@@ -65,10 +71,42 @@ def gerar_prompt_imagem(pauta: dict, produto: Optional[dict], skill: dict) -> st
     return chamar_ia(system=system, prompt=prompt, max_tokens=500, temperature=0.8)
 
 
-def gerar_imagem(prompt_imagem: str, headline: Optional[str], skill: dict) -> dict:
-    """Gera a imagem base (uma única chamada, sem iteração) e sobrepõe a chamada em
-    português no formato final (1080x1440 por padrão), usando as cores da marca."""
-    bruta = openai_client.gerar_imagem(prompt_imagem)
+def _prompt_para_edicao(prompt_cena: str) -> str:
+    return (
+        "Use the exact product shown in the attached reference image as-is — keep its "
+        "shape, colors, materials and any label/branding exactly as photographed, do "
+        "not redesign or reinvent it. Place this same product into the following new "
+        "scene, matching its lighting and style to fit in naturally:\n" + prompt_cena
+    )
+
+
+def _gerar_imagem_bruta(prompt_imagem: str, produto: Optional[dict]) -> dict:
+    """Tenta gerar com a foto real do produto como referência; se não houver foto (ou a
+    tentativa falhar por qualquer motivo), cai para a geração comum a partir do texto."""
+    foto_url = (produto or {}).get("foto_url")
+    tem_foto_real = bool(foto_url) and not (produto or {}).get("fallback_usado")
+
+    if tem_foto_real:
+        try:
+            foto_bytes = openai_client.baixar_imagem_referencia(foto_url)
+            resultado = openai_client.gerar_imagem_com_referencia(
+                _prompt_para_edicao(prompt_imagem), foto_bytes
+            )
+            if resultado.get("imagem_b64"):
+                return resultado
+        except Exception:
+            pass  # cai para a geração comum abaixo — nunca trava o fluxo
+
+    resultado = openai_client.gerar_imagem(prompt_imagem)
+    resultado["com_referencia"] = False
+    return resultado
+
+
+def gerar_imagem(prompt_imagem: str, headline: Optional[str], skill: dict, produto: Optional[dict] = None) -> dict:
+    """Gera a imagem (com a foto real do produto quando disponível) e sobrepõe a
+    chamada em português no formato final (1080x1440 por padrão), usando as cores da
+    marca."""
+    bruta = _gerar_imagem_bruta(prompt_imagem, produto)
     if not bruta.get("imagem_b64"):
         # Sem base64 (ex: só veio uma URL) não dá pra compor localmente — devolve como veio.
         return bruta
@@ -77,6 +115,7 @@ def gerar_imagem(prompt_imagem: str, headline: Optional[str], skill: dict) -> di
         imagem_bytes=base64.b64decode(bruta["imagem_b64"]),
         headline=headline or "",
         cores_hex=skill.get("cores_hex") or [],
+        cliente=skill.get("cliente"),
     )
     bruta["imagem_b64"] = base64.b64encode(imagem_final_bytes).decode("ascii")
     bruta["tamanho"] = f"{image_overlay.LARGURA_PADRAO}x{image_overlay.ALTURA_PADRAO}"

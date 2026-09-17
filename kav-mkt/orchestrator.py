@@ -46,6 +46,11 @@ def rodar(cliente: str, historico: Optional[str] = None, gerar_imagem_tambem: bo
     logger = _logger_execucao(cliente)
     skill = carregar_skill(cliente)
 
+    if not historico:
+        caminho_historico = BASE_DIR / "data" / cliente / "historico_manual.txt"
+        if caminho_historico.exists():
+            historico = caminho_historico.read_text(encoding="utf-8").strip() or None
+
     print(f"[1/3] Agente de Pauta ({cliente})...")
     pauta = gerar_pauta(skill, historico=historico)
     (pasta_saida / "pauta.json").write_text(
@@ -87,7 +92,7 @@ def rodar(cliente: str, historico: Optional[str] = None, gerar_imagem_tambem: bo
     imagem_gerada = False
     if gerar_imagem_tambem:
         try:
-            resultado_imagem = gerar_imagem(prompt_imagem, pauta.get("headline_imagem"), skill)
+            resultado_imagem = gerar_imagem(prompt_imagem, pauta.get("headline_imagem"), skill, produto)
             if resultado_imagem.get("imagem_b64"):
                 (pasta_saida / "imagem.png").write_bytes(base64.b64decode(resultado_imagem["imagem_b64"]))
                 imagem_gerada = True

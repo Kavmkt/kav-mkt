@@ -2,7 +2,7 @@
 
 Sistema de automação de conteúdo da Kav (@kav.mkt), orquestrando agentes independentes
 que usam a API da OpenAI: texto com `gpt-4o-mini` (pauta, legenda, brief de imagem) e a
-imagem final com `gpt-image-1`, gerada de uma vez só a partir de um brief completo (cores
+imagem final com o GPT Image 2.5 da OpenAI, gerada de uma vez só a partir de um brief completo (cores
 da marca, direção de arte, composição). **Não posta nada automaticamente** — a postagem
 final é sempre manual, feita por você.
 
@@ -20,13 +20,15 @@ kav-mkt/
 ├── agents/
 │   ├── agente_pauta.py             # gera a pauta do dia via OpenAI (gpt-4o-mini)
 │   ├── agente_produto.py           # resolve produto (manual ou coringa), com fallback
-│   └── agente_design.py            # brief de KV (gpt-4o-mini) + imagem final (gpt-image-1)
+│   └── agente_design.py            # brief de KV (gpt-4o-mini) + imagem final (GPT Image 2.5)
 ├── utils/
 │   ├── openai_client.py            # wrapper único para chamadas à API da OpenAI
 │   ├── image_overlay.py            # recorte 1080x1440 + sobreposição da chamada (headline)
 │   └── skill_loader.py             # lê e faz parse do arquivo de skill do cliente (inclui cores)
 ├── assets/fonts/                   # fontes bold (Anton, Archivo Black) para a chamada na imagem
+├── assets/logos/<cliente>.png      # logo do cliente (opcional — ver assets/logos/README.md)
 ├── data/<cliente>/produtos_usados.json   # controle de produtos já usados
+├── data/<cliente>/historico_manual.txt   # referências de posts anteriores (opcional)
 ├── logs/<cliente>/falhas_produto.log     # log de falhas na busca de produto
 ├── output/<cliente>/<AAAA-MM-DD>/        # artefatos gerados por execução
 ├── .streamlit/config.toml          # tema visual do app
@@ -178,15 +180,15 @@ lápis) — o app atualiza sozinho.
 3. Envie o novo arquivo de skill para o repositório no GitHub. Ele aparece
    automaticamente no seletor de cliente da interface.
 
-## Como plugar um histórico de posts no futuro (Agente de Pauta)
+## Evoluir o histórico de posts no futuro (Agente de Pauta)
 
-`agente_pauta.gerar_pauta(skill, historico=None)` já aceita um parâmetro opcional
-`historico` (string). Quando você tiver uma fonte de histórico organizada (arquivo,
-planilha, API), basta montar um resumo em texto dos posts recentes e passar como
-`gerar_pauta(skill, historico=resumo)` — o próprio agente já injeta esse conteúdo no
-prompt da IA, pedindo para evitar repetir temas. Nenhuma mudança é necessária dentro
-do `agente_pauta.py` além de fornecer esse texto (ex: a partir do `app.py`, antes de
-chamar `gerar_pauta`).
+Hoje o histórico é preenchido manualmente colando exemplos na barra lateral (ver seção
+"Referências de posts anteriores" acima), salvo em
+`data/<cliente>/historico_manual.txt`. Quando no futuro você tiver uma fonte organizada
+(planilha, API do Instagram, etc.), basta montar um resumo em texto dos posts recentes e
+passar para `gerar_pauta(skill, historico=resumo)` no lugar do texto lido do arquivo —
+o parâmetro já existe e o agente já injeta esse conteúdo no prompt da IA pedindo para
+evitar repetir temas. Nenhuma mudança é necessária dentro do `agente_pauta.py`.
 
 ## Segurança do app publicado
 
@@ -196,36 +198,54 @@ chamar `gerar_pauta`).
   consumir sua cota da API. Configure o secret opcional `APP_PASSWORD` (explicado no
   passo a passo acima) para exigir uma senha simples antes de usar o app.
 
-## Geração de imagem (gpt-image-1)
+## Geração de imagem (GPT Image 2.5)
 
-`gpt-image-1` é o modelo de imagem atual da OpenAI (o mesmo por trás da geração de
-imagem "nova" do ChatGPT) — é o que este projeto usa.
+O modelo usado é o **GPT Image 2.5** — o mais recente da OpenAI (sucessor do
+`gpt-image-1`), em duas variantes:
+- `gpt-image-2.5-flare`: geração rápida do zero (usada quando não há foto real do
+  produto).
+- `gpt-image-2.5-sunburst`: mais precisa para edição/composição com imagem de
+  referência (usada quando HÁ foto real do produto — ver abaixo).
 
-O Agente de Design funciona em três etapas, mas com uma única chamada de imagem por
-execução (pra não gastar crédito repetindo tentativas):
+O Agente de Design funciona em etapas, mas com uma única chamada de imagem por execução
+(pra não gastar crédito repetindo tentativas):
 
 1. Um brief de "Key Visual" (KV) é escrito por texto (`gpt-4o-mini`), incorporando as
    cores da marca, direção de arte e composição — pensado pra sair completo e específico
    já na primeira vez. **Esse brief pede uma cena 100% sem texto/tipografia** — IA de
    imagem erra texto com frequência (corta, embaralha letras, ou escreve em inglês por
    padrão), então isso é resolvido à parte no passo 3.
-2. O brief é enviado ao `gpt-image-1`, que gera a cena.
-3. A imagem é cortada/redimensionada em código para exatamente **1080x1440** (vertical),
-   e a chamada (headline) — vindo já em português da Pauta — é sobreposta numa barra
-   sólida, com uma fonte bold (Anton, incluída em `assets/fonts/`) nas cores da marca do
-   cliente. Isso garante texto legível, em português e sem corte, sem depender da IA de
-   imagem acertar isso sozinha.
-
-Sobre usar **imagens de referência**: a API da OpenAI permite sim (`images.edit`, que
-aceita uma imagem de entrada para orientar o estilo/composição) — não implementei isso
-ainda porque o problema relatado (texto cortado/em inglês) é resolvido de forma mais
-confiável com a sobreposição por código acima. Fica como possível melhoria futura se
-quiser manter um "molde" visual mais fixo entre posts.
+2. **Se o produto tiver uma foto real** (você colou o link no formulário da etapa
+   Produto, e não caiu no fallback coringa), essa foto é baixada e enviada como
+   **referência** para o `gpt-image-2.5-sunburst`, que recria a cena preservando a
+   aparência real do produto (forma, cor, rótulo) em vez de "inventar" um genérico a
+   partir do nome. Se isso falhar por qualquer motivo (link não é uma imagem direta,
+   API recusa, etc.), cai automaticamente para a geração comum a partir do texto — sem
+   travar o fluxo. A tela mostra "✅ Gerada a partir da foto real do produto" quando a
+   referência foi usada de verdade.
+3. A imagem é cortada/redimensionada em código para exatamente **1080x1440** (vertical);
+   o logo do cliente é colado no canto superior direito, se existir em
+   `assets/logos/<cliente>.png` (ver `assets/logos/README.md`); e a chamada (headline) —
+   vindo já em português da Pauta — é sobreposta numa barra sólida, com uma fonte bold
+   (Anton, incluída em `assets/fonts/`) nas cores da marca do cliente.
 
 Se a geração de imagem falhar (ex: conta sem acesso ao modelo, billing não configurado),
 o app mostra o erro claramente na tela mas **não trava** — o brief de texto continua
 disponível pra você usar manualmente em outra ferramenta. Desmarque "Gerar imagem
 também" na barra lateral quando quiser só testar o texto sem gastar crédito de imagem.
+
+> A OpenAI muda a nomenclatura dos modelos de tempos em tempos. Se `gpt-image-2.5-flare`
+> ou `gpt-image-2.5-sunburst` pararem de existir no futuro, ajuste `OPENAI_IMAGE_MODEL` e
+> `OPENAI_IMAGE_EDIT_MODEL` nos Secrets — nenhum código precisa mudar.
+
+## Referências de posts anteriores
+
+Na barra lateral, o expansor **"📚 Referências de posts anteriores"** deixa você colar
+exemplos de posts que já publicou (tema + legenda). Isso é salvo em
+`data/<cliente>/historico_manual.txt` e passado automaticamente para o Agente de Pauta a
+cada geração, para ele não repetir temas e aprender o estilo que já funcionou. É o
+parâmetro `historico` que já estava previsto desde o início — agora com uma forma
+simples de preencher, sem precisar organizar uma base de dados externa ainda.
 
 ## Limitações desta fase (de propósito)
 

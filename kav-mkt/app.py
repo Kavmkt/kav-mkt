@@ -62,6 +62,17 @@ def _salvar_json(pasta: Path, nome: str, dados: dict) -> None:
     (pasta / nome).write_text(json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def _caminho_historico(cliente: str) -> Path:
+    pasta = BASE_DIR / "data" / cliente
+    pasta.mkdir(parents=True, exist_ok=True)
+    return pasta / "historico_manual.txt"
+
+
+def _ler_historico(cliente: str) -> str:
+    caminho = _caminho_historico(cliente)
+    return caminho.read_text(encoding="utf-8") if caminho.exists() else ""
+
+
 def _montar_resumo(
     cliente: str,
     pauta: dict,
@@ -140,6 +151,24 @@ if not clientes:
 cliente = st.sidebar.selectbox("Cliente", clientes, format_func=lambda c: c.replace("-", " ").title())
 skill = carregar_skill(cliente)
 
+with st.sidebar.expander("📚 Referências de posts anteriores (opcional)"):
+    st.caption(
+        "Cole aqui exemplos de posts que você já publicou (tema + legenda, um por "
+        "linha ou parágrafo). O Agente de Pauta usa isso pra não repetir ideias e pra "
+        "aprender o estilo que já funcionou. Fica salvo pra esse cliente."
+    )
+    historico_texto = st.text_area(
+        "Posts anteriores",
+        value=st.session_state.get(f"historico_{cliente}", _ler_historico(cliente)),
+        height=150,
+        label_visibility="collapsed",
+        key=f"historico_input_{cliente}",
+    )
+    if st.button("💾 Salvar referências", key=f"salvar_historico_{cliente}"):
+        _caminho_historico(cliente).write_text(historico_texto, encoding="utf-8")
+        st.session_state[f"historico_{cliente}"] = historico_texto
+        st.success("Salvo.")
+
 st.sidebar.divider()
 
 if _api_key_configurada():
@@ -192,7 +221,7 @@ if "cliente_atual" not in st.session_state or st.session_state.cliente_atual != 
 
 if gerar:
     with st.spinner("Agente de Pauta pensando..."):
-        st.session_state.pauta = gerar_pauta(skill)
+        st.session_state.pauta = gerar_pauta(skill, historico=historico_texto.strip() or None)
     st.session_state.produto = None
     st.session_state.prompt_imagem = None
     st.session_state.imagem = None
@@ -293,7 +322,7 @@ if st.session_state.etapa == "design" and st.session_state.prompt_imagem is None
     if st.session_state.get("gerar_imagem_desta_vez", True):
         try:
             with st.spinner("Gerando a imagem (uma única chamada)..."):
-                resultado_imagem = gerar_imagem(prompt_imagem, pauta.get("headline_imagem"), skill)
+                resultado_imagem = gerar_imagem(prompt_imagem, pauta.get("headline_imagem"), skill, produto)
             if resultado_imagem.get("imagem_b64"):
                 imagem_bytes = base64.b64decode(resultado_imagem["imagem_b64"])
                 st.session_state.imagem = resultado_imagem
@@ -334,13 +363,15 @@ if st.session_state.get("prompt_imagem"):
                 )
             elif imagem_info.get("imagem_url"):
                 st.image(imagem_info["imagem_url"], use_container_width=True)
+            if imagem_info.get("com_referencia"):
+                st.caption("✅ Gerada a partir da foto real do produto (referência).")
             st.caption(f"Modelo: {imagem_info.get('modelo')} · {imagem_info.get('tamanho')} · qualidade {imagem_info.get('qualidade')}")
         elif st.session_state.get("imagem_erro"):
             st.error(
                 f"Não consegui gerar a imagem: {st.session_state.imagem_erro}\n\n"
-                "Verifique se sua conta OpenAI tem acesso ao modelo `gpt-image-1` e se o "
-                "billing está ativo. O texto do brief abaixo continua disponível pra você "
-                "usar em outra ferramenta, se quiser."
+                "Verifique se sua conta OpenAI tem acesso ao modelo de imagem configurado "
+                "e se o billing está ativo. O texto do brief abaixo continua disponível "
+                "pra você usar em outra ferramenta, se quiser."
             )
         else:
             st.caption("Geração de imagem desmarcada nesta execução (só texto).")
