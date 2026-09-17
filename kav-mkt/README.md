@@ -221,6 +221,14 @@ O Agente de Design funciona em etapas, mas com uma única chamada de imagem por 
    desenho por código (mais prático e sem depender de sorte): edite
    `agents/agente_design.py`, passando `headline=headline` (em vez de `headline=""`) na
    chamada de `image_overlay.compor_imagem_final(...)`.
+
+   **Margem de segurança para o recorte:** como a etapa 3 abaixo recorta a imagem
+   gerada para caber exatamente no formato final, o brief avisa a IA (com o percentual
+   exato calculado em `_margem_corte_vertical()`, a partir dos tamanhos configurados)
+   para não colar texto/logo bem na borda de cima ou de baixo, já que essa faixa é
+   cortada depois. Se mesmo assim algo continuar sendo cortado, aumente a folga extra
+   somada em `_margem_corte_vertical()` (hoje +2 pontos percentuais) para um valor
+   maior.
 2. Duas fontes de referência visual são combinadas quando disponíveis, ambas enviadas
    juntas numa única chamada de edição ao `gpt-image-2.5-sunburst` (a API aceita várias
    imagens de referência ao mesmo tempo):

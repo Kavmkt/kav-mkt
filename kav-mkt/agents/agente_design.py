@@ -9,6 +9,11 @@ voltarem a aparecer, dá pra reverter para o desenho por código em
 `utils.image_overlay.compor_imagem_final` (a função continua lá, só não é mais chamada
 com uma headline).
 
+Como a imagem gerada é recortada depois para o formato final (ver `_margem_corte_vertical`
+e `utils.image_overlay`), o brief avisa a IA — com o percentual exato calculado a partir
+dos tamanhos configurados — para manter texto/logo fora da faixa de topo/rodapé que será
+cortada, em vez de arriscar colar esses elementos na borda.
+
 Duas fontes de referência visual, combináveis, ambas via edição de imagem (não geração
 do zero):
 - **Produto**: quando o produto tem uma foto real (link colado no formulário, não um
@@ -42,10 +47,19 @@ na primeira vez.
 DIRETRIZES DE MARCA E VISUAL DO CLIENTE:
 {skill}
 
+ATENÇÃO — RECORTE POSTERIOR: depois de gerada, a imagem passa por um recorte automático
+que remove cerca de {margem_corte}% do topo e outros {margem_corte}% do rodapé da tela
+(pra ajustar a proporção ao formato final do post). Isso significa que QUALQUER
+texto, logotipo, rosto ou elemento importante posicionado nesses {margem_corte}% mais
+próximos da borda de cima ou de baixo será cortado. Planeje a composição já contando com
+isso: trate a faixa de {margem_corte}% no topo e no rodapé como uma margem de segurança
+— pode ter fundo/cenário ali, mas nada que precise aparecer inteiro.
+
 O brief (em inglês, pronto para o gerador de imagem) deve definir, em um único parágrafo
 denso:
 - Cena/composição principal (o que aparece, enquadramento, plano), pensada para um
-  formato VERTICAL (retrato, mais alto do que largo)
+  formato VERTICAL (retrato, mais alto do que largo), com todo elemento essencial
+  centralizado verticalmente, respeitando a margem de segurança de topo/rodapé acima
 - Produto em destaque (quando houver) e como ele aparece na cena
 - Paleta de cores (use as cores da marca do cliente)
 - Estilo/direção de arte (fotografia realista, ilustração, etc. — escolha o que combine
@@ -54,13 +68,13 @@ denso:
 - Um tratamento gráfico para a HEADLINE informada abaixo (quando houver): um bloco
   sólido (faixa ou retângulo) numa cor da marca, com o texto em letras grandes, em
   negrito/caixa alta, numa cor de alto contraste — como um pôster/anúncio real,
-  ocupando uma área que não compita com o produto
+  posicionado bem dentro da área segura (nunca colado nas bordas de cima ou de baixo)
 
 Regras para a headline (quando houver uma):
 - O texto renderizado deve ser EXATAMENTE a headline informada, palavra por palavra, em
   português — não traduza, não resuma, não invente palavras extras.
-- Letras grandes, fonte bold/condensada, com margem generosa das bordas da imagem —
-  nunca cortada, nunca saindo do quadro.
+- Letras grandes, fonte bold/condensada, inteiramente dentro da área segura descrita
+  acima — nunca cortada, nunca saindo do quadro, nunca dentro da margem de topo/rodapé.
 - Se imagens de referência de posts anteriores forem fornecidas e tiverem texto nelas,
   IGNORE o texto que aparece nelas — use só a headline informada abaixo, não o texto das
   referências.
@@ -75,8 +89,28 @@ Outras regras:
 """
 
 
+def _margem_corte_vertical() -> int:
+    """Calcula (em %) quanto do topo/rodapé da imagem gerada é removido pelo recorte
+    para o formato final, para avisar a IA a deixar uma margem de segurança na
+    composição. Soma uma folga extra (2 pontos percentuais) por segurança."""
+    try:
+        largura_gerada, altura_gerada = (int(v) for v in openai_client.IMAGE_SIZE.lower().split("x"))
+    except (ValueError, AttributeError):
+        return 10  # tamanho não numérico (ex: "auto") — usa uma margem conservadora
+    razao_gerada = largura_gerada / altura_gerada
+    razao_final = image_overlay.LARGURA_PADRAO / image_overlay.ALTURA_PADRAO
+    if razao_gerada >= razao_final:
+        return 0  # o recorte nesse caso seria nas laterais, não no topo/rodapé
+    altura_apos_corte = largura_gerada / razao_final
+    corte_total = 1 - (altura_apos_corte / altura_gerada)
+    return round((corte_total / 2) * 100) + 2
+
+
 def gerar_prompt_imagem(pauta: dict, produto: Optional[dict], skill: dict) -> str:
-    system = SYSTEM_PROMPT.format(skill=skill["texto_completo"])
+    system = SYSTEM_PROMPT.format(
+        skill=skill["texto_completo"],
+        margem_corte=_margem_corte_vertical(),
+    )
     partes = [
         f"Tema do post: {pauta.get('tema')}",
         f"Descrição: {pauta.get('descricao')}",
