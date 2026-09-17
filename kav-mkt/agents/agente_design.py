@@ -33,6 +33,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+from PIL import Image
+from io import BytesIO
+
 from utils import image_overlay, openai_client
 from utils.openai_client import chamar_ia
 
@@ -92,18 +95,14 @@ Outras regras:
 def _margem_corte_vertical() -> int:
     """Calcula (em %) quanto do topo/rodapé da imagem gerada é removido pelo recorte
     para o formato final, para avisar a IA a deixar uma margem de segurança na
-    composição. Soma uma folga extra (2 pontos percentuais) por segurança."""
-    try:
-        largura_gerada, altura_gerada = (int(v) for v in openai_client.IMAGE_SIZE.lower().split("x"))
-    except (ValueError, AttributeError):
-        return 10  # tamanho não numérico (ex: "auto") — usa uma margem conservadora
-    razao_gerada = largura_gerada / altura_gerada
-    razao_final = image_overlay.LARGURA_PADRAO / image_overlay.ALTURA_PADRAO
-    if razao_gerada >= razao_final:
-        return 0  # o recorte nesse caso seria nas laterais, não no topo/rodapé
-    altura_apos_corte = largura_gerada / razao_final
-    corte_total = 1 - (altura_apos_corte / altura_gerada)
-    return round((corte_total / 2) * 100) + 2
+    composição. Soma uma folga extra (2 pontos percentuais) por segurança.
+
+    IMPORTANTE: agora que a imagem final é obtida por REDIMENSIONAMENTO (não mais por
+    corte), não há mais perda de topo/rodapé — então esta função retorna 0 e a IA não
+    precisa reservar margem de segurança. Mantida por compatibilidade e para o caso de
+    você querer voltar ao modo de corte no futuro.
+    """
+    return 0
 
 
 def gerar_prompt_imagem(pauta: dict, produto: Optional[dict], skill: dict) -> str:
@@ -218,6 +217,27 @@ def _gerar_imagem_bruta(prompt_imagem: str, produto: Optional[dict], referencias
     return resultado
 
 
+def _redimensionar_para_formato_final(imagem_bytes: bytes) -> bytes:
+    """Redimensiona a imagem gerada pela IA para o formato final (LARGURA_PADRAO x
+    ALTURA_PADRAO, ex: 1080x1440) SEM cortar nada — preserva todo o conteúdo desenhado
+    pela IA, apenas ajustando a proporção. A distorção é mínima (a API da OpenAI só
+    oferece tamanhos fixos como 1024x1536, cuja razão é próxima da final).
+
+    Isso substitui o recorte que era feito antes (que removia topo/rodapé e podia
+    cortar texto/logo). Se quiser voltar ao comportamento antigo, é só usar
+    image_overlay.compor_imagem_final em vez desta função.
+    """
+    largura_final = image_overlay.LARGURA_PADRAO
+    altura_final = image_overlay.ALTURA_PADRAO
+
+    img = Image.open(BytesIO(imagem_bytes)).convert("RGB")
+    img_redimensionada = img.resize((largura_final, altura_final), Image.LANCZOS)
+
+    buffer = BytesIO()
+    img_redimensionada.save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
 def gerar_imagem(
     prompt_imagem: str,
     skill: dict,
@@ -226,8 +246,8 @@ def gerar_imagem(
 ) -> dict:
     """Gera a imagem (com foto real do produto e/ou estilo dos últimos posts, quando
     disponíveis) — a headline já vem desenhada pela própria IA, como parte do brief.
-    Corta/redimensiona para o formato final (1080x1440 por padrão) e cola o logo do
-    cliente, se existir. Guarda o resultado como referência de layout para a próxima
+    Redimensiona para o formato final (1080x1440 por padrão) SEM cortar, e cola o logo
+    do cliente, se existir. Guarda o resultado como referência de layout para a próxima
     execução."""
     cliente = skill.get("cliente")
     referencias_layout = (
@@ -239,12 +259,20 @@ def gerar_imagem(
         # Sem base64 (ex: só veio uma URL) não dá pra compor localmente — devolve como veio.
         return bruta
 
+    # Redimensiona para o formato final SEM cortar (substitui o recorte anterior).
+    imagem_final_bytes = _redimensionar_para_formato_final(
+        base64.b64decode(bruta["imagem_b64"])
+    )
+
+    # Aplica o logo do cliente, se houver (usa a função existente do image_overlay,
+    # mas agora sem headline e sem corte — a imagem já está no tamanho final).
     imagem_final_bytes = image_overlay.compor_imagem_final(
-        imagem_bytes=base64.b64decode(bruta["imagem_b64"]),
+        imagem_bytes=imagem_final_bytes,
         headline="",  # a headline já foi desenhada pela IA na própria cena
         cores_hex=skill.get("cores_hex") or [],
         cliente=cliente,
     )
+
     bruta["imagem_b64"] = base64.b64encode(imagem_final_bytes).decode("ascii")
     bruta["tamanho"] = f"{image_overlay.LARGURA_PADRAO}x{image_overlay.ALTURA_PADRAO}"
 
