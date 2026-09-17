@@ -97,9 +97,7 @@ def rodar(
     imagem_gerada = False
     if gerar_imagem_tambem:
         try:
-            resultado_imagem = gerar_imagem(
-                prompt_imagem, pauta.get("headline_imagem"), skill, produto, usar_referencias_layout
-            )
+            resultado_imagem = gerar_imagem(prompt_imagem, skill, produto, usar_referencias_layout)
             if resultado_imagem.get("imagem_b64"):
                 (pasta_saida / "imagem.png").write_bytes(base64.b64decode(resultado_imagem["imagem_b64"]))
                 imagem_gerada = True

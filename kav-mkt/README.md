@@ -212,10 +212,15 @@ O Agente de Design funciona em etapas, mas com uma única chamada de imagem por 
 (pra não gastar crédito repetindo tentativas):
 
 1. Um brief de "Key Visual" (KV) é escrito por texto (`gpt-4o-mini`), incorporando as
-   cores da marca, direção de arte e composição — pensado pra sair completo e específico
-   já na primeira vez. **Esse brief pede uma cena 100% sem texto/tipografia** — IA de
-   imagem erra texto com frequência (corta, embaralha letras, ou escreve em inglês por
-   padrão), então isso é resolvido à parte no passo 3.
+   cores da marca, direção de arte, composição **e a headline (chamada) em português**
+   vinda da Pauta — instruindo a própria IA de imagem a desenhar esse texto exatamente
+   como está, dentro de um bloco/faixa numa cor da marca, com boa margem das bordas. O
+   GPT Image 2.5 renderiza texto bem melhor que o modelo anterior (gpt-image-1), então
+   isso passou a ser viável diretamente na cena, sem precisar de composição por código.
+   Se ainda assim o texto sair cortado ou errado com frequência, dá pra reativar o
+   desenho por código (mais prático e sem depender de sorte): edite
+   `agents/agente_design.py`, passando `headline=headline` (em vez de `headline=""`) na
+   chamada de `image_overlay.compor_imagem_final(...)`.
 2. Duas fontes de referência visual são combinadas quando disponíveis, ambas enviadas
    juntas numa única chamada de edição ao `gpt-image-2.5-sunburst` (a API aceita várias
    imagens de referência ao mesmo tempo):
@@ -233,11 +238,9 @@ O Agente de Design funciona em etapas, mas com uma única chamada de imagem por 
    é imagem direta, API recusa, etc.), cai automaticamente para a geração comum a partir
    do texto (`gpt-image-2.5-flare`) — nunca trava o fluxo. A tela mostra qual(is)
    referência(s) foram usadas de verdade.
-3. A imagem é cortada/redimensionada em código para exatamente **1080x1440** (vertical);
-   o logo do cliente é colado no canto superior direito, se existir em
-   `assets/logos/<cliente>.png` (ver `assets/logos/README.md`); e a chamada (headline) —
-   vindo já em português da Pauta — é sobreposta numa barra sólida, com uma fonte bold
-   (Anton, incluída em `assets/fonts/`) nas cores da marca do cliente.
+3. A imagem final é cortada/redimensionada em código para exatamente **1080x1440**
+   (vertical), e o logo do cliente é colado no canto superior direito, se existir em
+   `assets/logos/<cliente>.png` (ver `assets/logos/README.md`).
 
 Se a geração de imagem falhar (ex: conta sem acesso ao modelo, billing não configurado),
 o app mostra o erro claramente na tela mas **não trava** — o brief de texto continua

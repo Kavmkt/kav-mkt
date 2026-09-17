@@ -1,6 +1,13 @@
 """Agente de Design: monta o brief de Key Visual (KV) do post — composição, direção de
-arte e cores da marca — gera a imagem base chamando o modelo de imagem da OpenAI (GPT
-Image 2.5) uma única vez por execução, e sobrepõe a chamada (headline) por código.
+arte, cores da marca e a chamada (headline) em português — e gera a imagem final
+chamando o modelo de imagem da OpenAI (GPT Image 2.5) uma única vez por execução.
+
+O texto é desenhado pela PRÓPRIA IA de imagem, como parte da cena (não é mais sobreposto
+por código depois). O GPT Image 2.5 é bem melhor em texto do que o modelo anterior
+(gpt-image-1), então isso passou a ser viável — se erros de texto cortado/embaralhado
+voltarem a aparecer, dá pra reverter para o desenho por código em
+`utils.image_overlay.compor_imagem_final` (a função continua lá, só não é mais chamada
+com uma headline).
 
 Duas fontes de referência visual, combináveis, ambas via edição de imagem (não geração
 do zero):
@@ -15,11 +22,6 @@ do zero):
 
 Se qualquer tentativa com referência falhar (link não é imagem direta, API recusa,
 etc.), cai automaticamente para a geração comum a partir do texto — nunca trava o fluxo.
-
-Não pedimos para o próprio modelo de imagem escrever texto na cena: IA de imagem erra
-texto com frequência (corta, embaralha letras, ou usa o idioma errado). Em vez disso o
-brief pede uma cena limpa, com espaço reservado, e o texto em português entra depois via
-`utils.image_overlay`, com fonte e posição garantidas.
 """
 import base64
 from datetime import datetime
@@ -49,16 +51,27 @@ denso:
 - Estilo/direção de arte (fotografia realista, ilustração, etc. — escolha o que combine
   com o público e o tom do cliente)
 - Iluminação e humor/mood
-- O terço inferior da imagem deve ficar visualmente mais simples/limpo (menos elementos
-  de destaque ali), pois uma barra sólida com texto será adicionada por cima depois
+- Um tratamento gráfico para a HEADLINE informada abaixo (quando houver): um bloco
+  sólido (faixa ou retângulo) numa cor da marca, com o texto em letras grandes, em
+  negrito/caixa alta, numa cor de alto contraste — como um pôster/anúncio real,
+  ocupando uma área que não compita com o produto
 
-Regras:
-- NÃO inclua nenhum texto, letra, número, logotipo ou palavra na imagem — isso é feito
-  à parte depois. A cena deve ser 100% visual, sem tipografia nenhuma.
+Regras para a headline (quando houver uma):
+- O texto renderizado deve ser EXATAMENTE a headline informada, palavra por palavra, em
+  português — não traduza, não resuma, não invente palavras extras.
+- Letras grandes, fonte bold/condensada, com margem generosa das bordas da imagem —
+  nunca cortada, nunca saindo do quadro.
+- Se imagens de referência de posts anteriores forem fornecidas e tiverem texto nelas,
+  IGNORE o texto que aparece nelas — use só a headline informada abaixo, não o texto das
+  referências.
+- Se nenhuma headline for informada, não inclua nenhum texto na imagem.
+
+Outras regras:
 - Se nenhum produto foi informado (post institucional/educativo), descreva uma cena
   genérica coerente com o segmento do cliente, sem inventar produtos.
-- Retorne APENAS o brief em texto corrido, em inglês, sem explicações, sem markdown,
-  sem listas — é o prompt final que vai direto para o gerador de imagem.
+- Retorne APENAS o brief em texto corrido, em inglês — exceto a headline em si, que deve
+  aparecer citada entre aspas exatamente em português — sem explicações, sem markdown,
+  sem listas. É o prompt final que vai direto para o gerador de imagem.
 """
 
 
@@ -69,6 +82,11 @@ def gerar_prompt_imagem(pauta: dict, produto: Optional[dict], skill: dict) -> st
         f"Descrição: {pauta.get('descricao')}",
         f"Objetivo: {pauta.get('objetivo')}",
     ]
+    headline = pauta.get("headline_imagem")
+    if headline:
+        partes.append(f'Headline a renderizar na imagem (em português, exatamente): "{headline}"')
+    else:
+        partes.append("Nenhuma headline definida — não inclua texto na imagem.")
     if produto and produto.get("nome"):
         partes.append(f"Produto a destacar na imagem: {produto['nome']}")
         if produto.get("fallback_usado"):
@@ -125,8 +143,8 @@ def _prompt_para_edicao(prompt_cena: str, tem_layout_refs: bool, tem_produto_rea
             "The reference image(s) shown first are examples of this brand's past post "
             "designs. Match their overall visual style, composition, framing, color "
             "treatment and mood as closely as possible, to keep a consistent look across "
-            "posts. Do not copy their specific subject or product — only the visual "
-            "style/layout."
+            "posts. Do not copy their specific subject, product or on-image text — only "
+            "the visual style/layout."
         )
     if tem_produto_real:
         partes.append(
@@ -168,15 +186,15 @@ def _gerar_imagem_bruta(prompt_imagem: str, produto: Optional[dict], referencias
 
 def gerar_imagem(
     prompt_imagem: str,
-    headline: Optional[str],
     skill: dict,
     produto: Optional[dict] = None,
     usar_referencias_layout: bool = True,
 ) -> dict:
     """Gera a imagem (com foto real do produto e/ou estilo dos últimos posts, quando
-    disponíveis) e sobrepõe a chamada em português no formato final (1080x1440 por
-    padrão), usando as cores da marca. Guarda o resultado como referência de layout para
-    a próxima execução."""
+    disponíveis) — a headline já vem desenhada pela própria IA, como parte do brief.
+    Corta/redimensiona para o formato final (1080x1440 por padrão) e cola o logo do
+    cliente, se existir. Guarda o resultado como referência de layout para a próxima
+    execução."""
     cliente = skill.get("cliente")
     referencias_layout = (
         carregar_referencias_layout(cliente) if (cliente and usar_referencias_layout) else []
@@ -189,7 +207,7 @@ def gerar_imagem(
 
     imagem_final_bytes = image_overlay.compor_imagem_final(
         imagem_bytes=base64.b64decode(bruta["imagem_b64"]),
-        headline=headline or "",
+        headline="",  # a headline já foi desenhada pela IA na própria cena
         cores_hex=skill.get("cores_hex") or [],
         cliente=cliente,
     )

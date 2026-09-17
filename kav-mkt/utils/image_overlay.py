@@ -1,7 +1,11 @@
 """Pós-processamento da imagem gerada pela IA: corta/redimensiona para o formato final
-exato e sobrepõe a chamada (headline) por código — bem mais confiável do que pedir para
-o modelo de imagem "escrever" texto na cena (que costuma cortar, embaralhar ou usar o
-idioma errado).
+exato e cola o logo do cliente, se houver.
+
+Também sabe sobrepor uma chamada (headline) por código, via `compor_imagem_final(...,
+headline=...)` — hoje o Agente de Design não usa mais essa opção por padrão (a própria
+IA de imagem desenha o texto na cena, GPT Image 2.5 é bem melhor nisso que o modelo
+anterior). Se erros de texto cortado/embaralhado voltarem a acontecer, essa função
+continua pronta para reativar o desenho por código como alternativa mais previsível.
 """
 from io import BytesIO
 from pathlib import Path
