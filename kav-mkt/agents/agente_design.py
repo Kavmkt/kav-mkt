@@ -9,10 +9,9 @@ voltarem a aparecer, dá pra reverter para o desenho por código em
 `utils.image_overlay.compor_imagem_final` (a função continua lá, só não é mais chamada
 com uma headline).
 
-Como a imagem gerada é recortada depois para o formato final (ver `_margem_corte_vertical`
-e `utils.image_overlay`), o brief avisa a IA — com o percentual exato calculado a partir
-dos tamanhos configurados — para manter texto/logo fora da faixa de topo/rodapé que será
-cortada, em vez de arriscar colar esses elementos na borda.
+Como a imagem gerada é redimensionada depois para o formato final (ver
+`_redimensionar_para_formato_final` e `utils.image_overlay`), não há perda de topo/rodapé
+— a composição é preservada integralmente.
 
 Duas fontes de referência visual, combináveis, ambas via edição de imagem (não geração
 do zero):
@@ -89,6 +88,73 @@ Outras regras:
 - Retorne APENAS o brief em texto corrido, em inglês — exceto a headline em si, que deve
   aparecer citada entre aspas exatamente em português — sem explicações, sem markdown,
   sem listas. É o prompt final que vai direto para o gerador de imagem.
+
+REGRAS NEGATIVAS E DIRETRIZES OBRIGATÓRIAS (o brief DEVE deixar isso explícito para o
+gerador de imagem, e o gerador NUNCA deve violar):
+
+1. AMBIENTAÇÃO DO PRODUTO (quando houver produto real):
+   - Sempre posicionar o produto em um ambiente profissional, limpo, bem iluminado e
+     que favoreça o produto (ex: superfície de trabalho, bancada, cenário de estúdio,
+     contexto de aplicação real do produto).
+   - NUNCA colocar o produto no chão, jogado em cantos sujos, sobre superfícies
+     degradadas, com poeira, manchas, entulho ou qualquer contexto que desvalorize
+     o produto.
+   - A iluminação deve destacar o produto (luz controlada, sombras suaves, realce
+     de textura e acabamento).
+
+2. TIPOGRAFIA:
+   - Usar EXCLUSIVAMENTE a família tipográfica "Barlow" (qualquer peso: Regular,
+     Medium, SemiBold, Bold, Condensed) em TODOS os textos da imagem.
+   - NUNCA usar outras fontes (sem serifadas, sem scripts, sem fontes decorativas).
+
+3. PRESENÇA DO VEÍCULO / CARRO DE REFERÊNCIA:
+   - Além do produto aplicado na imagem de forma profissional, incluir ao fundo do
+     layout a imagem de um carro/modelo de referência do público-alvo do cliente
+     (ex: o carro que o cliente costuma atender), para ancoragem visual e
+     identificação imediata por parte do público.
+   - O carro NÃO precisa ter o produto aplicado nele — o objetivo é apenas referenciar
+     o modelo/veículo que o público reconhece como "o carro dele".
+   - O carro deve aparecer integrado à cena, em segundo plano, sem competir com o
+     produto principal.
+
+4. TRATAMENTO DE TEXTO E CONTRASTE:
+   - NUNCA colocar formas geométricas decorativas (retângulos, círculos, faixas
+     arbitrárias) atrás do texto como muleta de contraste.
+   - O texto deve ser aplicado SOBRE superfícies reais da cena que já ofereçam
+     contraste natural (parede, móvel, área escura da composição, etc.).
+   - Se NÃO houver superfície natural favorável para o texto, aplicar um degradê
+     sutil na cor preta como fundo de contraste — leve, sem virar bloco preto.
+   - NUNCA usar sombra projetada (drop shadow) em texto. Para dar contraste, usar
+     exclusivamente o degradê escuro descrito acima.
+
+5. ESCALA E MARGENS DA HEADLINE:
+   - Headlines NUNCA devem ter escala exagerada ("texto gigante").
+   - Usar escala controlada, com margens de segurança generosas nas bordas do layout.
+   - O texto deve respirar — nada colado nas laterais, topo ou rodapé.
+   - Priorizar legibilidade e hierarquia visual em vez de tamanho bruto.
+
+6. TEXTURAS E ACABAMENTO:
+   - Usar SEMPRE texturas leves, modernas, sutis e sofisticadas.
+   - NUNCA usar texturas duras, rugosas, granuladas, "grunge", ou que deem aspecto
+     "over"/carregado ao layout.
+   - O acabamento geral deve transmitir limpeza, modernidade e profissionalismo.
+
+7. REGRAS GERAIS NEGATIVAS (aplicáveis a TODA geração):
+   - NUNCA use texto em inglês na imagem — a headline (quando houver) é sempre em
+     português.
+   - NUNCA gere rostos deformados, mãos com dedos extras/faltando, olhos tortos ou
+     anatomia estranha.
+   - NUNCA use marcas d'água, assinaturas, selos de "AI generated", logos de terceiros
+     ou elementos genéricos de stock photo.
+   - NUNCA coloque elementos importantes (texto, logo, rosto, produto) colados nas
+     bordas do layout.
+   - NUNCA use fundos brancos vazios sem contexto — sempre uma cena/composição
+     intencional.
+   - NUNCA misture estilos incompatíveis (ex: 3D realista + ilustração flat no mesmo KV).
+   - NUNCA invente texto na imagem além da headline informada.
+   - NUNCA use paletas fora das cores da marca do cliente.
+   - NUNCA mostre o produto de forma irreconhecível ou alterada (quando houver foto real).
+   - NUNCA gere imagens com proporção horizontal/paisagem — sempre vertical (retrato).
 """
 
 
