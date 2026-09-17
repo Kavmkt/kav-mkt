@@ -168,9 +168,9 @@ with st.sidebar.expander("ℹ️ Como funciona / limitações"):
   navegação automática comum). Quando a pauta pedir um produto específico, você pode
   colar as informações manualmente, ou deixar em branco para usar um **produto coringa**
   da skill do cliente.
-- A imagem é gerada de uma vez só, com um brief completo (cores, direção de arte,
-  composição) montado antes — evitamos gerar de novo à toa para não gastar crédito
-  repetindo tentativas. Se quiser outra versão, gere um novo post.
+- A imagem sai no formato vertical 1080x1440. A IA gera só a cena (sem texto nenhum) —
+  a chamada em português é sobreposta depois por código, com fonte e posição garantidas,
+  pra não sair cortada nem embaralhada. É gerada de uma vez só, sem repetir tentativas.
 - Desmarque "Gerar imagem também" pra só testar o texto sem gastar crédito de imagem.
 - Este é um protótipo: o armazenamento pode ser reiniciado quando o servidor gratuito
   reinicia (é esperado nesta fase).
@@ -227,6 +227,8 @@ with st.container(border=True):
         st.markdown(f"**Legenda sugerida:**")
         st.code(pauta.get("legenda_sugerida", ""), language=None)
         st.markdown(" ".join(pauta.get("hashtags", [])))
+        if pauta.get("headline_imagem"):
+            st.markdown(f"**Chamada para a imagem:** {pauta['headline_imagem']}")
     with col2:
         st.metric("Objetivo", pauta.get("objetivo", "—"))
         st.metric("Requer produto?", "Sim" if pauta.get("requer_produto_especifico") else "Não")
@@ -291,7 +293,7 @@ if st.session_state.etapa == "design" and st.session_state.prompt_imagem is None
     if st.session_state.get("gerar_imagem_desta_vez", True):
         try:
             with st.spinner("Gerando a imagem (uma única chamada)..."):
-                resultado_imagem = gerar_imagem(prompt_imagem)
+                resultado_imagem = gerar_imagem(prompt_imagem, pauta.get("headline_imagem"), skill)
             if resultado_imagem.get("imagem_b64"):
                 imagem_bytes = base64.b64decode(resultado_imagem["imagem_b64"])
                 st.session_state.imagem = resultado_imagem

@@ -23,7 +23,9 @@ kav-mkt/
 │   └── agente_design.py            # brief de KV (gpt-4o-mini) + imagem final (gpt-image-1)
 ├── utils/
 │   ├── openai_client.py            # wrapper único para chamadas à API da OpenAI
-│   └── skill_loader.py             # lê e faz parse do arquivo de skill do cliente
+│   ├── image_overlay.py            # recorte 1080x1440 + sobreposição da chamada (headline)
+│   └── skill_loader.py             # lê e faz parse do arquivo de skill do cliente (inclui cores)
+├── assets/fonts/                   # fontes bold (Anton, Archivo Black) para a chamada na imagem
 ├── data/<cliente>/produtos_usados.json   # controle de produtos já usados
 ├── logs/<cliente>/falhas_produto.log     # log de falhas na busca de produto
 ├── output/<cliente>/<AAAA-MM-DD>/        # artefatos gerados por execução
@@ -165,7 +167,12 @@ lápis) — o app atualiza sozinho.
 ## Adicionar um novo cliente
 
 1. Crie `skills/<novo-cliente>.md` seguindo as mesmas seções de `skills/ponto-car.md`
-   (Segmento, Público-alvo, Cores, Tom de voz, Regras, Produtos Coringa).
+   (Segmento, Público-alvo, Cores, Tom de voz, Regras, Produtos Coringa). Na seção
+   `## Cores da marca`, use nomes simples em português (preto, branco, amarelo, azul,
+   azul petróleo, vermelho, verde, laranja, cinza, rosa, roxo, marrom) — são os nomes
+   que `utils/skill_loader.py` reconhece pra colorir a barra de texto da imagem. Nomes
+   fora dessa lista são ignorados nesse ponto específico (o resto do skill funciona
+   normalmente).
 2. Se o cliente também tiver loja na Shopee, adicione a URL no dicionário `URLS_LOJA` em
    `agents/agente_produto.py` (opcional — a busca manual funciona sem isso).
 3. Envie o novo arquivo de skill para o repositório no GitHub. Ele aparece
@@ -191,14 +198,29 @@ chamar `gerar_pauta`).
 
 ## Geração de imagem (gpt-image-1)
 
-O Agente de Design funciona em duas etapas, mas com uma única chamada de imagem por
+`gpt-image-1` é o modelo de imagem atual da OpenAI (o mesmo por trás da geração de
+imagem "nova" do ChatGPT) — é o que este projeto usa.
+
+O Agente de Design funciona em três etapas, mas com uma única chamada de imagem por
 execução (pra não gastar crédito repetindo tentativas):
 
 1. Um brief de "Key Visual" (KV) é escrito por texto (`gpt-4o-mini`), incorporando as
-   cores da marca, direção de arte, composição e um eventual texto curto de destaque —
-   pensado pra sair completo e específico já na primeira vez.
-2. Esse brief é enviado direto para o modelo de imagem da OpenAI (`gpt-image-1`), que
-   gera a imagem final, exibida na tela com botão de download.
+   cores da marca, direção de arte e composição — pensado pra sair completo e específico
+   já na primeira vez. **Esse brief pede uma cena 100% sem texto/tipografia** — IA de
+   imagem erra texto com frequência (corta, embaralha letras, ou escreve em inglês por
+   padrão), então isso é resolvido à parte no passo 3.
+2. O brief é enviado ao `gpt-image-1`, que gera a cena.
+3. A imagem é cortada/redimensionada em código para exatamente **1080x1440** (vertical),
+   e a chamada (headline) — vindo já em português da Pauta — é sobreposta numa barra
+   sólida, com uma fonte bold (Anton, incluída em `assets/fonts/`) nas cores da marca do
+   cliente. Isso garante texto legível, em português e sem corte, sem depender da IA de
+   imagem acertar isso sozinha.
+
+Sobre usar **imagens de referência**: a API da OpenAI permite sim (`images.edit`, que
+aceita uma imagem de entrada para orientar o estilo/composição) — não implementei isso
+ainda porque o problema relatado (texto cortado/em inglês) é resolvido de forma mais
+confiável com a sobreposição por código acima. Fica como possível melhoria futura se
+quiser manter um "molde" visual mais fixo entre posts.
 
 Se a geração de imagem falhar (ex: conta sem acesso ao modelo, billing não configurado),
 o app mostra o erro claramente na tela mas **não trava** — o brief de texto continua

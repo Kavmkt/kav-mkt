@@ -1,13 +1,16 @@
 """Agente de Design: monta o brief de Key Visual (KV) do post — composição, direção de
-arte, cores da marca e eventual texto de destaque — e gera a imagem final chamando o
-modelo de imagem da OpenAI (gpt-image-1) uma única vez por execução.
+arte e cores da marca — gera a imagem base chamando o modelo de imagem da OpenAI
+(gpt-image-1) uma única vez por execução, e sobrepõe a chamada (headline) por código.
 
-O brief é pensado para sair completo e específico já na primeira chamada de texto, para
-que a chamada de imagem (mais cara) não precise ser repetida por falta de direção.
+Não pedimos para o próprio modelo de imagem escrever texto na cena: IA de imagem erra
+texto com frequência (corta, embaralha letras, ou usa o idioma errado). Em vez disso o
+brief pede uma cena limpa, com espaço reservado, e o texto em português entra depois via
+`utils.image_overlay`, com fonte e posição garantidas.
 """
+import base64
 from typing import Optional
 
-from utils import openai_client
+from utils import image_overlay, openai_client
 from utils.openai_client import chamar_ia
 
 SYSTEM_PROMPT = """Você é o Diretor de Arte da Kav (@kav.mkt). Sua função é escrever o
@@ -20,19 +23,19 @@ DIRETRIZES DE MARCA E VISUAL DO CLIENTE:
 
 O brief (em inglês, pronto para o gerador de imagem) deve definir, em um único parágrafo
 denso:
-- Cena/composição principal (o que aparece, enquadramento, plano)
+- Cena/composição principal (o que aparece, enquadramento, plano), pensada para um
+  formato VERTICAL (retrato, mais alto do que largo)
 - Produto em destaque (quando houver) e como ele aparece na cena
 - Paleta de cores (use as cores da marca do cliente)
 - Estilo/direção de arte (fotografia realista, ilustração, etc. — escolha o que combine
   com o público e o tom do cliente)
 - Iluminação e humor/mood
-- Espaço de respiro (negative space) pensado para uma eventual sobreposição de
-  logo/texto do post por cima da imagem
+- O terço inferior da imagem deve ficar visualmente mais simples/limpo (menos elementos
+  de destaque ali), pois uma barra sólida com texto será adicionada por cima depois
 
 Regras:
-- No máximo uma frase curta de texto embutido na imagem (3-4 palavras), e só se agregar
-  de verdade (ex: uma chamada tipo "-20% HOJE"); IA de imagem erra textos longos, então
-  na dúvida não inclua nenhum texto.
+- NÃO inclua nenhum texto, letra, número, logotipo ou palavra na imagem — isso é feito
+  à parte depois. A cena deve ser 100% visual, sem tipografia nenhuma.
 - Se nenhum produto foi informado (post institucional/educativo), descreva uma cena
   genérica coerente com o segmento do cliente, sem inventar produtos.
 - Retorne APENAS o brief em texto corrido, em inglês, sem explicações, sem markdown,
@@ -62,6 +65,19 @@ def gerar_prompt_imagem(pauta: dict, produto: Optional[dict], skill: dict) -> st
     return chamar_ia(system=system, prompt=prompt, max_tokens=500, temperature=0.8)
 
 
-def gerar_imagem(prompt_imagem: str) -> dict:
-    """Gera a imagem final a partir do brief de KV (uma única chamada, sem iteração)."""
-    return openai_client.gerar_imagem(prompt_imagem)
+def gerar_imagem(prompt_imagem: str, headline: Optional[str], skill: dict) -> dict:
+    """Gera a imagem base (uma única chamada, sem iteração) e sobrepõe a chamada em
+    português no formato final (1080x1440 por padrão), usando as cores da marca."""
+    bruta = openai_client.gerar_imagem(prompt_imagem)
+    if not bruta.get("imagem_b64"):
+        # Sem base64 (ex: só veio uma URL) não dá pra compor localmente — devolve como veio.
+        return bruta
+
+    imagem_final_bytes = image_overlay.compor_imagem_final(
+        imagem_bytes=base64.b64decode(bruta["imagem_b64"]),
+        headline=headline or "",
+        cores_hex=skill.get("cores_hex") or [],
+    )
+    bruta["imagem_b64"] = base64.b64encode(imagem_final_bytes).decode("ascii")
+    bruta["tamanho"] = f"{image_overlay.LARGURA_PADRAO}x{image_overlay.ALTURA_PADRAO}"
+    return bruta

@@ -55,6 +55,7 @@ Responda APENAS com um objeto JSON, sem nenhum texto antes ou depois, no formato
   "formato": "qual ângulo/formato foi usado (livre, pode citar um da lista ou descrever o seu)",
   "descricao": "4-6 frases desenvolvendo a ideia com uma situação concreta, não genérica",
   "legenda_sugerida": "rascunho de legenda pronta pra publicar, no tom de voz do cliente, com pelo menos 3-4 frases",
+  "headline_imagem": "chamada BEM curta (2 a 5 palavras), em português, para aparecer escrita sobre a imagem do post (ex: 'BORRACHA NOVA, CARRO NOVO'). Maiúsculas ou não, sem emoji. Se não fizer sentido ter uma chamada (ex: post mais institucional/sutil), retorne null.",
   "requer_produto_especifico": true ou false,
   "categoria_produto": "categoria ou nome do produto necessário, ou null se requer_produto_especifico for false",
   "hashtags": ["#exemplo1", "#exemplo2", "#exemplo3"]

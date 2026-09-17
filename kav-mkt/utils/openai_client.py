@@ -12,7 +12,10 @@ from openai import OpenAI
 
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 IMAGE_MODEL = os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-1")
-IMAGE_SIZE = os.environ.get("OPENAI_IMAGE_SIZE", "1024x1024")
+# O gpt-image-1 só aceita alguns tamanhos fixos (1024x1024, 1024x1536, 1536x1024, auto).
+# Usamos o vertical mais próximo do formato final (1080x1440) — o recorte exato pro
+# tamanho final acontece depois, em utils.image_overlay.
+IMAGE_SIZE = os.environ.get("OPENAI_IMAGE_SIZE", "1024x1536")
 # "low" gasta bem menos crédito que "high" — "medium" é o meio-termo padrão.
 IMAGE_QUALITY = os.environ.get("OPENAI_IMAGE_QUALITY", "medium")
 
