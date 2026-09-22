@@ -1,20 +1,22 @@
 """Cliente compartilhado para chamadas à API da OpenAI: texto (gpt-4o-mini) e imagem
 (GPT Image 2.5).
 
-Centralizado aqui para que os agentes (Pauta, Design) não dupliquem a leitura da chave
+Centralizado aqui para que os agentes (Legenda, Design) não dupliquem a leitura da chave
 de API nem a lógica de extração de JSON da resposta.
 """
 import json
 import os
 import re
 from io import BytesIO
+from typing import Optional
 
 import requests
 from openai import OpenAI
+from PIL import Image
 
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
-# "flare" = geração rápida do zero. "sunburst" = mais precisa, usada quando há uma foto
-# de referência real do produto (edição/composição), onde manter fidelidade importa mais.
+# "flare" = geração rápida do zero. "sunburst" = mais precisa, usada quando há imagens de
+# referência (layout do cliente e/ou foto real do produto), onde fidelidade importa mais.
 IMAGE_MODEL = os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-2.5-flare")
 IMAGE_EDIT_MODEL = os.environ.get("OPENAI_IMAGE_EDIT_MODEL", "gpt-image-2.5-sunburst")
 # Tamanho pedido à API (o recorte exato pro formato final de 1080x1440 acontece depois,
@@ -96,9 +98,9 @@ def gerar_imagem(prompt: str) -> dict:
 
 
 def baixar_imagem_referencia(url: str) -> bytes:
-    """Baixa os bytes de uma foto de produto (ex: link colado no formulário) para usar
-    como referência na geração com edição. Lança exceção se a URL não for uma imagem
-    válida/acessível — o chamador deve tratar isso com um fallback."""
+    """Baixa os bytes da foto de um produto do catálogo para usar como referência na
+    geração com edição. Lança exceção se a URL não for uma imagem válida/acessível — o
+    chamador deve tratar isso com um fallback."""
     resposta = requests.get(url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
     resposta.raise_for_status()
     content_type = resposta.headers.get("Content-Type", "")
@@ -107,24 +109,31 @@ def baixar_imagem_referencia(url: str) -> bytes:
     return resposta.content
 
 
-def gerar_imagem_com_referencias(prompt: str, imagens_bytes: list) -> dict:
-    """Gera a imagem usando uma ou mais imagens como referência (foto real do produto
-    e/ou layouts de posts anteriores), em vez de descrever tudo só por texto.
+def gerar_imagem_com_referencias(prompt: str, imagens_bytes: list, size: Optional[str] = None) -> dict:
+    """Gera a imagem usando uma ou mais imagens como referência (layout do cliente, foto
+    real do produto, e/ou a própria imagem atual para um ajuste pontual), em vez de
+    descrever tudo só por texto.
 
     Faz UMA única chamada à API de edição de imagem da OpenAI, com todas as referências
     enviadas juntas (a API do GPT Image aceita até 16 imagens numa única edição).
+
+    Args:
+        size: normalmente omitido (usa IMAGE_SIZE). Passe "auto" quando a imagem de
+            referência já estiver no formato final (ex: ajuste pontual sobre uma imagem
+            já composta), pra API não tentar redimensionar/distorcer pra IMAGE_SIZE.
     """
     client = get_client()
     arquivos = []
     for indice, dados in enumerate(imagens_bytes):
-        arquivo = BytesIO(dados)
+        arquivo = BytesIO(_como_png(dados))
         arquivo.name = f"referencia_{indice}.png"
         arquivos.append(arquivo)
+    tamanho_pedido = size or IMAGE_SIZE
     resposta = client.images.edit(
         model=IMAGE_EDIT_MODEL,
         image=arquivos,
         prompt=prompt,
-        size=IMAGE_SIZE,
+        size=tamanho_pedido,
         quality=IMAGE_QUALITY,
     )
     dado = resposta.data[0]
@@ -132,9 +141,20 @@ def gerar_imagem_com_referencias(prompt: str, imagens_bytes: list) -> dict:
         "imagem_b64": getattr(dado, "b64_json", None),
         "imagem_url": getattr(dado, "url", None),
         "modelo": IMAGE_EDIT_MODEL,
-        "tamanho": IMAGE_SIZE,
+        "tamanho": tamanho_pedido,
         "qualidade": IMAGE_QUALITY,
     }
+
+
+def _como_png(dados: bytes, lado_max: int = 1536) -> bytes:
+    """Converte qualquer imagem (JPG/WEBP da Shopee, referências grandes) para PNG de no
+    máximo `lado_max` px — formato aceito pela API e envio mais leve."""
+    imagem = Image.open(BytesIO(dados))
+    imagem = imagem.convert("RGBA" if imagem.mode in ("RGBA", "LA", "P") else "RGB")
+    imagem.thumbnail((lado_max, lado_max))
+    saida = BytesIO()
+    imagem.save(saida, format="PNG")
+    return saida.getvalue()
 
 
 def extrair_json(texto: str) -> dict:

@@ -1,348 +1,205 @@
-"""Agente de Design: monta o brief de Key Visual (KV) do post — composição, direção de
-arte, cores da marca e a chamada (headline) em português — e gera a imagem final
-chamando o modelo de imagem da OpenAI (GPT Image 2.5) uma única vez por execução.
+"""Agente de Design: escreve o brief de Key Visual (KV) do post e gera a imagem final com
+o modelo de imagem da OpenAI (GPT Image 2.5), uma única chamada por post.
 
-O texto é desenhado pela PRÓPRIA IA de imagem, como parte da cena (não é mais sobreposto
-por código depois). O GPT Image 2.5 é bem melhor em texto do que o modelo anterior
-(gpt-image-1), então isso passou a ser viável — se erros de texto cortado/embaralhado
-voltarem a aparecer, dá pra reverter para o desenho por código em
-`utils.image_overlay.compor_imagem_final` (a função continua lá, só não é mais chamada
-com uma headline).
+Referências enviadas à IA, na mesma chamada de edição (gpt-image-2.5-sunburst):
+- **Layout**: uma das (até 10) imagens fixas em clientes/<slug>/referencias/, sorteada a
+  cada post — a IA reproduz a estrutura do layout com o produto e os textos novos.
+- **Produto**: a foto real do produto no catálogo, para ele aparecer igual ao anúncio.
 
-Como a imagem gerada é redimensionada depois para o formato final (ver
-`_redimensionar_para_formato_final` e `utils.image_overlay`), não há perda de topo/rodapé
-— a composição é preservada integralmente.
+Sem nenhuma referência disponível (ou se a chamada com referências falhar), gera do zero
+a partir do brief (gpt-image-2.5-flare) e avisa.
 
-Duas fontes de referência visual, combináveis, ambas via edição de imagem (não geração
-do zero):
-- **Produto**: quando o produto tem uma foto real (link colado no formulário, não um
-  fallback coringa), a foto é baixada e usada como referência, preservando a aparência
-  real do produto em vez de descrevê-lo só por texto.
-- **Layout**: as últimas imagens geradas por este app para o cliente (guardadas em
-  data/<cliente>/referencias_layout/) são reaproveitadas como referência de estilo
-  visual/composição para o próximo post, criando consistência entre os posts ao longo do
-  tempo. Também é possível alimentar essa pasta manualmente com posts antigos (ver
-  `salvar_referencia_layout`, usado pela interface).
-
-Se qualquer tentativa com referência falhar (link não é imagem direta, API recusa,
-etc.), cai automaticamente para a geração comum a partir do texto — nunca trava o fluxo.
+A chamada e o selo do produto são desenhados pela própria IA na cena. O logo NÃO: a IA
+deixa o canto livre e o logo é aplicado depois por código (utils.image_overlay), para
+sair sempre idêntico ao arquivo do cliente.
 """
 import base64
-from datetime import datetime
-from pathlib import Path
-from typing import Optional
-
-from PIL import Image
-from io import BytesIO
+import random
 
 from utils import image_overlay, openai_client
 from utils.openai_client import chamar_ia
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-MAX_REFERENCIAS_LAYOUT = 3
+CANTOS_LOGO = {
+    "superior-esquerdo": "top-left",
+    "superior-direito": "top-right",
+    "inferior-esquerdo": "bottom-left",
+    "inferior-direito": "bottom-right",
+}
 
+# Placeholders substituídos com .replace() (e não .format()): o texto da skill do cliente
+# pode ter chaves {} que quebrariam o .format().
 SYSTEM_PROMPT = """Você é o Diretor de Arte da Kav (@kav.mkt). Sua função é escrever o
-brief de Key Visual (KV) de UM post, pronto para ser enviado direto a um gerador de
-imagem por IA — sem chance de retrabalho, então precisa ser completo e específico logo
-na primeira vez.
+brief de Key Visual (KV) de UM post de produto, pronto para ser enviado direto a um
+gerador de imagem por IA — sem chance de retrabalho, então precisa ser completo e
+específico logo na primeira vez.
 
-DIRETRIZES DE MARCA E VISUAL DO CLIENTE:
-{skill}
+DIRETRIZES DE MARCA E KV DO CLIENTE:
+__SKILL__
 
-ATENÇÃO — RECORTE POSTERIOR: depois de gerada, a imagem passa por um recorte automático
-que remove cerca de {margem_corte}% do topo e outros {margem_corte}% do rodapé da tela
-(pra ajustar a proporção ao formato final do post). Isso significa que QUALQUER
-texto, logotipo, rosto ou elemento importante posicionado nesses {margem_corte}% mais
-próximos da borda de cima ou de baixo será cortado. Planeje a composição já contando com
-isso: trate a faixa de {margem_corte}% no topo e no rodapé como uma margem de segurança
-— pode ter fundo/cenário ali, mas nada que precise aparecer inteiro.
+Contexto de produção (o gerador de imagem recebe junto com o seu brief):
+__CONTEXTO_LAYOUT__
+- quando existir, a foto real do produto, que ele vai manter fiel.
 
-O brief (em inglês, pronto para o gerador de imagem) deve definir, em um único parágrafo
-denso:
-- Cena/composição principal (o que aparece, enquadramento, plano), pensada para um
-  formato VERTICAL (retrato, mais alto do que largo), com todo elemento essencial
-  centralizado verticalmente, respeitando a margem de segurança de topo/rodapé acima
-- Produto em destaque (quando houver) e como ele aparece na cena
-- Paleta de cores (use as cores da marca do cliente)
-- Estilo/direção de arte (fotografia realista, ilustração, etc. — escolha o que combine
-  com o público e o tom do cliente)
-- Iluminação e humor/mood
-- Um tratamento gráfico para a HEADLINE informada abaixo (quando houver): um bloco
-  sólido (faixa ou retângulo) numa cor da marca, com o texto em letras grandes, em
-  negrito/caixa alta, numa cor de alto contraste — como um pôster/anúncio real,
-  posicionado bem dentro da área segura (nunca colado nas bordas de cima ou de baixo)
+RECORTE POSTERIOR: depois de gerada, a imagem perde cerca de __MARGEM__% do topo e
+__MARGEM__% do rodapé (ajuste para o formato final do post). Nada importante — texto,
+produto, rostos — pode ficar nessas faixas.
 
-Regras para a headline (quando houver uma):
-- O texto renderizado deve ser EXATAMENTE a headline informada, palavra por palavra, em
-  português — não traduza, não resuma, não invente palavras extras.
-- Letras grandes, fonte bold/condensada, inteiramente dentro da área segura descrita
-  acima — nunca cortada, nunca saindo do quadro, nunca dentro da margem de topo/rodapé.
-- Se imagens de referência de posts anteriores forem fornecidas e tiverem texto nelas,
-  IGNORE o texto que aparece nelas — use só a headline informada abaixo, não o texto das
-  referências.
-- Se nenhuma headline for informada, não inclua nenhum texto na imagem.
+LOGO: o logo do cliente é aplicado depois, por código, no canto __CANTO__. Deixe esse
+canto livre de texto e de elementos importantes, e NÃO desenhe nenhum logotipo, nome de
+loja ou marca do cliente na imagem.
 
-Outras regras:
-- Se nenhum produto foi informado (post institucional/educativo), descreva uma cena
-  genérica coerente com o segmento do cliente, sem inventar produtos.
-- Retorne APENAS o brief em texto corrido, em inglês — exceto a headline em si, que deve
-  aparecer citada entre aspas exatamente em português — sem explicações, sem markdown,
-  sem listas. É o prompt final que vai direto para o gerador de imagem.
+O brief (em inglês) deve definir, em um único parágrafo denso:
+- a cena fotográfica (situação do dia a dia, carro, ambiente, enquadramento) pensada
+  para formato VERTICAL (retrato);
+- o produto em destaque e como ele aparece na cena;
+- iluminação e mood;
+- a headline e o selo do produto, com o tratamento gráfico previsto no KV do cliente.
 
-REGRAS NEGATIVAS E DIRETRIZES OBRIGATÓRIAS (o brief DEVE deixar isso explícito para o
-gerador de imagem, e o gerador NUNCA deve violar):
+Regras de texto na imagem:
+- Renderize a headline e o selo EXATAMENTE como informados, palavra por palavra, em
+  português — sem traduzir, resumir ou acrescentar palavras.
+- Nenhum outro texto além deles (sem preço, sem slogan inventado).
+- Letras grandes e legíveis, inteiras dentro da área segura.
 
-1. AMBIENTAÇÃO DO PRODUTO (quando houver produto real):
-   - Sempre posicionar o produto em um ambiente profissional, limpo, bem iluminado e
-     que favoreça o produto (ex: superfície de trabalho, bancada, cenário de estúdio,
-     contexto de aplicação real do produto).
-   - NUNCA colocar o produto no chão, jogado em cantos sujos, sobre superfícies
-     degradadas, com poeira, manchas, entulho ou qualquer contexto que desvalorize
-     o produto.
-   - A iluminação deve destacar o produto (luz controlada, sombras suaves, realce
-     de textura e acabamento).
-
-2. TIPOGRAFIA:
-   - Usar EXCLUSIVAMENTE a família tipográfica "Barlow" (qualquer peso: Regular,
-     Medium, SemiBold, Bold, Condensed) em TODOS os textos da imagem.
-   - NUNCA usar outras fontes (sem serifadas, sem scripts, sem fontes decorativas).
-
-3. PRESENÇA DO VEÍCULO / CARRO DE REFERÊNCIA:
-   - Além do produto aplicado na imagem de forma profissional, incluir ao fundo do
-     layout a imagem de um carro/modelo de referência do público-alvo do cliente
-     (ex: o carro que o cliente costuma atender), para ancoragem visual e
-     identificação imediata por parte do público.
-   - O carro NÃO precisa ter o produto aplicado nele — o objetivo é apenas referenciar
-     o modelo/veículo que o público reconhece como "o carro dele".
-   - O carro deve aparecer integrado à cena, em segundo plano, sem competir com o
-     produto principal.
-
-4. TRATAMENTO DE TEXTO E CONTRASTE:
-   - NUNCA colocar formas geométricas decorativas (retângulos, círculos, faixas
-     arbitrárias) atrás do texto como muleta de contraste.
-   - O texto deve ser aplicado SOBRE superfícies reais da cena que já ofereçam
-     contraste natural (parede, móvel, área escura da composição, etc.).
-   - Se NÃO houver superfície natural favorável para o texto, aplicar um degradê
-     sutil na cor preta como fundo de contraste — leve, sem virar bloco preto.
-   - NUNCA usar sombra projetada (drop shadow) em texto. Para dar contraste, usar
-     exclusivamente o degradê escuro descrito acima.
-
-5. ESCALA E MARGENS DA HEADLINE:
-   - Headlines NUNCA devem ter escala exagerada ("texto gigante").
-   - Usar escala controlada, com margens de segurança generosas nas bordas do layout.
-   - O texto deve respirar — nada colado nas laterais, topo ou rodapé.
-   - Priorizar legibilidade e hierarquia visual em vez de tamanho bruto.
-
-6. TEXTURAS E ACABAMENTO:
-   - Usar SEMPRE texturas leves, modernas, sutis e sofisticadas.
-   - NUNCA usar texturas duras, rugosas, granuladas, "grunge", ou que deem aspecto
-     "over"/carregado ao layout.
-   - O acabamento geral deve transmitir limpeza, modernidade e profissionalismo.
-
-7. REGRAS GERAIS NEGATIVAS (aplicáveis a TODA geração):
-   - NUNCA use texto em inglês na imagem — a headline (quando houver) é sempre em
-     português.
-   - NUNCA gere rostos deformados, mãos com dedos extras/faltando, olhos tortos ou
-     anatomia estranha.
-   - NUNCA use marcas d'água, assinaturas, selos de "AI generated", logos de terceiros
-     ou elementos genéricos de stock photo.
-   - NUNCA coloque elementos importantes (texto, logo, rosto, produto) colados nas
-     bordas do layout.
-   - NUNCA use fundos brancos vazios sem contexto — sempre uma cena/composição
-     intencional.
-   - NUNCA misture estilos incompatíveis (ex: 3D realista + ilustração flat no mesmo KV).
-   - NUNCA invente texto na imagem além da headline informada.
-   - NUNCA use paletas fora das cores da marca do cliente.
-   - NUNCA mostre o produto de forma irreconhecível ou alterada (quando houver foto real).
-   - NUNCA gere imagens com proporção horizontal/paisagem — sempre vertical (retrato).
+Retorne APENAS o brief em texto corrido, em inglês — exceto a headline e o selo, citados
+entre aspas exatamente em português. Sem explicações, sem markdown, sem listas.
 """
 
 
-def _margem_corte_vertical() -> int:
-    """Calcula (em %) quanto do topo/rodapé da imagem gerada é removido pelo recorte
-    para o formato final, para avisar a IA a deixar uma margem de segurança na
-    composição. Soma uma folga extra (2 pontos percentuais) por segurança.
-
-    IMPORTANTE: agora que a imagem final é obtida por REDIMENSIONAMENTO (não mais por
-    corte), não há mais perda de topo/rodapé — então esta função retorna 0 e a IA não
-    precisa reservar margem de segurança. Mantida por compatibilidade e para o caso de
-    você querer voltar ao modo de corte no futuro.
-    """
-    return 0
+CONTEXTO_COM_REFERENCIA = (
+    "- uma imagem de referência de layout do cliente, que ele vai reproduzir em estrutura —\n"
+    "  então descreva a CENA e o CONTEÚDO do post novo, e não um layout novo do zero;"
+)
+CONTEXTO_SEM_REFERENCIA = (
+    "- nenhuma referência de layout: descreva também o layout (posição e forma da\n"
+    "  headline, do selo e das faixas) seguindo o KV do cliente;"
+)
 
 
-def gerar_prompt_imagem(pauta: dict, produto: Optional[dict], skill: dict) -> str:
-    system = SYSTEM_PROMPT.format(
-        skill=skill["texto_completo"],
-        margem_corte=_margem_corte_vertical(),
+def gerar_brief(copy: dict, produto: dict, cliente: dict) -> str:
+    contexto = CONTEXTO_COM_REFERENCIA if cliente["referencias"] else CONTEXTO_SEM_REFERENCIA
+    system = (
+        SYSTEM_PROMPT.replace("__SKILL__", cliente["skill"])
+        .replace("__CONTEXTO_LAYOUT__", contexto)
+        .replace("__MARGEM__", str(_margem_corte_vertical()))
+        .replace("__CANTO__", CANTOS_LOGO.get(_posicao_logo(cliente), "bottom-left"))
     )
-    partes = [
-        f"Tema do post: {pauta.get('tema')}",
-        f"Descrição: {pauta.get('descricao')}",
-        f"Objetivo: {pauta.get('objetivo')}",
-    ]
-    headline = pauta.get("headline_imagem")
-    if headline:
-        partes.append(f'Headline a renderizar na imagem (em português, exatamente): "{headline}"')
-    else:
-        partes.append("Nenhuma headline definida — não inclua texto na imagem.")
-    if produto and produto.get("nome"):
-        partes.append(f"Produto a destacar na imagem: {produto['nome']}")
-        if produto.get("fallback_usado"):
-            partes.append(
-                "Observação: este é um produto coringa (fallback), descreva-o de forma "
-                "genérica e reconhecível, sem depender de detalhes visuais exatos de uma "
-                "foto específica que não temos."
+    partes = [f"Produto: {produto.get('nome')}"]
+    if produto.get("categoria"):
+        partes.append(f"Categoria: {produto['categoria']}")
+    if produto.get("fallback_usado"):
+        partes.append("Não há foto real deste produto — descreva-o de forma genérica e reconhecível.")
+    partes.append(f'Headline (renderizar exatamente): "{copy.get("headline_imagem")}"')
+    if copy.get("selo_produto"):
+        partes.append(f'Selo do produto (renderizar exatamente): "{copy["selo_produto"]}"')
+    return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=600, temperature=0.8)
+
+
+def gerar_imagem(brief: str, produto: dict, cliente: dict) -> dict:
+    """Gera a imagem do post e devolve a versão final (recortada + logo) e a versão sem
+    logo (usada como base para ajustes pontuais depois)."""
+    referencia = random.choice(cliente["referencias"]) if cliente["referencias"] else None
+    imagens = [referencia.read_bytes()] if referencia else []
+    avisos = []
+
+    tem_foto = False
+    if produto.get("foto_url") and not produto.get("fallback_usado"):
+        try:
+            imagens.append(openai_client.baixar_imagem_referencia(produto["foto_url"]))
+            tem_foto = True
+        except Exception as exc:  # segue sem a foto, com aviso
+            avisos.append(f"Não consegui baixar a foto do produto ({exc}); a IA desenhou o produto a partir do nome.")
+
+    bruta = None
+    if imagens:
+        try:
+            bruta = openai_client.gerar_imagem_com_referencias(
+                _prompt_com_referencias(brief, referencia is not None, tem_foto), imagens
             )
-    else:
-        partes.append("Nenhum produto específico foi definido — crie uma cena genérica do segmento.")
+        except Exception as exc:  # cai para a geração sem referências, com aviso
+            avisos.append(f"A geração com referências falhou ({exc}); gerei sem elas.")
+    if not bruta or not bruta.get("imagem_b64"):
+        if bruta is not None:
+            avisos.append("A geração com referências não retornou imagem; gerei sem elas.")
+        bruta = openai_client.gerar_imagem(brief)
+        referencia, tem_foto = None, False
+    if not bruta.get("imagem_b64"):
+        raise RuntimeError("A API de imagem não retornou nenhuma imagem.")
 
-    prompt = "\n".join(partes)
-    return chamar_ia(system=system, prompt=prompt, max_tokens=500, temperature=0.8)
-
-
-# --- Referências de layout (últimos posts) ---------------------------------------
-
-def _pasta_referencias_layout(cliente: str) -> Path:
-    pasta = BASE_DIR / "data" / cliente / "referencias_layout"
-    pasta.mkdir(parents=True, exist_ok=True)
-    return pasta
-
-
-def carregar_referencias_layout(cliente: str, limite: int = MAX_REFERENCIAS_LAYOUT) -> list:
-    """Retorna os bytes das `limite` imagens de referência de layout mais recentes."""
-    if not cliente:
-        return []
-    pasta = _pasta_referencias_layout(cliente)
-    arquivos = sorted(pasta.glob("*.png"), key=lambda p: p.stat().st_mtime, reverse=True)
-    return [a.read_bytes() for a in arquivos[:limite]]
+    return {
+        **_finalizar(base64.b64decode(bruta["imagem_b64"]), cliente),
+        "modelo": bruta.get("modelo"),
+        "qualidade": bruta.get("qualidade"),
+        "referencia_layout": referencia.name if referencia else None,
+        "com_foto_produto": tem_foto,
+        "aviso": " ".join(avisos) or None,
+    }
 
 
-def salvar_referencia_layout(cliente: str, imagem_bytes: bytes) -> None:
-    """Guarda uma imagem (gerada pelo app, ou enviada manualmente) como referência de
-    layout para as próximas gerações desse cliente."""
-    pasta = _pasta_referencias_layout(cliente)
-    nome = f"{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.png"
-    (pasta / nome).write_bytes(imagem_bytes)
+def ajustar_imagem(imagem_sem_logo: bytes, instrucao: str, cliente: dict) -> dict:
+    """Aplica um ajuste pontual pedido pelo usuário (ex: 'deixe o céu ao entardecer')
+    sobre a imagem já gerada, com o modelo de edição (gpt-image-2.5-sunburst, indicado
+    para manter fidelidade). Parte da versão SEM logo, para o logo reaplicado por código
+    não sair duplicado."""
+    prompt = (
+        "Apply ONLY the following adjustment to the reference image, keeping everything "
+        "else (composition, product, text, colors) exactly the same unless the instruction "
+        "explicitly says otherwise:\n" + instrucao.strip()
+    )
+    # size="auto": a imagem de entrada já está no formato final — pedir o IMAGE_SIZE
+    # padrão distorceria a proporção.
+    bruta = openai_client.gerar_imagem_com_referencias(prompt, [imagem_sem_logo], size="auto")
+    if not bruta.get("imagem_b64"):
+        raise RuntimeError("A API de imagem não retornou nenhuma imagem para esse ajuste.")
+    return {
+        **_finalizar(base64.b64decode(bruta["imagem_b64"]), cliente),
+        "modelo": bruta.get("modelo"),
+        "qualidade": bruta.get("qualidade"),
+    }
 
 
-def limpar_referencias_layout(cliente: str) -> None:
-    """Apaga todas as referências de layout guardadas para o cliente."""
-    pasta = _pasta_referencias_layout(cliente)
-    for arquivo in pasta.glob("*.png"):
-        arquivo.unlink(missing_ok=True)
+def _finalizar(imagem_bytes: bytes, cliente: dict) -> dict:
+    sem_logo = image_overlay.recortar_formato_final(imagem_bytes)
+    final = image_overlay.aplicar_logo(sem_logo, cliente["logo"], _posicao_logo(cliente))
+    return {
+        "imagem_b64": base64.b64encode(final).decode("ascii"),
+        "imagem_sem_logo_b64": base64.b64encode(sem_logo).decode("ascii"),
+        "tamanho": f"{image_overlay.LARGURA_PADRAO}x{image_overlay.ALTURA_PADRAO}",
+    }
 
 
-# --- Geração da imagem -------------------------------------------------------------
-
-def _prompt_para_edicao(prompt_cena: str, tem_layout_refs: bool, tem_produto_real: bool) -> str:
+def _prompt_com_referencias(brief: str, tem_layout: bool, tem_foto: bool) -> str:
     partes = []
-    if tem_layout_refs:
+    if tem_layout:
         partes.append(
-            "The reference image(s) shown first are examples of this brand's past post "
-            "designs. Match their overall visual style, composition, framing, color "
-            "treatment and mood as closely as possible, to keep a consistent look across "
-            "posts. Do not copy their specific subject, product or on-image text — only "
-            "the visual style/layout."
+            "The FIRST reference image is this brand's layout template. Reproduce its layout "
+            "structure closely — placement and shape of the headline block, the product tag, "
+            "color bands, graphic elements and typography style — but with the new photo "
+            "scene, product and texts described below. Ignore any text, prices or logos that "
+            "appear in it."
         )
-    if tem_produto_real:
+    if tem_foto:
         partes.append(
-            "The LAST reference image shown is the real product for this post — keep "
-            "its exact shape, colors, materials and label/branding exactly as "
-            "photographed, do not redesign it."
+            "The LAST reference image is the real product being advertised — keep its exact "
+            "shape, colors, materials and details as photographed; do not redesign it."
         )
-    partes.append("New scene to depict:\n" + prompt_cena)
+    partes.append("Post to create:\n" + brief)
     return "\n\n".join(partes)
 
 
-def _gerar_imagem_bruta(prompt_imagem: str, produto: Optional[dict], referencias_layout: list) -> dict:
-    """Tenta gerar com referências (layout e/ou foto real do produto); se não houver
-    nenhuma referência disponível, ou a tentativa falhar por qualquer motivo, cai para a
-    geração comum a partir do texto — nunca trava o fluxo."""
-    foto_url = (produto or {}).get("foto_url")
-    tem_foto_real = bool(foto_url) and not (produto or {}).get("fallback_usado")
-    tem_layout_refs = bool(referencias_layout)
-
-    if tem_foto_real or tem_layout_refs:
-        try:
-            imagens = list(referencias_layout)
-            if tem_foto_real:
-                imagens.append(openai_client.baixar_imagem_referencia(foto_url))
-            prompt_edicao = _prompt_para_edicao(prompt_imagem, tem_layout_refs, tem_foto_real)
-            resultado = openai_client.gerar_imagem_com_referencias(prompt_edicao, imagens)
-            if resultado.get("imagem_b64"):
-                resultado["com_referencia"] = tem_foto_real
-                resultado["com_layout_referencia"] = tem_layout_refs
-                return resultado
-        except Exception:
-            pass  # cai para a geração comum abaixo
-
-    resultado = openai_client.gerar_imagem(prompt_imagem)
-    resultado["com_referencia"] = False
-    resultado["com_layout_referencia"] = False
-    return resultado
+def _posicao_logo(cliente: dict) -> str:
+    return cliente["config"].get("logo_posicao", "inferior-esquerdo")
 
 
-def _redimensionar_para_formato_final(imagem_bytes: bytes) -> bytes:
-    """Redimensiona a imagem gerada pela IA para o formato final (LARGURA_PADRAO x
-    ALTURA_PADRAO, ex: 1080x1440) SEM cortar nada — preserva todo o conteúdo desenhado
-    pela IA, apenas ajustando a proporção. A distorção é mínima (a API da OpenAI só
-    oferece tamanhos fixos como 1024x1536, cuja razão é próxima da final).
-
-    Isso substitui o recorte que era feito antes (que removia topo/rodapé e podia
-    cortar texto/logo). Se quiser voltar ao comportamento antigo, é só usar
-    image_overlay.compor_imagem_final em vez desta função.
-    """
-    largura_final = image_overlay.LARGURA_PADRAO
-    altura_final = image_overlay.ALTURA_PADRAO
-
-    img = Image.open(BytesIO(imagem_bytes)).convert("RGB")
-    img_redimensionada = img.resize((largura_final, altura_final), Image.LANCZOS)
-
-    buffer = BytesIO()
-    img_redimensionada.save(buffer, format="PNG")
-    return buffer.getvalue()
-
-
-def gerar_imagem(
-    prompt_imagem: str,
-    skill: dict,
-    produto: Optional[dict] = None,
-    usar_referencias_layout: bool = True,
-) -> dict:
-    """Gera a imagem (com foto real do produto e/ou estilo dos últimos posts, quando
-    disponíveis) — a headline já vem desenhada pela própria IA, como parte do brief.
-    Redimensiona para o formato final (1080x1440 por padrão) SEM cortar, e cola o logo
-    do cliente, se existir. Guarda o resultado como referência de layout para a próxima
-    execução."""
-    cliente = skill.get("cliente")
-    referencias_layout = (
-        carregar_referencias_layout(cliente) if (cliente and usar_referencias_layout) else []
-    )
-
-    bruta = _gerar_imagem_bruta(prompt_imagem, produto, referencias_layout)
-    if not bruta.get("imagem_b64"):
-        # Sem base64 (ex: só veio uma URL) não dá pra compor localmente — devolve como veio.
-        return bruta
-
-    # Redimensiona para o formato final SEM cortar (substitui o recorte anterior).
-    imagem_final_bytes = _redimensionar_para_formato_final(
-        base64.b64decode(bruta["imagem_b64"])
-    )
-
-    # Aplica o logo do cliente, se houver (usa a função existente do image_overlay,
-    # mas agora sem headline e sem corte — a imagem já está no tamanho final).
-    imagem_final_bytes = image_overlay.compor_imagem_final(
-        imagem_bytes=imagem_final_bytes,
-        headline="",  # a headline já foi desenhada pela IA na própria cena
-        cores_hex=skill.get("cores_hex") or [],
-        cliente=cliente,
-    )
-
-    bruta["imagem_b64"] = base64.b64encode(imagem_final_bytes).decode("ascii")
-    bruta["tamanho"] = f"{image_overlay.LARGURA_PADRAO}x{image_overlay.ALTURA_PADRAO}"
-
-    if cliente:
-        salvar_referencia_layout(cliente, imagem_final_bytes)
-
-    return bruta
+def _margem_corte_vertical() -> int:
+    """Quanto (%) do topo e do rodapé o recorte para o formato final remove, com +2 pontos
+    de folga — para avisar a IA a deixar essa faixa sem nada importante."""
+    try:
+        largura, altura = (int(v) for v in openai_client.IMAGE_SIZE.lower().split("x"))
+    except (ValueError, AttributeError):
+        return 10  # tamanho não numérico (ex: "auto") — margem conservadora
+    razao_final = image_overlay.LARGURA_PADRAO / image_overlay.ALTURA_PADRAO
+    if largura / altura >= razao_final:
+        return 0  # nesse caso o recorte é nas laterais, não no topo/rodapé
+    corte_total = 1 - (largura / razao_final) / altura
+    return round(corte_total / 2 * 100) + 2

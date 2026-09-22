@@ -1,177 +1,85 @@
-"""Orchestrator do sistema de automação de marketing da Kav (@kav.mkt).
+"""Orquestrador da Kav (@kav.mkt): cria um post completo para um cliente, sem intervenção.
 
-Executa a esteira de agentes para um cliente: Pauta -> Produto (se necessário) -> Design.
-Não faz nenhuma postagem em redes sociais — apenas gera e salva os artefatos em
-output/<cliente>/<data>/ para revisão e postagem manual.
+Catálogo (escolhe o produto) → Legenda (chamada, selo e legenda no padrão do cliente) →
+Design (brief + imagem com referência de layout, foto real do produto e logo).
 
-Uso:
+Nenhuma postagem é feita em redes sociais — o resultado é para revisão e publicação
+manual. Usado pelo app (app.py) e também pela linha de comando:
+
     python orchestrator.py --cliente ponto-car
 """
 import argparse
 import base64
 import json
-import logging
-from datetime import date
-from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
-from dotenv import load_dotenv
-
-from agents.agente_design import gerar_imagem, gerar_prompt_imagem
-from agents.agente_produto import buscar_produto, registrar_produto_usado
-from agents.agente_pauta import gerar_pauta
-from utils.skill_loader import carregar_skill
-
-BASE_DIR = Path(__file__).resolve().parent
+from agents.agente_catalogo import escolher_produto
+from agents.agente_design import gerar_brief, gerar_imagem
+from agents.agente_legenda import gerar_legenda
+from utils import historico
+from utils.cliente import CLIENTES_DIR, carregar_cliente
 
 
-def _logger_execucao(cliente: str) -> logging.Logger:
-    log_dir = BASE_DIR / "logs" / cliente
-    log_dir.mkdir(parents=True, exist_ok=True)
-    logger = logging.getLogger(f"execucoes.{cliente}")
-    if not logger.handlers:
-        handler = logging.FileHandler(log_dir / "execucoes.log", encoding="utf-8")
-        handler.setFormatter(logging.Formatter("%(asctime)s | %(message)s"))
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
-    return logger
+def gerar_post(slug: str, com_imagem: bool = True, etapa: Optional[Callable[[str], None]] = None) -> dict:
+    """Cria o post. `etapa` recebe o nome de cada passo (o app usa para mostrar progresso).
 
+    Só posts completos (com imagem) entram no histórico — assim, testes de texto não
+    "gastam" produtos da janela de 30 dias.
+    """
+    avisar = etapa or (lambda _texto: None)
+    cliente = carregar_cliente(slug)
 
-def rodar(
-    cliente: str,
-    historico: Optional[str] = None,
-    gerar_imagem_tambem: bool = True,
-    usar_referencias_layout: bool = True,
-) -> Path:
-    load_dotenv()
-    data_execucao = date.today().isoformat()
-    pasta_saida = BASE_DIR / "output" / cliente / data_execucao
-    pasta_saida.mkdir(parents=True, exist_ok=True)
+    avisar("Escolhendo o produto no catálogo...")
+    produto = escolher_produto(cliente)
+    avisos = list(produto.pop("avisos", []))
 
-    logger = _logger_execucao(cliente)
-    skill = carregar_skill(cliente)
+    avisar(f"Escrevendo chamada e legenda para: {produto.get('nome')}")
+    copy = gerar_legenda(produto, cliente)
+    post = {"cliente": cliente["nome"], "produto": produto, "copy": copy, "brief": None, "imagem": None, "avisos": avisos}
 
-    if not historico:
-        caminho_historico = BASE_DIR / "data" / cliente / "historico_manual.txt"
-        if caminho_historico.exists():
-            historico = caminho_historico.read_text(encoding="utf-8").strip() or None
+    if not com_imagem:
+        avisos.append("Modo teste (sem imagem): este produto não entrou no histórico.")
+        return post
 
-    print(f"[1/3] Agente de Pauta ({cliente})...")
-    pauta = gerar_pauta(skill, historico=historico)
-    (pasta_saida / "pauta.json").write_text(
-        json.dumps(pauta, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    logger.info(
-        "Pauta gerada: tema=%r requer_produto=%s",
-        pauta.get("tema"),
-        pauta.get("requer_produto_especifico"),
-    )
+    avisar("Montando o brief visual...")
+    post["brief"] = gerar_brief(copy, produto, cliente)
+    avisar("Gerando a imagem (pode levar até 1 minuto)...")
+    post["imagem"] = gerar_imagem(post["brief"], produto, cliente)
+    if post["imagem"].get("aviso"):
+        avisos.append(post["imagem"]["aviso"])
 
-    produto = None
-    if pauta.get("requer_produto_especifico"):
-        print(f"[2/3] Agente de Produto (categoria: {pauta.get('categoria_produto')})...")
-        produto = buscar_produto(
-            cliente=cliente,
-            categoria_produto=pauta.get("categoria_produto") or "não especificada",
-            skill=skill,
-            data_execucao=data_execucao,
-        )
-        registrar_produto_usado(cliente, produto, pauta)
-        (pasta_saida / "produto.json").write_text(
-            json.dumps(produto, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
-        if produto.get("fallback_usado"):
-            print(f"  ⚠️  {produto.get('aviso')}")
-            logger.info("Produto: FALLBACK usado (%r). Ver falhas_produto.log.", produto.get("nome"))
-        else:
-            print(f"  Produto encontrado: {produto.get('nome')} (fonte: {produto.get('fonte')})")
-            logger.info("Produto encontrado via %r: %s", produto.get("fonte"), produto.get("nome"))
-    else:
-        print("[2/3] Agente de Produto: pulado (pauta não requer produto específico).")
-
-    print("[3/3] Agente de Design...")
-    prompt_imagem = gerar_prompt_imagem(pauta, produto, skill)
-    (pasta_saida / "prompt_imagem.txt").write_text(prompt_imagem, encoding="utf-8")
-    logger.info("Brief de imagem gerado (%d caracteres).", len(prompt_imagem))
-
-    imagem_gerada = False
-    if gerar_imagem_tambem:
-        try:
-            resultado_imagem = gerar_imagem(prompt_imagem, skill, produto, usar_referencias_layout)
-            if resultado_imagem.get("imagem_b64"):
-                (pasta_saida / "imagem.png").write_bytes(base64.b64decode(resultado_imagem["imagem_b64"]))
-                imagem_gerada = True
-                print(f"  Imagem salva em: {pasta_saida / 'imagem.png'}")
-            logger.info("Imagem gerada via %s.", resultado_imagem.get("modelo"))
-        except Exception as exc:  # noqa: BLE001 — não deve travar o fluxo
-            print(f"  ⚠️  Não foi possível gerar a imagem: {exc}")
-            logger.info("Falha ao gerar imagem: %s", exc)
-
-    resumo = _montar_resumo(cliente, pauta, produto, prompt_imagem, imagem_gerada)
-    (pasta_saida / "resumo.md").write_text(resumo, encoding="utf-8")
-
-    print(f"\nConcluído. Resultados em: {pasta_saida}")
-    return pasta_saida
-
-
-def _montar_resumo(
-    cliente: str, pauta: dict, produto: Optional[dict], prompt_imagem: str, imagem_gerada: bool
-) -> str:
-    linhas = [
-        f"# Resumo da execução — {cliente} ({date.today().isoformat()})",
-        "",
-        "## Pauta",
-        f"- **Tema:** {pauta.get('tema')}",
-        f"- **Formato:** {pauta.get('formato', '—')}",
-        f"- **Objetivo:** {pauta.get('objetivo')}",
-        f"- **Descrição:** {pauta.get('descricao')}",
-        f"- **Legenda sugerida:** {pauta.get('legenda_sugerida')}",
-        f"- **Hashtags:** {' '.join(pauta.get('hashtags', []))}",
-        "",
-    ]
-    if produto:
-        linhas += [
-            "## Produto",
-            f"- **Nome:** {produto.get('nome')}",
-            f"- **Fonte:** {produto.get('fonte')}",
-        ]
-        if produto.get("fallback_usado"):
-            linhas.append(f"- **⚠️ ATENÇÃO:** {produto.get('aviso')}")
-        linhas.append("")
-    linhas += [
-        "## Brief de imagem (Key Visual)",
-        "```",
-        prompt_imagem,
-        "```",
-        f"Imagem gerada: {'sim (ver imagem.png)' if imagem_gerada else 'não'}",
-        "",
-        "> Nenhuma postagem foi feita automaticamente. Revise o material acima e publique manualmente.",
-    ]
-    return "\n".join(linhas)
+    try:
+        historico.registrar(slug, {
+            "produto_id": produto["id"],
+            "produto_nome": produto.get("nome"),
+            "headline": copy.get("headline_imagem"),
+            "legenda": copy.get("legenda"),
+            "referencia_layout": post["imagem"].get("referencia_layout"),
+        })
+    except Exception as exc:  # o post já está pronto — só avisa
+        avisos.append(f"Não consegui salvar no histórico ({exc}); este produto pode se repetir nos próximos posts.")
+    return post
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Orchestrator de automação de marketing — Kav")
-    parser.add_argument("--cliente", required=True, help="Slug do cliente (ex: ponto-car)")
-    parser.add_argument(
-        "--historico",
-        default=None,
-        help="(opcional, reservado para uso futuro) resumo de posts anteriores do cliente",
-    )
-    parser.add_argument(
-        "--sem-imagem",
-        action="store_true",
-        help="Só gera o texto (pauta/brief), pula a chamada de geração de imagem (economiza crédito).",
-    )
-    parser.add_argument(
-        "--sem-referencia-layout",
-        action="store_true",
-        help="Não usa as últimas imagens geradas como referência de estilo/layout para esta execução.",
-    )
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    parser = argparse.ArgumentParser(description="Cria um post completo para um cliente da Kav.")
+    parser.add_argument("--cliente", required=True, help="Pasta do cliente em clientes/ (ex: ponto-car)")
+    parser.add_argument("--sem-imagem", action="store_true", help="Só gera o texto (não entra no histórico).")
     args = parser.parse_args()
-    rodar(
-        cliente=args.cliente,
-        historico=args.historico,
-        gerar_imagem_tambem=not args.sem_imagem,
-        usar_referencias_layout=not args.sem_referencia_layout,
+
+    resultado = gerar_post(args.cliente, com_imagem=not args.sem_imagem, etapa=print)
+    pasta = CLIENTES_DIR.parent / "output" / args.cliente / historico.agora().strftime("%Y-%m-%d_%H%M%S")
+    pasta.mkdir(parents=True, exist_ok=True)
+    (pasta / "legenda.txt").write_text(resultado["copy"].get("legenda") or "", encoding="utf-8")
+    (pasta / "post.json").write_text(
+        json.dumps({k: v for k, v in resultado.items() if k != "imagem"}, ensure_ascii=False, indent=2),
+        encoding="utf-8",
     )
+    if resultado["imagem"]:
+        (pasta / "imagem.png").write_bytes(base64.b64decode(resultado["imagem"]["imagem_b64"]))
+    for aviso in resultado["avisos"]:
+        print(f"⚠️  {aviso}")
+    print(f"\nPronto: {pasta}")
