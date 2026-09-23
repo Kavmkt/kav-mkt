@@ -20,9 +20,19 @@ MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 # referência (layout do cliente e/ou foto real do produto), onde fidelidade importa mais.
 IMAGE_MODEL = os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-2.5-flare")
 IMAGE_EDIT_MODEL = os.environ.get("OPENAI_IMAGE_EDIT_MODEL", "gpt-image-2.5-sunburst")
-# Tamanho pedido à API (o recorte exato pro formato final de 1080x1440 acontece depois,
-# em utils.image_overlay — isso aqui só evita gerar numa proporção muito diferente).
-IMAGE_SIZE = os.environ.get("OPENAI_IMAGE_SIZE", "1024x1536")
+# Tamanho pedido à API. Escolhido o mais próximo possível da proporção final (1080x1440 =
+# 0.75) porque o recorte final (utils.image_overlay.recortar_formato_final) sempre corta
+# uma faixa do topo/rodapé (ou dos lados) pra chegar nessa proporção — quanto mais
+# parecida a proporção pedida for da final, MENOR essa faixa cortada, e menos qualquer
+# margem de segurança (por menor imprecisão da IA) acaba sendo engolida pelo corte.
+# "1024x1536" (0.667) tinha ~5.6% de corte no topo E no rodapé — quase do tamanho da
+# própria margem de segurança pedida (6-8%), então bastava a IA errar por pouco pra
+# cortar o logo/texto (bug visto em 2026-09-23). "1072x1440" (0.744, múltiplo de 16 nos
+# dois lados) deixa esse corte em ~0.4% — folga bem maior.
+IMAGE_SIZE = os.environ.get("OPENAI_IMAGE_SIZE", "1072x1440")
+# Tamanho "oficial" da API (documentado, sempre aceito) — usado como fallback automático
+# se o tamanho customizado acima for rejeitado por algum motivo.
+TAMANHO_IMAGEM_SEGURO = "1024x1536"
 # "low" gasta bem menos crédito que "high" — "medium" é o meio-termo padrão.
 IMAGE_QUALITY = os.environ.get("OPENAI_IMAGE_QUALITY", "medium")
 
@@ -73,22 +83,36 @@ def chamar_ia(
     return (resposta.choices[0].message.content or "").strip()
 
 
+def _chamar_com_fallback_tamanho(chamar, tamanho_pedido: str, usar_fallback: bool):
+    """Executa `chamar(tamanho)`; se falhar e `tamanho_pedido` for o tamanho customizado
+    (não o oficial), tenta de novo com `TAMANHO_IMAGEM_SEGURO` antes de desistir — a API
+    pode rejeitar um tamanho fora da lista documentada, e sem esse fallback a chamada
+    inteira falharia (perdendo as referências) por causa só do `size`."""
+    try:
+        return chamar(tamanho_pedido), tamanho_pedido
+    except Exception:
+        if not usar_fallback or tamanho_pedido == TAMANHO_IMAGEM_SEGURO:
+            raise
+        return chamar(TAMANHO_IMAGEM_SEGURO), TAMANHO_IMAGEM_SEGURO
+
+
 def gerar_imagem(prompt: str) -> dict:
     """Gera a imagem do zero a partir de um brief de imagem já pronto e bem definido.
 
-    Faz UMA única chamada à API de imagem da OpenAI — o prompt deve chegar completo e
+    Faz UMA única chamada à API de imagem da OpenAI (duas só se o tamanho customizado for
+    rejeitado, ver `_chamar_com_fallback_tamanho`) — o prompt deve chegar completo e
     específico, sem necessidade de iteração, para não gastar créditos à toa com
     tentativas repetidas.
     """
     client = get_client()
-    resposta = client.images.generate(
-        model=IMAGE_MODEL,
-        prompt=prompt,
-        size=IMAGE_SIZE,
-        quality=IMAGE_QUALITY,
-        n=1,
+    resposta, tamanho_usado = _chamar_com_fallback_tamanho(
+        lambda tam: client.images.generate(
+            model=IMAGE_MODEL, prompt=prompt, size=tam, quality=IMAGE_QUALITY, n=1
+        ),
+        IMAGE_SIZE,
+        usar_fallback=True,
     )
-    return _resultado_imagem(resposta.data[0], IMAGE_MODEL, IMAGE_SIZE)
+    return _resultado_imagem(resposta.data[0], IMAGE_MODEL, tamanho_usado)
 
 
 def baixar_imagem_referencia(url: str) -> bytes:
@@ -117,20 +141,25 @@ def gerar_imagem_com_referencias(prompt: str, imagens_bytes: list, size: Optiona
             já composta), pra API não tentar redimensionar/distorcer pra IMAGE_SIZE.
     """
     client = get_client()
-    arquivos = []
-    for indice, dados in enumerate(imagens_bytes):
-        arquivo = BytesIO(_como_png(dados))
-        arquivo.name = f"referencia_{indice}.png"
-        arquivos.append(arquivo)
+    pngs = [_como_png(dados) for dados in imagens_bytes]
+
+    def _chamar(tam):
+        # Reconstrói os arquivos a cada tentativa — um BytesIO já lido (tentativa
+        # anterior) chegaria vazio na chamada de retry.
+        arquivos = []
+        for indice, dados in enumerate(pngs):
+            arquivo = BytesIO(dados)
+            arquivo.name = f"referencia_{indice}.png"
+            arquivos.append(arquivo)
+        return client.images.edit(
+            model=IMAGE_EDIT_MODEL, image=arquivos, prompt=prompt, size=tam, quality=IMAGE_QUALITY
+        )
+
     tamanho_pedido = size or IMAGE_SIZE
-    resposta = client.images.edit(
-        model=IMAGE_EDIT_MODEL,
-        image=arquivos,
-        prompt=prompt,
-        size=tamanho_pedido,
-        quality=IMAGE_QUALITY,
+    resposta, tamanho_usado = _chamar_com_fallback_tamanho(
+        _chamar, tamanho_pedido, usar_fallback=(size is None)
     )
-    return _resultado_imagem(resposta.data[0], IMAGE_EDIT_MODEL, tamanho_pedido)
+    return _resultado_imagem(resposta.data[0], IMAGE_EDIT_MODEL, tamanho_usado)
 
 
 def _resultado_imagem(dado, modelo: str, tamanho_pedido: str) -> dict:

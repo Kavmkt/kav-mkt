@@ -6,10 +6,16 @@ referência para o gerador de imagem (ver agents/agente_design.py), que o desenh
 junto com o resto. Mas o arquivo do logo sozinho tem uma proporção bem diferente da
 imagem final (uma faixa larga e baixa, contra um retrato 1080x1440) — mandar essa
 referência "torta" junto com o layout (que já é 1080x1440) parece confundir o modelo
-sobre qual proporção de saída ele deve gerar, e foi isso que causava corte de texto no
-topo/rodapé mesmo com a margem pedida no brief (visto em 2026-09-23). Por isso o logo é
-colado, por código, num canvas transparente do TAMANHO FINAL antes de virar referência —
-assim toda referência de "formato" que a IA recebe já está na proporção certa.
+sobre qual proporção de saída ele deve gerar. Por isso o logo é colado, por código, num
+canvas transparente do TAMANHO FINAL antes de virar referência — assim toda referência
+de "formato" que a IA recebe já está na proporção certa.
+
+Isso, sozinho, não bastou (corte de logo/texto ainda visto em 2026-09-23 mesmo depois
+dessa mudança) — a outra metade do problema era `openai_client.IMAGE_SIZE` pedir a
+geração numa proporção diferente da final, obrigando um recorte real de ~5.6% no
+topo/rodapé (ver `agents/agente_design.py` e o ajuste de IMAGE_SIZE em
+`openai_client.py`). LOGO_MARGEM aqui embaixo foi alinhada com a margem de segurança do
+brief (8%) por consistência — mesma régua nos dois lugares.
 """
 from io import BytesIO
 from pathlib import Path
@@ -19,7 +25,9 @@ from PIL import Image
 LARGURA_PADRAO = 1080
 ALTURA_PADRAO = 1440
 LOGO_LARGURA = 0.30  # fração da largura do canvas
-LOGO_MARGEM = 0.06  # fração da largura do canvas, a partir de cada borda
+LOGO_MARGEM = 0.08  # fração da largura do canvas, a partir de cada borda (igual à
+# margem de segurança usada no brief em agents/agente_design.py — mesma régua nos dois
+# lugares)
 
 
 def recortar_formato_final(imagem_bytes: bytes, largura: int = LARGURA_PADRAO, altura: int = ALTURA_PADRAO) -> bytes:
