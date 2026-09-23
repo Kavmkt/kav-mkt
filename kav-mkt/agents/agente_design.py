@@ -69,9 +69,10 @@ Contexto de produção (o gerador de imagem recebe junto com o seu brief):
 __CONTEXTO_LAYOUT__
 - quando existir, a foto real do produto, que ele vai manter fiel;
 - um guia de logo: um template do MESMO formato/proporção da imagem final, transparente
-  exceto onde o logo do cliente já está posicionado — reproduza o logo pixel a pixel
-  dali (mesmas cores, proporções, tipografia e detalhes, nunca redesenhado ou
-  distorcido), na mesma posição e escala mostradas no guia.
+  exceto onde o logo do cliente está posicionado — reproduza o logo pixel a pixel dali
+  (mesmas cores, proporções, tipografia e detalhes, nunca redesenhado ou distorcido) na
+  MESMA ESCALA e na mesma faixa vertical (topo ou rodapé) mostradas no guia; a posição
+  horizontal dentro dessa faixa é livre — veja a regra de margens abaixo.
 
 IMPORTANTE: as referências de layout e de logo estão no formato final exato do post
 (retrato, mais alto que largo). Gere a cena na MESMA proporção dessas referências — não
@@ -105,8 +106,8 @@ O brief (em inglês) deve definir, em um único parágrafo denso:
 - iluminação e mood;
 - a headline e o selo do produto, com o tratamento gráfico previsto no KV do cliente,
   usando só as cores da marca;
-- a reprodução exata do logo a partir do guia de posição, na mesma posição e escala
-  mostradas nele.
+- a reprodução exata do logo a partir do guia (mesma escala), na área vertical mostrada
+  nele, com a posição horizontal ajustada ao espaço mais livre da cena que você desenhou.
 
 Regras de texto na imagem:
 - Renderize a headline e o selo EXATAMENTE como informados, palavra por palavra, em
