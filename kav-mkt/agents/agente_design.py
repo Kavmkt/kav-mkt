@@ -10,20 +10,24 @@ Sem nenhuma referência disponível (ou se a chamada com referências falhar), g
 a partir do brief (gpt-image-2.5-flare) e avisa.
 
 A chamada e o selo do produto são desenhados pela própria IA na cena. O logo NÃO: a IA
-deixa o canto livre e o logo é aplicado depois por código (utils.image_overlay), para
-sair sempre idêntico ao arquivo do cliente.
+deixa livre a área onde o logo fica naquele layout (referencias.json) e o logo é
+aplicado depois por código (utils.image_overlay), para sair idêntico ao arquivo.
 """
 import base64
 import random
+from pathlib import Path
+from typing import Optional
 
 from utils import image_overlay, openai_client
 from utils.openai_client import chamar_ia
 
-CANTOS_LOGO = {
-    "superior-esquerdo": "top-left",
-    "superior-direito": "top-right",
-    "inferior-esquerdo": "bottom-left",
-    "inferior-direito": "bottom-right",
+AREAS_LOGO = {
+    "superior-esquerdo": "top-left corner",
+    "superior-centro": "top center",
+    "superior-direito": "top-right corner",
+    "inferior-esquerdo": "bottom-left corner",
+    "inferior-centro": "bottom center",
+    "inferior-direito": "bottom-right corner",
 }
 
 # Placeholders substituídos com .replace() (e não .format()): o texto da skill do cliente
@@ -44,9 +48,9 @@ RECORTE POSTERIOR: depois de gerada, a imagem perde cerca de __MARGEM__% do topo
 __MARGEM__% do rodapé (ajuste para o formato final do post). Nada importante — texto,
 produto, rostos — pode ficar nessas faixas.
 
-LOGO: o logo do cliente é aplicado depois, por código, no canto __CANTO__. Deixe esse
-canto livre de texto e de elementos importantes, e NÃO desenhe nenhum logotipo, nome de
-loja ou marca do cliente na imagem.
+LOGO: o logo do cliente é aplicado depois, por código, na área __AREA_LOGO__ da imagem.
+Deixe essa área livre de texto e de elementos importantes (fundo simples ali), e NÃO
+desenhe nenhum logotipo, nome de loja, tagline ou marca do cliente na imagem.
 
 O brief (em inglês) deve definir, em um único parágrafo denso:
 - a cena fotográfica (situação do dia a dia, carro, ambiente, enquadramento) pensada
@@ -76,13 +80,19 @@ CONTEXTO_SEM_REFERENCIA = (
 )
 
 
-def gerar_brief(copy: dict, produto: dict, cliente: dict) -> str:
-    contexto = CONTEXTO_COM_REFERENCIA if cliente["referencias"] else CONTEXTO_SEM_REFERENCIA
+def escolher_referencia(cliente: dict) -> Optional[dict]:
+    """Sorteia uma das referências de layout do cliente (ou None se não houver)."""
+    return random.choice(cliente["referencias"]) if cliente["referencias"] else None
+
+
+def gerar_brief(copy: dict, produto: dict, cliente: dict, referencia: Optional[dict]) -> str:
+    contexto = CONTEXTO_COM_REFERENCIA if referencia else CONTEXTO_SEM_REFERENCIA
+    _, posicao_logo = _logo(cliente, referencia)
     system = (
         SYSTEM_PROMPT.replace("__SKILL__", cliente["skill"])
         .replace("__CONTEXTO_LAYOUT__", contexto)
         .replace("__MARGEM__", str(_margem_corte_vertical()))
-        .replace("__CANTO__", CANTOS_LOGO.get(_posicao_logo(cliente), "bottom-left"))
+        .replace("__AREA_LOGO__", AREAS_LOGO.get(posicao_logo, "bottom-left corner"))
     )
     partes = [f"Produto: {produto.get('nome')}"]
     if produto.get("categoria"):
@@ -95,12 +105,12 @@ def gerar_brief(copy: dict, produto: dict, cliente: dict) -> str:
     return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=600, temperature=0.8)
 
 
-def gerar_imagem(brief: str, produto: dict, cliente: dict) -> dict:
+def gerar_imagem(brief: str, produto: dict, cliente: dict, referencia: Optional[dict]) -> dict:
     """Gera a imagem do post e devolve a versão final (recortada + logo) e a versão sem
     logo (usada como base para ajustes pontuais depois)."""
-    referencia = random.choice(cliente["referencias"]) if cliente["referencias"] else None
-    imagens = [referencia.read_bytes()] if referencia else []
+    imagens = [referencia["arquivo"].read_bytes()] if referencia else []
     avisos = []
+    layout_usado = referencia["arquivo"].name if referencia else None
 
     tem_foto = False
     if produto.get("foto_url") and not produto.get("fallback_usado"):
@@ -122,21 +132,21 @@ def gerar_imagem(brief: str, produto: dict, cliente: dict) -> dict:
         if bruta is not None:
             avisos.append("A geração com referências não retornou imagem; gerei sem elas.")
         bruta = openai_client.gerar_imagem(brief)
-        referencia, tem_foto = None, False
+        layout_usado, tem_foto = None, False
     if not bruta.get("imagem_b64"):
         raise RuntimeError("A API de imagem não retornou nenhuma imagem.")
 
     return {
-        **_finalizar(base64.b64decode(bruta["imagem_b64"]), cliente),
+        **_finalizar(base64.b64decode(bruta["imagem_b64"]), cliente, referencia),
         "modelo": bruta.get("modelo"),
         "qualidade": bruta.get("qualidade"),
-        "referencia_layout": referencia.name if referencia else None,
+        "referencia_layout": layout_usado,
         "com_foto_produto": tem_foto,
         "aviso": " ".join(avisos) or None,
     }
 
 
-def ajustar_imagem(imagem_sem_logo: bytes, instrucao: str, cliente: dict) -> dict:
+def ajustar_imagem(imagem_sem_logo: bytes, instrucao: str, cliente: dict, referencia: Optional[dict]) -> dict:
     """Aplica um ajuste pontual pedido pelo usuário (ex: 'deixe o céu ao entardecer')
     sobre a imagem já gerada, com o modelo de edição (gpt-image-2.5-sunburst, indicado
     para manter fidelidade). Parte da versão SEM logo, para o logo reaplicado por código
@@ -152,15 +162,15 @@ def ajustar_imagem(imagem_sem_logo: bytes, instrucao: str, cliente: dict) -> dic
     if not bruta.get("imagem_b64"):
         raise RuntimeError("A API de imagem não retornou nenhuma imagem para esse ajuste.")
     return {
-        **_finalizar(base64.b64decode(bruta["imagem_b64"]), cliente),
+        **_finalizar(base64.b64decode(bruta["imagem_b64"]), cliente, referencia),
         "modelo": bruta.get("modelo"),
         "qualidade": bruta.get("qualidade"),
     }
 
 
-def _finalizar(imagem_bytes: bytes, cliente: dict) -> dict:
+def _finalizar(imagem_bytes: bytes, cliente: dict, referencia: Optional[dict]) -> dict:
     sem_logo = image_overlay.recortar_formato_final(imagem_bytes)
-    final = image_overlay.aplicar_logo(sem_logo, cliente["logo"], _posicao_logo(cliente))
+    final = image_overlay.aplicar_logo(sem_logo, *_logo(cliente, referencia))
     return {
         "imagem_b64": base64.b64encode(final).decode("ascii"),
         "imagem_sem_logo_b64": base64.b64encode(sem_logo).decode("ascii"),
@@ -187,8 +197,15 @@ def _prompt_com_referencias(brief: str, tem_layout: bool, tem_foto: bool) -> str
     return "\n\n".join(partes)
 
 
-def _posicao_logo(cliente: dict) -> str:
-    return cliente["config"].get("logo_posicao", "inferior-esquerdo")
+def _logo(cliente: dict, referencia: Optional[dict]) -> tuple:
+    """(arquivo do logo, posição) para o layout sorteado: posição e versão (fundo claro
+    ou escuro) vêm de referencias.json; sem isso, a posição padrão do config.json e o
+    logo para fundo escuro."""
+    referencia = referencia or {}
+    posicao = referencia.get("logo_posicao") or cliente["config"].get("logo_posicao", "inferior-esquerdo")
+    versao = referencia.get("logo_versao", "fundo-escuro")
+    arquivo: Optional[Path] = cliente["logos"].get(versao) or cliente["logos"].get("fundo-escuro")
+    return arquivo, posicao
 
 
 def _margem_corte_vertical() -> int:

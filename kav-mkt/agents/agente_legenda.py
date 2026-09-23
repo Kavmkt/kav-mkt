@@ -38,8 +38,8 @@ Regras:
 
 Responda APENAS com um objeto JSON, sem texto antes ou depois:
 {
-  "headline_imagem": "chamada principal da imagem: 2 a 5 palavras, em português, sem emoji",
-  "selo_produto": "identificação curta do produto para o selo da imagem (até ~40 caracteres, ex: 'Palheta 18\\" · Corsa 94/02 · PAR'), ou null se não fizer sentido",
+  "headline_imagem": "chamada principal da imagem: 2 a 6 palavras, em português, sem emoji, de preferência citando o carro (ex: 'Seu Gol G2 de cara nova!', 'Sua Fiorino merece o melhor!')",
+  "selo_produto": "nome curto do produto + aplicação para o selo da imagem, até ~40 caracteres (ex: 'Retrovisor Gol / Parati G2 (95 a 99)'), ou null se não fizer sentido",
   "legenda": "legenda completa, pronta pra colar no Instagram, seguindo o padrão"
 }
 """
