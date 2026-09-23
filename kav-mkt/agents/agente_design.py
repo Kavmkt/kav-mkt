@@ -85,8 +85,13 @@ dois pode invadir essas faixas:
 - TODAS as bordas (topo, rodapé e as duas laterais): mantenha texto e logo a pelo menos
   __MARGEM_LATERAL__% de distância de qualquer borda da imagem. Nunca cole texto ou o
   logo rente à borda, mesmo nas laterais.
-- O logo vai no __AREA_LOGO__, respeitando essas margens, com espaço vazio ao redor dele
-  (nada de texto, produto ou elemento gráfico encostando nele).
+- O logo vai na faixa indicada no guia (__AREA_LOGO__) e do MESMO tamanho mostrado nele,
+  mas a posição horizontal dentro dessa faixa NÃO é fixa: use a área mais vazia da cena
+  que você está desenhando. Se o centro dessa faixa estiver livre (sem produto, sem
+  texto, sem elemento gráfico), centralize o logo ali — não empurre ele pra esquerda por
+  padrão. Só mantenha na lateral indicada no guia se o centro estiver ocupado por outra
+  coisa. Sempre com espaço vazio ao redor do logo (nada de texto, produto ou elemento
+  gráfico encostando nele), respeitando as margens acima.
 
 CORES: use somente as cores da marca listadas nas diretrizes acima para os elementos
 gráficos (bloco da headline, selo do produto, faixas, fundo atrás do logo) — não invente
@@ -187,11 +192,15 @@ def gerar_imagem(brief: str, produto: dict, cliente: dict, referencia: Optional[
         referencias_imagem.append((
             guia_logo,
             "a template the exact same pixel dimensions as the final image, transparent "
-            "everywhere except where the client's logo already sits — reproduce that "
-            "logo pixel-for-pixel, at that same position and scale, keeping its exact "
-            "colors, proportions and details (do not redraw, recolor or distort it). "
-            "Everywhere else in this template is transparent guidance only, not part of "
-            "the visible scene.",
+            "everywhere except where the client's logo sits — reproduce that logo "
+            "pixel-for-pixel, at that exact SCALE, keeping its exact colors, proportions "
+            "and details (do not redraw, recolor or distort it). Its vertical position "
+            "(top/bottom band) and default side are shown here, but its horizontal "
+            "position within that band is only a suggestion: place it wherever that "
+            "band is emptiest in the scene you're composing — centered if the middle of "
+            "the band is free, kept to this side only if the middle is occupied by the "
+            "product, text or another graphic element. Everywhere else in this template "
+            "is transparent guidance only, not part of the visible scene.",
         ))
 
     bruta = None
