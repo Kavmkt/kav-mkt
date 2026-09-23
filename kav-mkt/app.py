@@ -110,7 +110,7 @@ with st.sidebar.expander("ℹ️ Como funciona"):
    30 dias.
 2. **Legenda** — escreve chamada, selo do produto e legenda no padrão do cliente.
 3. **Design** — sorteia 1 das referências de layout do cliente e gera a imagem com a
-   foto real do produto; o logo é aplicado por cima, idêntico ao original.
+   foto real do produto e o logo oficial, tudo desenhado na mesma chamada.
 
 Nada é postado automaticamente. O catálogo é atualizado pedindo ao Claude (via Claude
 in Chrome) — ver `clientes/README.md`.
@@ -174,9 +174,7 @@ else:
             if aplicar and instrucao.strip():
                 try:
                     with st.spinner("Aplicando o ajuste..."):
-                        novo = ajustar_imagem(
-                            base64.b64decode(imagem["imagem_sem_logo_b64"]), instrucao, cliente, post["referencia"]
-                        )
+                        novo = ajustar_imagem(base64.b64decode(imagem["imagem_b64"]), instrucao)
                     post["imagem"] = {**imagem, **novo}
                     st.rerun()
                 except Exception as exc:
