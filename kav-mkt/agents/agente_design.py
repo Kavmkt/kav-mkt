@@ -44,26 +44,76 @@ Contexto de produção (o gerador de imagem recebe junto com o seu brief):
 __CONTEXTO_LAYOUT__
 - quando existir, a foto real do produto, que ele vai manter fiel.
 
+FIDELIDADE À REFERÊNCIA (crítico):
+- A imagem de referência é usada SÓ como molde estrutural: posição, proporção e formato
+  dos blocos (headline, faixa do selo, produto, elementos gráficos de fundo). Nada além.
+- NUNCA copie da referência: preços ("R$", "por apenas"), carimbos de "PROMOÇÃO",
+  "OFERTA", "PRODUTO EM OFERTA", selos de garantia, medalhas, slogans, taglines,
+  assinaturas, endereços, telefones, ícones de redes sociais, QR codes, marcas de
+  fabricante (Fiat, VW, Chevrolet, Hyundai, etc.). Ignore TODOS os textos da referência.
+- Se a referência contradiz o KV do cliente (logo antigo, cor fora da paleta, tipografia
+  diferente, carro de outro segmento), siga o KV do cliente — a referência perde.
+- Não invente elementos gráficos que não aparecem nem na referência nem no KV: nada de
+  preço, selo de desconto, carimbo, faixa de "frete grátis", contador, etc.
+
+MARGENS LATERAIS (crítico):
+- Deixe no mínimo ~5% de respiro em cada lateral (esquerda e direita). Nenhum texto,
+  selo, faixa ou elemento importante pode ficar colado na borda — sempre há uma margem
+  de fundo visível.
+- A headline, o selo do produto e o logo têm que estar inteiramente dentro dessa margem,
+  nunca cortando a lateral.
+
 RECORTE POSTERIOR: depois de gerada, a imagem perde cerca de __MARGEM__% do topo e
 __MARGEM__% do rodapé (ajuste para o formato final do post). Nada importante — texto,
 produto, rostos — pode ficar nessas faixas.
 
-LOGO: o logo do cliente é aplicado depois, por código, na área __AREA_LOGO__ da imagem.
-Deixe essa área livre de texto e de elementos importantes (fundo simples ali), e NÃO
-desenhe nenhum logotipo, nome de loja, tagline ou marca do cliente na imagem.
+ZONA DO LOGO — RESERVAR ÁREA LIMPA (crítico):
+- O logo do cliente NÃO é desenhado por você. Ele é aplicado depois, por código, no
+  canto __AREA_LOGO__ da imagem.
+- Você precisa reservar uma zona retangular limpa nesse canto, pensando numa caixa de
+  aproximadamente 30% da largura por 15% da altura do post (proporção de logo).
+- Essa zona tem que ter fundo 100% uniforme: uma cor sólida OU um gradiente suave e
+  contínuo. A caixa NÃO pode cruzar fronteira entre duas cores (nada de metade em cima
+  do bloco amarelo e metade em cima do bloco escuro), não pode conter texto, foto,
+  produto, pessoa, marca d'água, elemento gráfico ou detalhe fotográfico.
+- Deixe uma folga de segurança: além da caixa de 30%x15%, mantenha um respiro extra em
+  volta (outros ~5% da largura) sem elementos, para o logo não encostar em nada.
+- Se a referência mostra o logo em cima de fundo bagunçado, IGNORE e escolha uma área
+  limpa equivalente no mesmo canto — a referência é só molde estrutural, não um mapa
+  pixel-perfect do que vai em cima do fundo.
+- A marca d'água grande (ex: o "P" gigante do KV) é permitida como elemento gráfico de
+  fundo, mas NUNCA dentro da zona do logo.
+
+LOGOTIPO EM SI — NÃO DESENHAR (crítico):
+- NÃO desenhe logotipo completo, marca, emblema, nome da loja, tagline ou assinatura do
+  cliente em nenhum lugar da imagem. Nem no canto, nem no topo, nem no rodapé.
+- A única coisa que pode aparecer relacionada à marca são os ELEMENTOS GRÁFICOS do KV
+  (formas, faixas, marca d'água — o "P" gigante, se o KV prevê) — nunca o logo inteiro
+  nem o nome escrito.
+
+ELEMENTOS PROIBIDOS NA IMAGEM (não desenhar):
+- Logotipos, marcas, emblemas, montadoras ou qualquer marca do cliente.
+- Selos, medalhas, carimbos, preços, "R$", "por apenas", "promoção", "oferta", "desconto".
+- Endereços, telefones, QR codes, ícones de redes sociais, site, e-mail.
+- Assinaturas, slogans, taglines ou frases de efeito — exceto a headline e o selo do
+  produto que vieram no brief.
+- Textos em inglês ou qualquer idioma que não seja português.
 
 O brief (em inglês) deve definir, em um único parágrafo denso:
 - a cena fotográfica (situação do dia a dia, carro, ambiente, enquadramento) pensada
   para formato VERTICAL (retrato);
 - o produto em destaque e como ele aparece na cena;
 - iluminação e mood;
-- a headline e o selo do produto, com o tratamento gráfico previsto no KV do cliente.
+- a headline e o selo do produto, com o tratamento gráfico previsto no KV do cliente;
+- a descrição explícita do fundo da ZONA DO LOGO no canto __AREA_LOGO__ (qual cor sólida
+  ou gradiente suave preenche aquela área, garantindo uniformidade).
 
 Regras de texto na imagem:
 - Renderize a headline e o selo EXATAMENTE como informados, palavra por palavra, em
   português — sem traduzir, resumir ou acrescentar palavras.
 - Nenhum outro texto além deles (sem preço, sem slogan inventado).
-- Letras grandes e legíveis, inteiras dentro da área segura.
+- Letras grandes e legíveis, inteiras dentro da área segura, respeitando as margens
+  laterais de ~5%.
 
 Retorne APENAS o brief em texto corrido, em inglês — exceto a headline e o selo, citados
 entre aspas exatamente em português. Sem explicações, sem markdown, sem listas.
@@ -102,7 +152,12 @@ def gerar_brief(copy: dict, produto: dict, cliente: dict, referencia: Optional[d
     partes.append(f'Headline (renderizar exatamente): "{copy.get("headline_imagem")}"')
     if copy.get("selo_produto"):
         partes.append(f'Selo do produto (renderizar exatamente): "{copy["selo_produto"]}"')
-    return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=600, temperature=0.8)
+    partes.append(
+        f"Zona do logo a manter limpa (fundo uniforme, sem texto/elemento): "
+        f"{AREAS_LOGO.get(posicao_logo, 'bottom-left corner')} — caixa de ~30% largura x ~15% altura "
+        f"com ~5% de folga extra em volta."
+    )
+    return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=700, temperature=0.8)
 
 
 def gerar_imagem(brief: str, produto: dict, cliente: dict, referencia: Optional[dict]) -> dict:
@@ -154,7 +209,7 @@ def ajustar_imagem(imagem_sem_logo: bytes, instrucao: str, cliente: dict, refere
     prompt = (
         "Apply ONLY the following adjustment to the reference image, keeping everything "
         "else (composition, product, text, colors) exactly the same unless the instruction "
-        "explicitly says otherwise:\n" + instrucao.strip()
+        "explicitly says otherwise. Keep the logo area clean and unchanged:\n" + instrucao.strip()
     )
     # size="auto": a imagem de entrada já está no formato final — pedir o IMAGE_SIZE
     # padrão distorceria a proporção.
@@ -186,7 +241,10 @@ def _prompt_com_referencias(brief: str, tem_layout: bool, tem_foto: bool) -> str
             "structure closely — placement and shape of the headline block, the product tag, "
             "color bands, graphic elements and typography style — but with the new photo "
             "scene, product and texts described below. Ignore any text, prices or logos that "
-            "appear in it."
+            "appear in it. In particular, do NOT copy the logo nor the exact background "
+            "behind it: instead, leave a clean rectangular area with a uniform solid color "
+            "or smooth gradient in the corner indicated in the brief, so the brand's logo "
+            "can be applied over it later by code."
         )
     if tem_foto:
         partes.append(
