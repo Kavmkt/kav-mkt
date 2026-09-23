@@ -4,14 +4,17 @@ o modelo de imagem da OpenAI (GPT Image 2.5), uma única chamada por post.
 Referências enviadas à IA, na mesma chamada de edição (gpt-image-2.5-sunburst), quando
 disponíveis:
 - **Layout**: uma das (até 10) imagens fixas em clientes/<slug>/referencias/, sorteada a
-  cada post — a IA reproduz a estrutura do layout com o produto e os textos novos.
+  cada post — a IA reproduz a estrutura do layout com o produto e os textos novos. Já
+  está no tamanho final (1080x1440).
 - **Produto**: a foto real do produto no catálogo, para ele aparecer igual ao anúncio.
-- **Logo**: o arquivo oficial do cliente (fundo claro/escuro conforme o layout) — a IA
-  reproduz esse arquivo exatamente (sem redesenhar) na posição indicada. O logo NÃO é
-  mais aplicado por código depois: tentativas anteriores de deixar a IA acertar só a
-  cena e colar o logo por cima davam problema de espaço/margem, então agora o próprio
-  gerador de imagem desenha tudo de uma vez, com a margem de segurança explícita no
-  brief.
+- **Logo**: não é o arquivo do logo sozinho (que tem uma proporção bem diferente — uma
+  faixa larga e baixa), e sim um "guia" gerado por código
+  (utils.image_overlay.guia_posicao_logo): um canvas transparente do MESMO tamanho final
+  (1080x1440) com o logo já colado na posição certa. Mandar uma referência "torta" junto
+  com o layout (retrato) parecia confundir o modelo sobre a proporção de saída esperada,
+  e foi isso que causava texto cortado no topo/rodapé mesmo com a margem pedida no brief
+  (diagnosticado em 2026-09-23) — o guia resolve isso e ainda dá posição/escala exatas
+  do logo, não só uma descrição em texto.
 
 Sem nenhuma referência disponível (ou se a chamada com referências falhar), gera do zero
 a partir do brief (gpt-image-2.5-flare) e avisa — nesse caso a imagem sai sem logo.
@@ -35,7 +38,9 @@ AREAS_LOGO = {
 
 # Margem mínima (em % da imagem) que texto e logo devem manter de QUALQUER borda —
 # além da faixa de topo/rodapé cortada pelo redimensionamento (ver _margem_corte_vertical).
-MARGEM_SEGURANCA_BORDA = 6
+# 8 (não 6) de propósito: folga extra enquanto validamos se o guia de logo (ver
+# utils.image_overlay.guia_posicao_logo) já resolve o corte sozinho.
+MARGEM_SEGURANCA_BORDA = 8
 
 # Placeholders substituídos com .replace() (e não .format()): o texto da skill do cliente
 # pode ter chaves {} que quebrariam o .format().
@@ -50,9 +55,14 @@ __SKILL__
 Contexto de produção (o gerador de imagem recebe junto com o seu brief):
 __CONTEXTO_LAYOUT__
 - quando existir, a foto real do produto, que ele vai manter fiel;
-- o logo oficial do cliente, como imagem de referência — deve ser reproduzido
-  EXATAMENTE como está (mesmas cores, proporções, tipografia e detalhes), nunca
-  redesenhado, recolorido, simplificado ou distorcido.
+- um guia de logo: um template do MESMO formato/proporção da imagem final, transparente
+  exceto onde o logo do cliente já está posicionado — reproduza o logo pixel a pixel
+  dali (mesmas cores, proporções, tipografia e detalhes, nunca redesenhado ou
+  distorcido), na mesma posição e escala mostradas no guia.
+
+IMPORTANTE: as referências de layout e de logo estão no formato final exato do post
+(retrato, mais alto que largo). Gere a cena na MESMA proporção dessas referências — não
+em quadrado nem em outro formato.
 
 MARGENS DE SEGURANÇA — valem para TEXTO (headline e selo) e para o LOGO, nenhum dos
 dois pode invadir essas faixas:
@@ -77,8 +87,8 @@ O brief (em inglês) deve definir, em um único parágrafo denso:
 - iluminação e mood;
 - a headline e o selo do produto, com o tratamento gráfico previsto no KV do cliente,
   usando só as cores da marca;
-- a reprodução exata do logo do cliente (a partir da imagem de referência) na posição
-  indicada, dentro da margem de segurança.
+- a reprodução exata do logo a partir do guia de posição, na mesma posição e escala
+  mostradas nele.
 
 Regras de texto na imagem:
 - Renderize a headline e o selo EXATAMENTE como informados, palavra por palavra, em
@@ -158,13 +168,17 @@ def gerar_imagem(brief: str, produto: dict, cliente: dict, referencia: Optional[
 
     logo_arquivo, posicao_logo = _logo(cliente, referencia)
     if logo_arquivo:
+        # Canvas do tamanho final (não o arquivo do logo sozinho, que tem proporção bem
+        # diferente) — ver docstring do módulo para o porquê.
+        guia_logo = image_overlay.guia_posicao_logo(logo_arquivo, posicao_logo)
         referencias_imagem.append((
-            logo_arquivo.read_bytes(),
-            f"this brand's official logo. Reproduce it EXACTLY as shown — same colors, "
-            f"proportions, typography and details, do not redraw, recolor or distort "
-            f"it — placed at the {AREAS_LOGO.get(posicao_logo, 'bottom-left corner')}, "
-            f"at least {MARGEM_SEGURANCA_BORDA}% away from every edge, with clear empty "
-            f"space around it so nothing overlaps it.",
+            guia_logo,
+            "a template the exact same pixel dimensions as the final image, transparent "
+            "everywhere except where the client's logo already sits — reproduce that "
+            "logo pixel-for-pixel, at that same position and scale, keeping its exact "
+            "colors, proportions and details (do not redraw, recolor or distort it). "
+            "Everywhere else in this template is transparent guidance only, not part of "
+            "the visible scene.",
         ))
 
     bruta = None
@@ -184,10 +198,18 @@ def gerar_imagem(brief: str, produto: dict, cliente: dict, referencia: Optional[
     if not bruta.get("imagem_b64"):
         raise RuntimeError("A API de imagem não retornou nenhuma imagem.")
 
+    if bruta.get("tamanho_pedido") and bruta.get("tamanho_real") and bruta["tamanho_pedido"] != bruta["tamanho_real"]:
+        avisos.append(
+            f"A API pediu {bruta['tamanho_pedido']} mas devolveu {bruta['tamanho_real']} — "
+            "o recorte final ainda sai certo (1080x1440), mas a margem interna pode não "
+            "bater exatamente com o que foi pedido no brief."
+        )
+
     return {
         **_finalizar(base64.b64decode(bruta["imagem_b64"])),
         "modelo": bruta.get("modelo"),
         "qualidade": bruta.get("qualidade"),
+        "tamanho_gerado": bruta.get("tamanho_real"),
         "referencia_layout": layout_usado,
         "com_foto_produto": tem_foto,
         "aviso": " ".join(avisos) or None,
@@ -213,6 +235,7 @@ def ajustar_imagem(imagem_atual: bytes, instrucao: str) -> dict:
         **_finalizar(base64.b64decode(bruta["imagem_b64"])),
         "modelo": bruta.get("modelo"),
         "qualidade": bruta.get("qualidade"),
+        "tamanho_gerado": bruta.get("tamanho_real"),
     }
 
 
@@ -242,8 +265,13 @@ def _logo(cliente: dict, referencia: Optional[dict]) -> tuple:
 
 
 def _margem_corte_vertical() -> int:
-    """Quanto (%) do topo e do rodapé o recorte para o formato final remove, com +2 pontos
-    de folga — para avisar a IA a deixar essa faixa sem nada importante."""
+    """Quanto (%) do topo e do rodapé o recorte para o formato final remove, com +4 pontos
+    de folga — para avisar a IA a deixar essa faixa sem nada importante.
+
+    Isso assume que a API devolve o tamanho pedido (IMAGE_SIZE) — nem sempre é verdade
+    (ver `openai_client._resultado_imagem`, que mede o tamanho real da imagem que volta).
+    A folga extra é por causa dessa incerteza; se `aviso` de "tamanho_real" continuar
+    aparecendo com frequência, considere um valor de folga ainda maior aqui."""
     try:
         largura, altura = (int(v) for v in openai_client.IMAGE_SIZE.lower().split("x"))
     except (ValueError, AttributeError):
@@ -252,4 +280,4 @@ def _margem_corte_vertical() -> int:
     if largura / altura >= razao_final:
         return 0  # nesse caso o recorte é nas laterais, não no topo/rodapé
     corte_total = 1 - (largura / razao_final) / altura
-    return round(corte_total / 2 * 100) + 2
+    return round(corte_total / 2 * 100) + 4
