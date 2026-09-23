@@ -160,7 +160,7 @@ else:
             detalhes = [
                 f"Layout: {imagem['referencia_layout']}" if imagem.get("referencia_layout") else "Sem referência de layout",
                 "com foto real do produto" if imagem.get("com_foto_produto") else None,
-                f"{imagem.get('modelo')} · {imagem.get('tamanho')}",
+                f"{imagem.get('modelo')} · gerado em {imagem.get('tamanho_gerado') or '?'} · cortado para {imagem.get('tamanho')}",
             ]
             st.caption(" · ".join(d for d in detalhes if d))
 
