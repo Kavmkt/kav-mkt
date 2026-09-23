@@ -4,6 +4,7 @@
 Centralizado aqui para que os agentes (Legenda, Design) não dupliquem a leitura da chave
 de API nem a lógica de extração de JSON da resposta.
 """
+import base64
 import json
 import os
 import re
@@ -87,14 +88,7 @@ def gerar_imagem(prompt: str) -> dict:
         quality=IMAGE_QUALITY,
         n=1,
     )
-    dado = resposta.data[0]
-    return {
-        "imagem_b64": getattr(dado, "b64_json", None),
-        "imagem_url": getattr(dado, "url", None),
-        "modelo": IMAGE_MODEL,
-        "tamanho": IMAGE_SIZE,
-        "qualidade": IMAGE_QUALITY,
-    }
+    return _resultado_imagem(resposta.data[0], IMAGE_MODEL, IMAGE_SIZE)
 
 
 def baixar_imagem_referencia(url: str) -> bytes:
@@ -136,12 +130,30 @@ def gerar_imagem_com_referencias(prompt: str, imagens_bytes: list, size: Optiona
         size=tamanho_pedido,
         quality=IMAGE_QUALITY,
     )
-    dado = resposta.data[0]
+    return _resultado_imagem(resposta.data[0], IMAGE_EDIT_MODEL, tamanho_pedido)
+
+
+def _resultado_imagem(dado, modelo: str, tamanho_pedido: str) -> dict:
+    """Monta o dicionário de retorno padrão — incluindo `tamanho_real`, medido na imagem
+    que veio de verdade, nunca assumido a partir do que foi pedido. A API às vezes não
+    devolve exatamente o `size` pedido (principalmente com múltiplas imagens de
+    referência de proporções diferentes), e um código que assume "pedido = real" gera
+    margens de segurança erradas para a IA — foi exatamente esse o bug que cortava texto
+    no topo das imagens (visto em 2026-09-23)."""
+    b64 = getattr(dado, "b64_json", None)
+    tamanho_real = None
+    if b64:
+        try:
+            largura, altura = Image.open(BytesIO(base64.b64decode(b64))).size
+            tamanho_real = f"{largura}x{altura}"
+        except Exception:
+            tamanho_real = None
     return {
-        "imagem_b64": getattr(dado, "b64_json", None),
+        "imagem_b64": b64,
         "imagem_url": getattr(dado, "url", None),
-        "modelo": IMAGE_EDIT_MODEL,
-        "tamanho": tamanho_pedido,
+        "modelo": modelo,
+        "tamanho_pedido": tamanho_pedido,
+        "tamanho_real": tamanho_real,
         "qualidade": IMAGE_QUALITY,
     }
 
