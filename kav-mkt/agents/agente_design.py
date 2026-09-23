@@ -1,17 +1,20 @@
 """Agente de Design: escreve o brief de Key Visual (KV) do post e gera a imagem final com
 o modelo de imagem da OpenAI (GPT Image 2.5), uma única chamada por post.
 
-Referências enviadas à IA, na mesma chamada de edição (gpt-image-2.5-sunburst):
+Referências enviadas à IA, na mesma chamada de edição (gpt-image-2.5-sunburst), quando
+disponíveis:
 - **Layout**: uma das (até 10) imagens fixas em clientes/<slug>/referencias/, sorteada a
   cada post — a IA reproduz a estrutura do layout com o produto e os textos novos.
 - **Produto**: a foto real do produto no catálogo, para ele aparecer igual ao anúncio.
+- **Logo**: o arquivo oficial do cliente (fundo claro/escuro conforme o layout) — a IA
+  reproduz esse arquivo exatamente (sem redesenhar) na posição indicada. O logo NÃO é
+  mais aplicado por código depois: tentativas anteriores de deixar a IA acertar só a
+  cena e colar o logo por cima davam problema de espaço/margem, então agora o próprio
+  gerador de imagem desenha tudo de uma vez, com a margem de segurança explícita no
+  brief.
 
 Sem nenhuma referência disponível (ou se a chamada com referências falhar), gera do zero
-a partir do brief (gpt-image-2.5-flare) e avisa.
-
-A chamada e o selo do produto são desenhados pela própria IA na cena. O logo NÃO: a IA
-deixa livre a área onde o logo fica naquele layout (referencias.json) e o logo é
-aplicado depois por código (utils.image_overlay), para sair idêntico ao arquivo.
+a partir do brief (gpt-image-2.5-flare) e avisa — nesse caso a imagem sai sem logo.
 """
 import base64
 import random
@@ -30,6 +33,10 @@ AREAS_LOGO = {
     "inferior-direito": "bottom-right corner",
 }
 
+# Margem mínima (em % da imagem) que texto e logo devem manter de QUALQUER borda —
+# além da faixa de topo/rodapé cortada pelo redimensionamento (ver _margem_corte_vertical).
+MARGEM_SEGURANCA_BORDA = 6
+
 # Placeholders substituídos com .replace() (e não .format()): o texto da skill do cliente
 # pode ter chaves {} que quebrariam o .format().
 SYSTEM_PROMPT = """Você é o Diretor de Arte da Kav (@kav.mkt). Sua função é escrever o
@@ -42,78 +49,42 @@ __SKILL__
 
 Contexto de produção (o gerador de imagem recebe junto com o seu brief):
 __CONTEXTO_LAYOUT__
-- quando existir, a foto real do produto, que ele vai manter fiel.
+- quando existir, a foto real do produto, que ele vai manter fiel;
+- o logo oficial do cliente, como imagem de referência — deve ser reproduzido
+  EXATAMENTE como está (mesmas cores, proporções, tipografia e detalhes), nunca
+  redesenhado, recolorido, simplificado ou distorcido.
 
-FIDELIDADE À REFERÊNCIA (crítico):
-- A imagem de referência é usada SÓ como molde estrutural: posição, proporção e formato
-  dos blocos (headline, faixa do selo, produto, elementos gráficos de fundo). Nada além.
-- NUNCA copie da referência: preços ("R$", "por apenas"), carimbos de "PROMOÇÃO",
-  "OFERTA", "PRODUTO EM OFERTA", selos de garantia, medalhas, slogans, taglines,
-  assinaturas, endereços, telefones, ícones de redes sociais, QR codes, marcas de
-  fabricante (Fiat, VW, Chevrolet, Hyundai, etc.). Ignore TODOS os textos da referência.
-- Se a referência contradiz o KV do cliente (logo antigo, cor fora da paleta, tipografia
-  diferente, carro de outro segmento), siga o KV do cliente — a referência perde.
-- Não invente elementos gráficos que não aparecem nem na referência nem no KV: nada de
-  preço, selo de desconto, carimbo, faixa de "frete grátis", contador, etc.
+MARGENS DE SEGURANÇA — valem para TEXTO (headline e selo) e para o LOGO, nenhum dos
+dois pode invadir essas faixas:
+- Topo e rodapé: depois de gerada, a imagem perde cerca de __MARGEM__% do topo e
+  __MARGEM__% do rodapé (ajuste de proporção para o formato final do post). Trate essa
+  faixa como fora dos limites — nada importante pode ficar nela.
+- TODAS as bordas (topo, rodapé e as duas laterais): mantenha texto e logo a pelo menos
+  __MARGEM_LATERAL__% de distância de qualquer borda da imagem. Nunca cole texto ou o
+  logo rente à borda, mesmo nas laterais.
+- O logo vai no __AREA_LOGO__, respeitando essas margens, com espaço vazio ao redor dele
+  (nada de texto, produto ou elemento gráfico encostando nele).
 
-MARGENS LATERAIS (crítico):
-- Deixe no mínimo ~5% de respiro em cada lateral (esquerda e direita). Nenhum texto,
-  selo, faixa ou elemento importante pode ficar colado na borda — sempre há uma margem
-  de fundo visível.
-- A headline, o selo do produto e o logo têm que estar inteiramente dentro dessa margem,
-  nunca cortando a lateral.
-
-RECORTE POSTERIOR: depois de gerada, a imagem perde cerca de __MARGEM__% do topo e
-__MARGEM__% do rodapé (ajuste para o formato final do post). Nada importante — texto,
-produto, rostos — pode ficar nessas faixas.
-
-ZONA DO LOGO — RESERVAR ÁREA LIMPA (crítico):
-- O logo do cliente NÃO é desenhado por você. Ele é aplicado depois, por código, no
-  canto __AREA_LOGO__ da imagem.
-- Você precisa reservar uma zona retangular limpa nesse canto, pensando numa caixa de
-  aproximadamente 30% da largura por 15% da altura do post (proporção de logo).
-- Essa zona tem que ter fundo 100% uniforme: uma cor sólida OU um gradiente suave e
-  contínuo. A caixa NÃO pode cruzar fronteira entre duas cores (nada de metade em cima
-  do bloco amarelo e metade em cima do bloco escuro), não pode conter texto, foto,
-  produto, pessoa, marca d'água, elemento gráfico ou detalhe fotográfico.
-- Deixe uma folga de segurança: além da caixa de 30%x15%, mantenha um respiro extra em
-  volta (outros ~5% da largura) sem elementos, para o logo não encostar em nada.
-- Se a referência mostra o logo em cima de fundo bagunçado, IGNORE e escolha uma área
-  limpa equivalente no mesmo canto — a referência é só molde estrutural, não um mapa
-  pixel-perfect do que vai em cima do fundo.
-- A marca d'água grande (ex: o "P" gigante do KV) é permitida como elemento gráfico de
-  fundo, mas NUNCA dentro da zona do logo.
-
-LOGOTIPO EM SI — NÃO DESENHAR (crítico):
-- NÃO desenhe logotipo completo, marca, emblema, nome da loja, tagline ou assinatura do
-  cliente em nenhum lugar da imagem. Nem no canto, nem no topo, nem no rodapé.
-- A única coisa que pode aparecer relacionada à marca são os ELEMENTOS GRÁFICOS do KV
-  (formas, faixas, marca d'água — o "P" gigante, se o KV prevê) — nunca o logo inteiro
-  nem o nome escrito.
-
-ELEMENTOS PROIBIDOS NA IMAGEM (não desenhar):
-- Logotipos, marcas, emblemas, montadoras ou qualquer marca do cliente.
-- Selos, medalhas, carimbos, preços, "R$", "por apenas", "promoção", "oferta", "desconto".
-- Endereços, telefones, QR codes, ícones de redes sociais, site, e-mail.
-- Assinaturas, slogans, taglines ou frases de efeito — exceto a headline e o selo do
-  produto que vieram no brief.
-- Textos em inglês ou qualquer idioma que não seja português.
+CORES: use somente as cores da marca listadas nas diretrizes acima para os elementos
+gráficos (bloco da headline, selo do produto, faixas, fundo atrás do logo) — não invente
+cores fora dessa paleta. Garanta contraste forte entre cada texto e o fundo dele.
 
 O brief (em inglês) deve definir, em um único parágrafo denso:
 - a cena fotográfica (situação do dia a dia, carro, ambiente, enquadramento) pensada
-  para formato VERTICAL (retrato);
+  para formato VERTICAL (retrato), com todo elemento essencial dentro das margens de
+  segurança acima;
 - o produto em destaque e como ele aparece na cena;
 - iluminação e mood;
-- a headline e o selo do produto, com o tratamento gráfico previsto no KV do cliente;
-- a descrição explícita do fundo da ZONA DO LOGO no canto __AREA_LOGO__ (qual cor sólida
-  ou gradiente suave preenche aquela área, garantindo uniformidade).
+- a headline e o selo do produto, com o tratamento gráfico previsto no KV do cliente,
+  usando só as cores da marca;
+- a reprodução exata do logo do cliente (a partir da imagem de referência) na posição
+  indicada, dentro da margem de segurança.
 
 Regras de texto na imagem:
 - Renderize a headline e o selo EXATAMENTE como informados, palavra por palavra, em
   português — sem traduzir, resumir ou acrescentar palavras.
 - Nenhum outro texto além deles (sem preço, sem slogan inventado).
-- Letras grandes e legíveis, inteiras dentro da área segura, respeitando as margens
-  laterais de ~5%.
+- Letras grandes e legíveis, sempre dentro das margens de segurança descritas acima.
 
 Retorne APENAS o brief em texto corrido, em inglês — exceto a headline e o selo, citados
 entre aspas exatamente em português. Sem explicações, sem markdown, sem listas.
@@ -142,6 +113,7 @@ def gerar_brief(copy: dict, produto: dict, cliente: dict, referencia: Optional[d
         SYSTEM_PROMPT.replace("__SKILL__", cliente["skill"])
         .replace("__CONTEXTO_LAYOUT__", contexto)
         .replace("__MARGEM__", str(_margem_corte_vertical()))
+        .replace("__MARGEM_LATERAL__", str(MARGEM_SEGURANCA_BORDA))
         .replace("__AREA_LOGO__", AREAS_LOGO.get(posicao_logo, "bottom-left corner"))
     )
     partes = [f"Produto: {produto.get('nome')}"]
@@ -152,47 +124,68 @@ def gerar_brief(copy: dict, produto: dict, cliente: dict, referencia: Optional[d
     partes.append(f'Headline (renderizar exatamente): "{copy.get("headline_imagem")}"')
     if copy.get("selo_produto"):
         partes.append(f'Selo do produto (renderizar exatamente): "{copy["selo_produto"]}"')
-    partes.append(
-        f"Zona do logo a manter limpa (fundo uniforme, sem texto/elemento): "
-        f"{AREAS_LOGO.get(posicao_logo, 'bottom-left corner')} — caixa de ~30% largura x ~15% altura "
-        f"com ~5% de folga extra em volta."
-    )
-    return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=700, temperature=0.8)
+    return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=600, temperature=0.8)
 
 
 def gerar_imagem(brief: str, produto: dict, cliente: dict, referencia: Optional[dict]) -> dict:
-    """Gera a imagem do post e devolve a versão final (recortada + logo) e a versão sem
-    logo (usada como base para ajustes pontuais depois)."""
-    imagens = [referencia["arquivo"].read_bytes()] if referencia else []
+    """Gera a imagem do post: sorteia o que estiver disponível (layout, foto real do
+    produto, logo do cliente) como referências para a mesma chamada de edição — o logo
+    também é desenhado pela IA a partir do arquivo oficial, não mais colado por código."""
     avisos = []
-    layout_usado = referencia["arquivo"].name if referencia else None
+    referencias_imagem = []  # [(bytes, descrição em inglês para o prompt), ...]
+
+    if referencia:
+        referencias_imagem.append((
+            referencia["arquivo"].read_bytes(),
+            "this brand's layout template. Reproduce its layout structure closely — "
+            "placement and shape of the headline block, the product tag, color bands, "
+            "graphic elements and typography style — but with the new photo scene, "
+            "product and texts described below. Ignore any text, logo or product shown "
+            "in it.",
+        ))
 
     tem_foto = False
     if produto.get("foto_url") and not produto.get("fallback_usado"):
         try:
-            imagens.append(openai_client.baixar_imagem_referencia(produto["foto_url"]))
+            referencias_imagem.append((
+                openai_client.baixar_imagem_referencia(produto["foto_url"]),
+                "the real product being advertised. Keep its exact shape, colors, "
+                "materials and details as photographed; do not redesign it.",
+            ))
             tem_foto = True
         except Exception as exc:  # segue sem a foto, com aviso
             avisos.append(f"Não consegui baixar a foto do produto ({exc}); a IA desenhou o produto a partir do nome.")
 
+    logo_arquivo, posicao_logo = _logo(cliente, referencia)
+    if logo_arquivo:
+        referencias_imagem.append((
+            logo_arquivo.read_bytes(),
+            f"this brand's official logo. Reproduce it EXACTLY as shown — same colors, "
+            f"proportions, typography and details, do not redraw, recolor or distort "
+            f"it — placed at the {AREAS_LOGO.get(posicao_logo, 'bottom-left corner')}, "
+            f"at least {MARGEM_SEGURANCA_BORDA}% away from every edge, with clear empty "
+            f"space around it so nothing overlaps it.",
+        ))
+
     bruta = None
-    if imagens:
+    layout_usado = referencia["arquivo"].name if referencia else None
+    if referencias_imagem:
         try:
-            bruta = openai_client.gerar_imagem_com_referencias(
-                _prompt_com_referencias(brief, referencia is not None, tem_foto), imagens
-            )
+            imagens = [dados for dados, _ in referencias_imagem]
+            prompt = _prompt_com_referencias(brief, [desc for _, desc in referencias_imagem])
+            bruta = openai_client.gerar_imagem_com_referencias(prompt, imagens)
         except Exception as exc:  # cai para a geração sem referências, com aviso
-            avisos.append(f"A geração com referências falhou ({exc}); gerei sem elas.")
+            avisos.append(f"A geração com referências falhou ({exc}); gerei sem elas (sem logo nesta imagem).")
     if not bruta or not bruta.get("imagem_b64"):
         if bruta is not None:
-            avisos.append("A geração com referências não retornou imagem; gerei sem elas.")
+            avisos.append("A geração com referências não retornou imagem; gerei sem elas (sem logo nesta imagem).")
         bruta = openai_client.gerar_imagem(brief)
         layout_usado, tem_foto = None, False
     if not bruta.get("imagem_b64"):
         raise RuntimeError("A API de imagem não retornou nenhuma imagem.")
 
     return {
-        **_finalizar(base64.b64decode(bruta["imagem_b64"]), cliente, referencia),
+        **_finalizar(base64.b64decode(bruta["imagem_b64"])),
         "modelo": bruta.get("modelo"),
         "qualidade": bruta.get("qualidade"),
         "referencia_layout": layout_usado,
@@ -201,56 +194,38 @@ def gerar_imagem(brief: str, produto: dict, cliente: dict, referencia: Optional[
     }
 
 
-def ajustar_imagem(imagem_sem_logo: bytes, instrucao: str, cliente: dict, referencia: Optional[dict]) -> dict:
+def ajustar_imagem(imagem_atual: bytes, instrucao: str) -> dict:
     """Aplica um ajuste pontual pedido pelo usuário (ex: 'deixe o céu ao entardecer')
     sobre a imagem já gerada, com o modelo de edição (gpt-image-2.5-sunburst, indicado
-    para manter fidelidade). Parte da versão SEM logo, para o logo reaplicado por código
-    não sair duplicado."""
+    para manter fidelidade). Parte da imagem final (já com logo e texto), instruindo a
+    IA a manter tudo igual exceto o que foi pedido."""
     prompt = (
         "Apply ONLY the following adjustment to the reference image, keeping everything "
-        "else (composition, product, text, colors) exactly the same unless the instruction "
-        "explicitly says otherwise. Keep the logo area clean and unchanged:\n" + instrucao.strip()
+        "else (composition, product, text, logo, colors) exactly the same unless the "
+        "instruction explicitly says otherwise:\n" + instrucao.strip()
     )
     # size="auto": a imagem de entrada já está no formato final — pedir o IMAGE_SIZE
     # padrão distorceria a proporção.
-    bruta = openai_client.gerar_imagem_com_referencias(prompt, [imagem_sem_logo], size="auto")
+    bruta = openai_client.gerar_imagem_com_referencias(prompt, [imagem_atual], size="auto")
     if not bruta.get("imagem_b64"):
         raise RuntimeError("A API de imagem não retornou nenhuma imagem para esse ajuste.")
     return {
-        **_finalizar(base64.b64decode(bruta["imagem_b64"]), cliente, referencia),
+        **_finalizar(base64.b64decode(bruta["imagem_b64"])),
         "modelo": bruta.get("modelo"),
         "qualidade": bruta.get("qualidade"),
     }
 
 
-def _finalizar(imagem_bytes: bytes, cliente: dict, referencia: Optional[dict]) -> dict:
-    sem_logo = image_overlay.recortar_formato_final(imagem_bytes)
-    final = image_overlay.aplicar_logo(sem_logo, *_logo(cliente, referencia))
+def _finalizar(imagem_bytes: bytes) -> dict:
+    final = image_overlay.recortar_formato_final(imagem_bytes)
     return {
         "imagem_b64": base64.b64encode(final).decode("ascii"),
-        "imagem_sem_logo_b64": base64.b64encode(sem_logo).decode("ascii"),
         "tamanho": f"{image_overlay.LARGURA_PADRAO}x{image_overlay.ALTURA_PADRAO}",
     }
 
 
-def _prompt_com_referencias(brief: str, tem_layout: bool, tem_foto: bool) -> str:
-    partes = []
-    if tem_layout:
-        partes.append(
-            "The FIRST reference image is this brand's layout template. Reproduce its layout "
-            "structure closely — placement and shape of the headline block, the product tag, "
-            "color bands, graphic elements and typography style — but with the new photo "
-            "scene, product and texts described below. Ignore any text, prices or logos that "
-            "appear in it. In particular, do NOT copy the logo nor the exact background "
-            "behind it: instead, leave a clean rectangular area with a uniform solid color "
-            "or smooth gradient in the corner indicated in the brief, so the brand's logo "
-            "can be applied over it later by code."
-        )
-    if tem_foto:
-        partes.append(
-            "The LAST reference image is the real product being advertised — keep its exact "
-            "shape, colors, materials and details as photographed; do not redesign it."
-        )
+def _prompt_com_referencias(brief: str, descricoes: list) -> str:
+    partes = [f"Reference image {i + 1} is {desc}" for i, desc in enumerate(descricoes)]
     partes.append("Post to create:\n" + brief)
     return "\n\n".join(partes)
 
