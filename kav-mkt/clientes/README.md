@@ -9,15 +9,20 @@ clientes/<slug-do-cliente>/
 ├── legenda.md      # padrão de legenda que o Agente de Legenda segue à risca
 ├── config.json     # nome, loja da Shopee, posição do logo, dias sem repetir produto
 ├── catalogo.json   # produtos da loja (sincronizado via Claude in Chrome — ver abaixo)
-├── logo.png        # logo do cliente, de preferência com fundo transparente
-└── referencias/    # até 10 imagens de posts que servem de referência de layout
+├── logo-fundo-escuro.png  # logo claro, para layouts de fundo escuro (PNG transparente)
+├── logo-fundo-claro.png   # logo escuro, para layouts de fundo claro (PNG transparente)
+└── referencias/    # até 10 posts de referência de layout + referencias.json
 ```
+
+Se o cliente só tiver uma versão do logo, salve como `logo.png` — ela é usada nos dois
+casos. `referencias/referencias.json` diz onde fica o logo em cada layout e qual versão
+usar (ver `referencias/README.md`).
 
 ## Adicionar um cliente novo
 
 1. Copie a pasta `ponto-car/` com o novo nome (ex: `clientes/auto-pecas-silva/`).
 2. Edite `skill.md`, `legenda.md` e `config.json` com os dados do novo cliente.
-3. Troque `logo.png` e as imagens de `referencias/`.
+3. Troque os logos e as imagens de `referencias/` (e as linhas de `referencias.json`).
 4. Esvazie a lista de `produtos` em `catalogo.json` e faça a primeira sincronização.
 
 O cliente aparece sozinho no seletor do app — nenhum código precisa mudar.
@@ -29,7 +34,7 @@ O cliente aparece sozinho no seletor do app — nenhum código precisa mudar.
 | `nome` | Nome exibido no app |
 | `loja_shopee` | Link da loja do cliente na Shopee |
 | `shopee_shopid` | ID numérico da loja na Shopee (ajuda o Claude na sincronização) |
-| `logo_posicao` | Onde o logo é aplicado: `superior-esquerdo`, `superior-direito`, `inferior-esquerdo` ou `inferior-direito` |
+| `logo_posicao` | Posição padrão do logo, usada quando a referência sorteada não define uma: `superior-esquerdo`, `superior-centro`, `superior-direito`, `inferior-esquerdo`, `inferior-centro` ou `inferior-direito` |
 | `dias_sem_repetir_produto` | Janela em que um produto já usado não volta a ser escolhido (padrão 30) |
 
 ## Atualizar o catálogo (Claude in Chrome)
