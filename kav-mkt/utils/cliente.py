@@ -26,9 +26,7 @@ def carregar_cliente(slug: str) -> dict:
         )
     skill = caminho_skill.read_text(encoding="utf-8")
     config = _ler_json(pasta / "config.json", {})
-    referencias = sorted(
-        p for p in (pasta / "referencias").glob("*") if p.suffix.lower() in EXTENSOES_IMAGEM
-    )[:MAX_REFERENCIAS]
+    logo_generico = _existente(pasta / "logo.png")
     return {
         "slug": slug,
         "nome": config.get("nome") or slug.replace("-", " ").title(),
@@ -37,9 +35,21 @@ def carregar_cliente(slug: str) -> dict:
         "legenda_padrao": _ler_texto(pasta / "legenda.md"),
         "catalogo": _ler_json(pasta / "catalogo.json", {"produtos": []}),
         "produtos_coringa": _itens_da_secao(skill, "Produtos Coringa"),
-        "referencias": referencias,
-        "logo": _existente(pasta / "logo.png"),
+        "referencias": _carregar_referencias(pasta / "referencias"),
+        # Versão do logo por cor de fundo; logo.png serve de reserva para as duas.
+        "logos": {
+            "fundo-escuro": _existente(pasta / "logo-fundo-escuro.png") or logo_generico,
+            "fundo-claro": _existente(pasta / "logo-fundo-claro.png") or logo_generico,
+        },
     }
+
+
+def _carregar_referencias(pasta: Path) -> list:
+    """Lista de {"arquivo", "logo_posicao", "logo_versao"} — os dois últimos vêm de
+    referencias.json (onde o logo fica em cada layout) e podem faltar."""
+    metadados = _ler_json(pasta / "referencias.json", {})
+    arquivos = sorted(p for p in pasta.glob("*") if p.suffix.lower() in EXTENSOES_IMAGEM)[:MAX_REFERENCIAS]
+    return [{**metadados.get(p.name, {}), "arquivo": p} for p in arquivos]
 
 
 def _ler_json(caminho: Path, padrao: dict) -> dict:

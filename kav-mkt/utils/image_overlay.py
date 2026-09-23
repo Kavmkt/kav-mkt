@@ -10,7 +10,7 @@ from PIL import Image
 
 LARGURA_PADRAO = 1080
 ALTURA_PADRAO = 1440
-LOGO_LARGURA = 0.24  # fração da largura da imagem
+LOGO_LARGURA = 0.30  # fração da largura da imagem (≈ tamanho do logo nas referências)
 LOGO_MARGEM = 0.05  # fração da largura da imagem, a partir das bordas
 
 
@@ -32,7 +32,8 @@ def recortar_formato_final(imagem_bytes: bytes, largura: int = LARGURA_PADRAO, a
 
 
 def aplicar_logo(imagem_bytes: bytes, caminho_logo: Optional[Path], posicao: str) -> bytes:
-    """Cola o logo no canto indicado. Sem logo configurado, devolve a imagem como veio."""
+    """Cola o logo na posição indicada (ex: "inferior-esquerdo", "superior-centro"). Sem
+    logo configurado, devolve a imagem como veio."""
     if not caminho_logo:
         return imagem_bytes
     imagem = Image.open(BytesIO(imagem_bytes)).convert("RGB")
@@ -40,7 +41,12 @@ def aplicar_logo(imagem_bytes: bytes, caminho_logo: Optional[Path], posicao: str
     largura_logo = int(imagem.width * LOGO_LARGURA)
     logo = logo.resize((largura_logo, max(1, int(logo.height * largura_logo / logo.width))), Image.LANCZOS)
     margem = int(imagem.width * LOGO_MARGEM)
-    x = margem if posicao.endswith("esquerdo") else imagem.width - logo.width - margem
+    if posicao.endswith("esquerdo"):
+        x = margem
+    elif posicao.endswith("centro"):
+        x = (imagem.width - logo.width) // 2
+    else:
+        x = imagem.width - logo.width - margem
     y = margem if posicao.startswith("superior") else imagem.height - logo.height - margem
     imagem.paste(logo, (x, y), logo)
     return _png(imagem)
