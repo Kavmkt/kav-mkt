@@ -14,7 +14,7 @@ Texto com `gpt-4o-mini` e imagem com o GPT Image 2.5, ambos pela API da OpenAI.
 Catálogo  →  escolhe o produto: sorteio entre os 15 mais vendidos ainda não usados em 30 dias
 Legenda   →  chamada da imagem + selo do produto + legenda seguindo clientes/<cliente>/legenda.md
 Design    →  sorteia 1 das 10 referências de layout do cliente + foto real do produto
-             → imagem 1080x1440 → logo aplicado por código (idêntico ao arquivo original)
+             → imagem 1080x1440 → logo aplicado por código na posição daquele layout
 Histórico →  registra o produto usado (branch "dados" do GitHub) para não repetir
 ```
 
@@ -85,12 +85,12 @@ os detalhes e para adicionar um cliente novo (copiar a pasta e editar).
 
 | Arquivo | Para quê | Ponto Car |
 |---|---|---|
-| `skill.md` | tom de voz, regras, KV | ✅ pronto (KV para validar) |
-| `legenda.md` | padrão de legenda | ⚠️ provisório — aguardando o padrão oficial |
-| `config.json` | loja, posição do logo, dias sem repetir | ✅ pronto |
-| `catalogo.json` | produtos da loja | via Claude in Chrome |
-| `logo.png` | logo, fundo transparente | ⚠️ falta |
-| `referencias/` | até 10 posts de referência de layout | ⚠️ falta |
+| `skill.md` | tom de voz, regras, KV | ✅ pronto (KV descrito a partir das referências) |
+| `legenda.md` | padrão de legenda | ✅ pronto (baseado no exemplo do Versa) |
+| `config.json` | loja, posição padrão do logo, dias sem repetir | ✅ pronto |
+| `catalogo.json` | produtos da loja | ⚠️ vazio — sincronizar via Claude in Chrome |
+| `logo-fundo-escuro.png` / `logo-fundo-claro.png` | logo em PNG transparente | ✅ pronto (amarelo/branco e grafite/azul) |
+| `referencias/` | até 10 posts de referência de layout | ✅ 10 imagens + posição do logo em cada |
 
 A barra lateral do app mostra esse mesmo checklist para o cliente selecionado.
 

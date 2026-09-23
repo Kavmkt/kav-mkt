@@ -14,7 +14,7 @@ import json
 from typing import Callable, Optional
 
 from agents.agente_catalogo import escolher_produto
-from agents.agente_design import gerar_brief, gerar_imagem
+from agents.agente_design import escolher_referencia, gerar_brief, gerar_imagem
 from agents.agente_legenda import gerar_legenda
 from utils import historico
 from utils.cliente import CLIENTES_DIR, carregar_cliente
@@ -35,16 +35,26 @@ def gerar_post(slug: str, com_imagem: bool = True, etapa: Optional[Callable[[str
 
     avisar(f"Escrevendo chamada e legenda para: {produto.get('nome')}")
     copy = gerar_legenda(produto, cliente)
-    post = {"cliente": cliente["nome"], "produto": produto, "copy": copy, "brief": None, "imagem": None, "avisos": avisos}
+    post = {
+        "cliente": cliente["nome"],
+        "produto": produto,
+        "copy": copy,
+        "referencia": None,
+        "brief": None,
+        "imagem": None,
+        "avisos": avisos,
+    }
 
     if not com_imagem:
         avisos.append("Modo teste (sem imagem): este produto não entrou no histórico.")
         return post
 
+    # Sorteada antes do brief: a posição do logo depende do layout escolhido.
+    post["referencia"] = escolher_referencia(cliente)
     avisar("Montando o brief visual...")
-    post["brief"] = gerar_brief(copy, produto, cliente)
+    post["brief"] = gerar_brief(copy, produto, cliente, post["referencia"])
     avisar("Gerando a imagem (pode levar até 1 minuto)...")
-    post["imagem"] = gerar_imagem(post["brief"], produto, cliente)
+    post["imagem"] = gerar_imagem(post["brief"], produto, cliente, post["referencia"])
     if post["imagem"].get("aviso"):
         avisos.append(post["imagem"]["aviso"])
 
@@ -75,7 +85,7 @@ if __name__ == "__main__":
     pasta.mkdir(parents=True, exist_ok=True)
     (pasta / "legenda.txt").write_text(resultado["copy"].get("legenda") or "", encoding="utf-8")
     (pasta / "post.json").write_text(
-        json.dumps({k: v for k, v in resultado.items() if k != "imagem"}, ensure_ascii=False, indent=2),
+        json.dumps({k: v for k, v in resultado.items() if k != "imagem"}, ensure_ascii=False, indent=2, default=str),
         encoding="utf-8",
     )
     if resultado["imagem"]:

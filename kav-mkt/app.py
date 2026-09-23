@@ -47,7 +47,8 @@ def _status_cliente(cliente: dict) -> list:
         (_api_key_configurada(), "Chave da OpenAI"),
         (bool(produtos), f"Catálogo: {len(produtos)} produtos" + (f" ({atualizado})" if atualizado else "")),
         (bool(cliente["referencias"]), f"Referências de layout: {len(cliente['referencias'])}/10"),
-        (cliente["logo"] is not None, "Logo"),
+        (bool(cliente["logos"]["fundo-escuro"]), "Logo para fundo escuro"),
+        (bool(cliente["logos"]["fundo-claro"]), "Logo para fundo claro"),
         (
             bool(cliente["legenda_padrao"]) and not legenda_provisoria,
             "Padrão de legenda" + (" (provisório)" if legenda_provisoria else ""),
@@ -173,7 +174,9 @@ else:
             if aplicar and instrucao.strip():
                 try:
                     with st.spinner("Aplicando o ajuste..."):
-                        novo = ajustar_imagem(base64.b64decode(imagem["imagem_sem_logo_b64"]), instrucao, cliente)
+                        novo = ajustar_imagem(
+                            base64.b64decode(imagem["imagem_sem_logo_b64"]), instrucao, cliente, post["referencia"]
+                        )
                     post["imagem"] = {**imagem, **novo}
                     st.rerun()
                 except Exception as exc:
