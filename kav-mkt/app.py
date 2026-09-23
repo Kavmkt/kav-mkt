@@ -100,7 +100,7 @@ com_imagem = st.sidebar.checkbox(
     help="Desmarque para testar só o texto: gasta menos crédito e o produto não entra no histórico.",
 )
 criar = st.sidebar.button(
-    "🚀 Criar post", type="primary", use_container_width=True, disabled=not _api_key_configurada()
+    "🚀 Criar post", type="primary", width="stretch", disabled=not _api_key_configurada()
 )
 
 with st.sidebar.expander("ℹ️ Como funciona"):
@@ -153,7 +153,7 @@ else:
             st.caption("Modo teste: imagem não gerada.")
         else:
             final = base64.b64decode(imagem["imagem_b64"])
-            st.image(final, use_container_width=True)
+            st.image(final, width="stretch")
             st.download_button(
                 "⬇️ Baixar imagem (.png)", data=final, file_name=f"{slug}_{post['produto']['id']}.png", mime="image/png"
             )
