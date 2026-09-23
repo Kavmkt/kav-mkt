@@ -3,10 +3,5 @@
   "02-fiorino.jpg": {"logo_posicao": "superior-centro", "logo_versao": "fundo-escuro"},
   "03-farol-corsa.jpg": {"logo_posicao": "inferior-esquerdo", "logo_versao": "fundo-escuro"},
   "04-retrovisor-gol-g2.jpg": {"logo_posicao": "superior-centro", "logo_versao": "fundo-escuro"},
-  "05-ponteira-saveiro.jpg": {"logo_posicao": "inferior-direito", "logo_versao": "fundo-claro"},
-  "06-retrovisor-palio.jpg": {"logo_posicao": "superior-centro", "logo_versao": "fundo-claro"},
-  "07-promocao-parachoque-hb20.jpg": {"logo_posicao": "superior-centro", "logo_versao": "fundo-escuro"},
-  "08-tapete-car-floor.jpg": {"logo_posicao": "superior-centro", "logo_versao": "fundo-escuro"},
-  "09-retrovisor-gol-g3-g4.jpg": {"logo_posicao": "inferior-direito", "logo_versao": "fundo-escuro"},
-  "10-farol-celta.jpg": {"logo_posicao": "inferior-centro", "logo_versao": "fundo-claro"}
+  "05-ponteira-saveiro.jpg": {"logo_posicao": "inferior-direito", "logo_versao": "fundo-claro"}
 }

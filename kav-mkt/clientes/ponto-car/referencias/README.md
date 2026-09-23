@@ -5,8 +5,13 @@ WEBP). A cada post, o Agente de Design sorteia uma delas e pede para a IA reprod
 estrutura do layout com o novo produto. Se houver mais de 10, só as 10 primeiras em
 ordem alfabética são usadas.
 
+Só ficam aqui referências com o **logo atual** da Ponto Car. As 5 antigas (com o logo
+"Borrachas e Acessórios Automotivos") foram removidas em 23/09/2026 — suba mais posts no
+visual novo quando tiver.
+
 `referencias.json` diz, para cada imagem, onde o logo fica naquele layout e qual versão
-do logo usar — o logo é aplicado por código nesse ponto, e a IA deixa a área livre:
+usar — a IA recebe o arquivo do logo como referência e desenha ele mesma nessa posição
+(o código só recorta a imagem no final; não cola mais o logo por cima):
 
 - `logo_posicao`: `superior-esquerdo`, `superior-centro`, `superior-direito`,
   `inferior-esquerdo`, `inferior-centro` ou `inferior-direito`.
