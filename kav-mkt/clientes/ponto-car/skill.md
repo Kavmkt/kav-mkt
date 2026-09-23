@@ -14,6 +14,9 @@ Principais linhas de produto: calotas, tapetes, bandejas, grades de para-choque 
 sem emblema), lanternas, faróis, retrovisores, para-barros, borrachas de porta e de
 porta-malas, palhetas e pares de amortecedor.
 
+Vende pela loja oficial na Shopee e tem loja física na Av. Internacional, 469 —
+Osasco/SP.
+
 ## Público-alvo
 
 Classes C e D, donos de carro popular. Pessoas que cuidam do próprio carro para
@@ -50,26 +53,36 @@ problema" como se fosse conserto.
 
 ## KV — identidade visual
 
-> Ponto de partida montado a partir do post aprovado em set/2026 — validar com o cliente.
-> As 10 imagens em `referencias/` são a referência principal de layout; este texto
-> complementa o que não dá pra ver só nelas.
+> Descrito a partir das 10 referências em `referencias/` (set/2026). As imagens são a
+> referência principal; este texto complementa o que não dá pra ver só nelas.
 
-- Cores: preto, amarelo, branco e azul petróleo. Amarelo e preto dominam; azul petróleo
-  entra em detalhes (selo do produto, filetes).
-- Fotografia realista de carros populares brasileiros (2000-2015) em situações do dia a
-  dia: chuva, estrada, rua de bairro, garagem.
-- Chamada principal (headline) em bloco amarelo sólido, texto preto, fonte bold
-  condensada em caixa alta, bem grande.
-- Selo do produto (nome/aplicação) em faixa azul petróleo com texto branco.
-- Faixa preta na base reservada para o logo da Ponto Car.
-- Elementos gráficos: cortes diagonais, faixas, destaque circular amarelo para detalhe
-  do produto.
-- Contraste alto e cores saturadas.
+- Cores: azul petróleo/turquesa (gradientes de ciano a petróleo), amarelo vivo
+  (#FFEC00, o amarelo do logo), preto ou grafite e branco/cinza claro. Três ambientes de fundo se alternam: gradiente
+  turquesa, fundo escuro grafite com luzes ciano e amarelas, e estúdio branco/cinza claro.
+- Produto grande, em recorte limpo com sombra ou brilho embaixo, ocupando o centro ou a
+  metade inferior do post. Com frequência, junto com a foto do carro compatível (carro
+  popular brasileiro, de frente ou em 3/4) ao fundo ou acima do produto.
+- Headline em fonte sem serifa bem pesada (bold/black), muito grande, em branco, amarelo
+  ou azul petróleo, às vezes com uma segunda linha menor em peso regular
+  (ex: "Seu Gol G2" + "de cara nova!"; "Sua Fiorino" + "merece o melhor!").
+- Selo do produto (nome + aplicação, ex: "Retrovisor Gol / Parati G2 (95 a 99)") em
+  faixa arredondada azul petróleo com texto branco; às vezes uma segunda linha logo
+  abaixo, sem faixa.
+- Elementos gráficos: grande "P" do logo como marca d'água/forma de fundo, faixas e
+  cortes diagonais amarelos e ciano, curvas amarelas finas, blocos amarelos arredondados
+  atrás do produto.
+- Mascote (opcional): personagem 3D estilo animação, homem de óculos, cabelo escuro,
+  camisa polo preta com o logo da Ponto Car e calça jeans, simpático, segurando ou
+  apresentando o produto.
+- Assinaturas usadas: "O Ponto Certo Para o Seu Carro" (tagline, junto do logo) e
+  "Sua confiança move o nosso negócio".
 
 **Visual — não pode:**
 - Carros de luxo, importados novos ou cenários sofisticados/minimalistas.
-- Mais blocos de texto do que chamada + selo do produto.
+- Mais blocos de texto do que headline + selo do produto.
 - Inventar selos de garantia, preços ou marcas de fabricante que não estejam nos dados.
+- Usar o logo antigo ("Borrachas e Acessórios Automotivos", letras amarelas contornadas)
+  — algumas referências mais antigas ainda têm esse logo.
 
 ## Produtos Coringa
 

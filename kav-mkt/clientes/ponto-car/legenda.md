@@ -1,13 +1,35 @@
 # Padrão de legenda — Ponto Car
 
-> PROVISÓRIO — aguardando o padrão oficial da Kav. Substitua este arquivo inteiro pelo
-> padrão real; o Agente de Legenda segue o que estiver escrito aqui (estrutura, ordem,
-> textos fixos, emojis e hashtags).
+Três parágrafos curtos + hashtags, nesta ordem. Linguagem direta, de conversa, sem
+exagero. Nunca mencionar preço na legenda (quem quer o valor chama pelo link da bio).
 
-Estrutura, nesta ordem:
+1. **Gancho** — 1 frase só, ligando o produto a um modelo de carro e a um benefício
+   (visual, segurança, economia, praticidade). Termina com **um único emoji** de carro
+   ou relacionado (🚙 🚗 🛻 🔧 ✨).
 
-1. Gancho: 1 linha curta sobre um problema do dia a dia de quem tem carro popular.
-2. Produto: nome do produto + 1 ou 2 benefícios práticos.
-3. Aplicação: para quais carros/anos serve — só se estiver nos dados do produto.
-4. Chamada para compra: "Garanta o seu na nossa loja da Shopee 👉 link na bio"
-5. Hashtags: #pontocar #autopecas #acessoriosautomotivos + 3 a 5 hashtags do produto.
+2. **Produto** — 2 ou 3 frases: o que é o produto, para quais modelos/anos serve
+   (somente se estiver nos dados do produto — nunca inventar) e 2 ou 3 qualidades
+   concretas (acabamento, resistência, encaixe, durabilidade).
+
+3. **Chamada** — sempre este texto, adaptando só a primeira pergunta ao produto:
+   "Ficou na dúvida se serve no seu modelo? Quer saber o valor? É só clicar no link da
+   nossa bio e falar direto com a gente. Sem enrolação, a gente confirma pra você
+   rapidinho."
+
+4. **Hashtags** — exatamente 4, nesta ordem, numa linha só:
+   `#[ModeloDoCarro] #PontoCAR #[Produto] #Autopeças`
+   (ex: #NissanVersa, #GradeCromada; sem acento e sem espaço dentro da hashtag, exceto
+   #Autopeças que é fixa).
+
+## Exemplo aprovado
+
+Dar um upgrade no visual do Versa não precisa ser complicado.🚙
+
+Essa grade com moldura cromada tem o encaixe exato para os modelos 2015 a 2021 e já muda
+completamente a dianteira do carro. Acabamento de qualidade, resistente e com aquele
+brilho que chama atenção.
+
+Ficou na dúvida se serve no seu modelo? Quer saber o valor? É só clicar no link da nossa
+bio e falar direto com a gente. Sem enrolação, a gente confirma pra você rapidinho.
+
+#NissanVersa #PontoCAR #GradeCromada #Autopeças
