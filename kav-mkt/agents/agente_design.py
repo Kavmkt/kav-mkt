@@ -10,11 +10,24 @@ disponíveis:
 - **Logo**: não é o arquivo do logo sozinho (que tem uma proporção bem diferente — uma
   faixa larga e baixa), e sim um "guia" gerado por código
   (utils.image_overlay.guia_posicao_logo): um canvas transparente do MESMO tamanho final
-  (1080x1440) com o logo já colado na posição certa. Mandar uma referência "torta" junto
-  com o layout (retrato) parecia confundir o modelo sobre a proporção de saída esperada,
-  e foi isso que causava texto cortado no topo/rodapé mesmo com a margem pedida no brief
-  (diagnosticado em 2026-09-23) — o guia resolve isso e ainda dá posição/escala exatas
-  do logo, não só uma descrição em texto.
+  (1080x1440) com o logo já colado na posição certa — dá posição/escala exatas, não só
+  uma descrição em texto.
+
+CAUSA RAIZ do corte de logo/texto (dois problemas encontrados, não só um — visto em
+2026-09-23, corrigido nas duas pontas):
+1. Mandar o logo bruto (proporção bem diferente do layout retrato) como referência
+   parecia confundir o modelo sobre a proporção de saída esperada — resolvido com o
+   guia acima (mesma proporção da imagem final em toda referência de "formato").
+2. MAIS IMPORTANTE, e o que sobrava mesmo depois do guia: `openai_client.IMAGE_SIZE`
+   (o tamanho pedido à API) tinha uma proporção BEM diferente da final (1024x1536 =
+   0.667 contra 1080x1440 = 0.75), então `image_overlay.recortar_formato_final` sempre
+   cortava ~5.6% do topo E do rodapé pra chegar na proporção certa — uma faixa quase do
+   mesmo tamanho da margem de segurança pedida no brief (6-8%). Ou seja: mesmo que a IA
+   seguisse a instrução de margem à risca, sobrava uma folga de só alguns pixels —
+   qualquer imprecisão normal de geração cortava o logo/texto de verdade. Corrigido
+   trocando IMAGE_SIZE para "1072x1440" (proporção quase igual à final — corte cai pra
+   ~0.4%), com fallback automático pro tamanho oficial da API se esse customizado for
+   rejeitado (ver `openai_client._chamar_com_fallback_tamanho`).
 
 Sem nenhuma referência disponível (ou se a chamada com referências falhar), gera do zero
 a partir do brief (gpt-image-2.5-flare) e avisa — nesse caso a imagem sai sem logo.
