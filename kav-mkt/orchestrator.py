@@ -13,9 +13,11 @@ import base64
 import json
 from typing import Callable, Optional
 
+from agents.agente_carrossel import gerar_imagens_carrossel, gerar_roteiro
 from agents.agente_catalogo import escolher_produto
 from agents.agente_design import escolher_referencia, gerar_brief, gerar_imagem
 from agents.agente_legenda import gerar_legenda
+from agents.agente_pauta import escolher_pauta
 from utils import historico
 from utils.cliente import CLIENTES_DIR, carregar_cliente
 
@@ -68,6 +70,53 @@ def gerar_post(slug: str, com_imagem: bool = True, etapa: Optional[Callable[[str
         })
     except Exception as exc:  # o post já está pronto — só avisa
         avisos.append(f"Não consegui salvar no histórico ({exc}); este produto pode se repetir nos próximos posts.")
+    return post
+
+
+def gerar_carrossel(
+    slug: str, num_paginas: int = 5, com_imagem: bool = True, etapa: Optional[Callable[[str], None]] = None
+) -> dict:
+    """Cria um carrossel (1 a 7 páginas) para um cliente de conteúdo (config.json com
+    "tipo": "carrossel") — mesmo espírito do `gerar_post`, mas com Pauta no lugar de
+    Catálogo e N imagens (uma por página) no lugar de uma só. Não é chamada pelo fluxo
+    de clientes de produto (ex: ponto-car), que continua em `gerar_post`.
+    """
+    avisar = etapa or (lambda _texto: None)
+    cliente = carregar_cliente(slug)
+    num_paginas = max(1, min(7, num_paginas))
+
+    avisar("Escolhendo a pauta do carrossel...")
+    pauta = escolher_pauta(cliente)
+    avisos = list(pauta.pop("avisos", []))
+
+    avisar(f"Escrevendo o roteiro ({num_paginas} páginas): {pauta.get('tema')}")
+    roteiro = gerar_roteiro(pauta, cliente, num_paginas)
+
+    post = {
+        "cliente": cliente["nome"],
+        "pauta": pauta,
+        "roteiro": roteiro,
+        "referencia": None,
+        "slides": None,
+        "avisos": avisos,
+    }
+
+    if not com_imagem:
+        avisos.append("Modo teste (sem imagem): esta pauta não entrou no histórico.")
+        return post
+
+    post["referencia"] = escolher_referencia(cliente)
+    post["slides"] = gerar_imagens_carrossel(roteiro, cliente, pauta.get("tema", ""), post["referencia"], etapa=avisar)
+
+    try:
+        historico.registrar(slug, {
+            "produto_id": pauta["id"],
+            "produto_nome": pauta.get("tema"),
+            "headline": roteiro["paginas"][0].get("titulo") if roteiro.get("paginas") else None,
+            "legenda": roteiro.get("legenda"),
+        })
+    except Exception as exc:  # o carrossel já está pronto — só avisa
+        avisos.append(f"Não consegui salvar no histórico ({exc}); esta pauta pode se repetir nos próximos carrosséis.")
     return post
 
 

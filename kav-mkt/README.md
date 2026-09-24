@@ -29,18 +29,24 @@ kav-mkt/
 ├── app.py                    # interface web (Streamlit)
 ├── orchestrator.py           # o fluxo completo (usado pelo app e pela linha de comando)
 ├── agents/
-│   ├── agente_catalogo.py    # escolhe o produto do post
+│   ├── agente_catalogo.py    # escolhe o produto do post (cliente de produto)
 │   ├── agente_legenda.py     # chamada, selo e legenda no padrão do cliente
-│   └── agente_design.py      # brief visual + imagem + ajustes pontuais
+│   ├── agente_design.py      # brief visual + imagem + ajustes pontuais
+│   ├── agente_pauta.py       # escolhe o tema do carrossel (cliente de conteúdo)
+│   └── agente_carrossel.py   # roteiro + imagens do carrossel (1 a 7 páginas)
 ├── utils/
 │   ├── cliente.py            # carrega a pasta do cliente
 │   ├── historico.py          # histórico de posts (GitHub ou arquivo local)
 │   ├── image_overlay.py      # recorte 1080x1440 (o logo é desenhado pela IA, não colado)
 │   └── openai_client.py      # chamadas à API da OpenAI
 └── clientes/
-    ├── README.md             # como adicionar cliente e atualizar o catálogo
-    └── ponto-car/            # skill, legenda, config, catálogo, logo, referências
+    ├── README.md             # como adicionar cliente, tipos de cliente e atualizar o catálogo
+    ├── ponto-car/            # cliente de produto: skill, legenda, config, catálogo, logo, referências
+    └── kav/                  # cliente de carrossel: skill, pautas, config, logo, referências
 ```
+
+Dois tipos de cliente, pelo `config.json` (`"tipo": "carrossel"` ou ausente/produto) —
+ver [clientes/README.md](clientes/README.md#cliente-de-carrossel-ex-kav).
 
 ## Publicar / atualizar no Streamlit Community Cloud
 

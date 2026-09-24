@@ -18,6 +18,25 @@ Se o cliente só tiver uma versão do logo, salve como `logo.png` — ela é usa
 casos. `referencias/referencias.json` diz onde fica o logo em cada layout e qual versão
 usar (ver `referencias/README.md`).
 
+## Cliente de carrossel (ex: `kav/`)
+
+Além do cliente "de produto" (Catálogo → Legenda → Imagem, ex: `ponto-car/`), o app
+também suporta cliente "de conteúdo" — carrossel de 1 a 7 páginas (Pauta → Roteiro →
+Imagens), usado hoje pelo cliente `kav/` (posts da própria Kav no Instagram). O que
+muda:
+
+| Arquivo | No cliente de produto | No cliente de carrossel |
+|---|---|---|
+| `config.json` | — | tem `"tipo": "carrossel"` (é isso que o app usa pra saber qual fluxo mostrar) |
+| `catalogo.json` | produtos da loja | não usado |
+| `pautas.json` | não usado | temas do carrossel (ver `clientes/kav/pautas.json` como exemplo) |
+| `legenda.md` | padrão de legenda de produto | não usado |
+| `carrossel.md` | não usado | padrão de estrutura do carrossel + legenda |
+| `referencias/` | opcional | opcional (sem elas, a 1ª página/capa define o estilo e as seguintes seguem ela) |
+
+O seletor de cliente na barra lateral do app funciona igual para os dois tipos — só a
+tela muda de acordo com `config.json`.
+
 ## Adicionar um cliente novo
 
 1. Copie a pasta `ponto-car/` com o novo nome (ex: `clientes/auto-pecas-silva/`).

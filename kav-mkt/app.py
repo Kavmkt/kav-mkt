@@ -25,7 +25,7 @@ except Exception:
     pass  # sem secrets.toml (rodando local só com .env)
 
 from agents.agente_design import ajustar_imagem  # noqa: E402
-from orchestrator import gerar_post  # noqa: E402
+from orchestrator import gerar_carrossel, gerar_post  # noqa: E402
 from utils import historico  # noqa: E402
 from utils.cliente import carregar_cliente, listar_clientes  # noqa: E402
 
@@ -34,12 +34,18 @@ def _api_key_configurada() -> bool:
     return bool(os.environ.get("OPENAI_API_KEY"))
 
 
+def _eh_carrossel(cliente: dict) -> bool:
+    return cliente["config"].get("tipo") == "carrossel"
+
+
 @st.cache_data(ttl=300, show_spinner=False)
 def _historico_recente(slug: str) -> list:
     return historico.carregar(slug)
 
 
 def _status_cliente(cliente: dict) -> list:
+    if _eh_carrossel(cliente):
+        return _status_cliente_carrossel(cliente)
     produtos = cliente["catalogo"].get("produtos") or []
     atualizado = cliente["catalogo"].get("atualizado_em")
     legenda_provisoria = "PROVISÓRIO" in cliente["legenda_padrao"]
@@ -52,6 +58,26 @@ def _status_cliente(cliente: dict) -> list:
         (
             bool(cliente["legenda_padrao"]) and not legenda_provisoria,
             "Padrão de legenda" + (" (provisório)" if legenda_provisoria else ""),
+        ),
+        (
+            historico.usa_github(),
+            "Histórico salvo no GitHub" if historico.usa_github() else "Histórico só local (some ao reiniciar)",
+        ),
+    ]
+
+
+def _status_cliente_carrossel(cliente: dict) -> list:
+    pautas = cliente["pautas"].get("pautas") or []
+    padrao_provisorio = "PROVISÓRIO" in (cliente.get("carrossel_padrao") or "")
+    return [
+        (_api_key_configurada(), "Chave da OpenAI"),
+        (bool(pautas), f"Pautas cadastradas: {len(pautas)}"),
+        (bool(cliente["referencias"]), f"Referências de layout: {len(cliente['referencias'])}/10 (opcional)"),
+        (bool(cliente["logos"]["fundo-escuro"]), "Logo para fundo escuro"),
+        (bool(cliente["logos"]["fundo-claro"]), "Logo para fundo claro"),
+        (
+            bool(cliente.get("carrossel_padrao")) and not padrao_provisorio,
+            "Padrão de carrossel" + (" (provisório)" if padrao_provisorio else ""),
         ),
         (
             historico.usa_github(),
@@ -94,18 +120,41 @@ with st.sidebar.container(border=True):
     for ok, texto in _status_cliente(cliente):
         st.markdown(f"{'✅' if ok else '⚠️'} {texto}")
 
+eh_carrossel = _eh_carrossel(cliente)
+
+num_paginas = 1
+if eh_carrossel:
+    num_paginas = st.sidebar.slider(
+        "📑 Páginas do carrossel", min_value=1, max_value=7, value=cliente["config"].get("paginas_padrao", 5)
+    )
+
 com_imagem = st.sidebar.checkbox(
     "🎨 Gerar imagem",
     value=True,
-    help="Desmarque para testar só o texto: gasta menos crédito e o produto não entra no histórico.",
+    help="Desmarque para testar só o texto: gasta menos crédito e a pauta/produto não entra no histórico.",
 )
 criar = st.sidebar.button(
-    "🚀 Criar post", type="primary", width="stretch", disabled=not _api_key_configurada()
+    "🚀 Criar carrossel" if eh_carrossel else "🚀 Criar post",
+    type="primary",
+    width="stretch",
+    disabled=not _api_key_configurada(),
 )
 
 with st.sidebar.expander("ℹ️ Como funciona"):
-    st.markdown(
-        """
+    if eh_carrossel:
+        st.markdown(
+            """
+1. **Pauta** — escolhe um tema que não foi usado nos últimos 30 dias.
+2. **Roteiro** — escreve o texto de cada página e a legenda final, no padrão do cliente.
+3. **Design** — gera uma imagem por página (GPT Image 2.5); a partir da 2ª página, a
+   capa já gerada entra como referência, pra manter a mesma identidade visual.
+
+Nada é postado automaticamente.
+            """
+        )
+    else:
+        st.markdown(
+            """
 1. **Catálogo** — escolhe um dos mais vendidos da loja que não foi usado nos últimos
    30 dias.
 2. **Legenda** — escreve chamada, selo do produto e legenda no padrão do cliente.
@@ -115,7 +164,7 @@ with st.sidebar.expander("ℹ️ Como funciona"):
 Nada é postado automaticamente. O catálogo é atualizado pedindo ao Claude (via Claude
 in Chrome) — ver `clientes/README.md`.
         """
-    )
+        )
 
 # ---------------------------------------------------------------------------
 # Criação do post
@@ -126,20 +175,73 @@ if st.session_state.get("post_cliente") != slug:
     st.session_state.post_cliente = slug
 
 st.title(cliente["nome"])
-st.caption("Catálogo → Legenda → Imagem · texto com gpt-4o-mini, imagem com GPT Image 2.5")
+if eh_carrossel:
+    st.caption("Pauta → Roteiro → Imagens (1 a 7 páginas) · texto com gpt-4o-mini, imagem com GPT Image 2.5")
+else:
+    st.caption("Catálogo → Legenda → Imagem · texto com gpt-4o-mini, imagem com GPT Image 2.5")
 
 if criar:
     try:
-        with st.status("Criando o post...", expanded=True) as status:
-            st.session_state.post = gerar_post(slug, com_imagem=com_imagem, etapa=status.write)
-            status.update(label="Post criado", state="complete", expanded=False)
+        rotulo = "Criando o carrossel..." if eh_carrossel else "Criando o post..."
+        with st.status(rotulo, expanded=True) as status:
+            if eh_carrossel:
+                st.session_state.post = gerar_carrossel(
+                    slug, num_paginas=num_paginas, com_imagem=com_imagem, etapa=status.write
+                )
+            else:
+                st.session_state.post = gerar_post(slug, com_imagem=com_imagem, etapa=status.write)
+            status.update(label="Pronto", state="complete", expanded=False)
         _historico_recente.clear()
     except Exception as exc:
-        st.error(f"Não consegui criar o post: {exc}")
+        st.error(f"Não consegui criar {'o carrossel' if eh_carrossel else 'o post'}: {exc}")
 
 post = st.session_state.get("post")
 if not post:
-    st.info("Clique em **🚀 Criar post** na barra lateral para começar.")
+    st.info(f"Clique em **🚀 {'Criar carrossel' if eh_carrossel else 'Criar post'}** na barra lateral para começar.")
+elif eh_carrossel:
+    for aviso in post["avisos"]:
+        st.warning(aviso)
+
+    pauta = post["pauta"]
+    st.markdown(f"**Tema:** {pauta.get('tema')}")
+
+    slides = post["slides"]
+    if not slides:
+        st.caption("Modo teste: imagens não geradas.")
+    else:
+        colunas = st.columns(min(len(slides), 4))
+        for i, slide in enumerate(slides):
+            with colunas[i % len(colunas)]:
+                final = base64.b64decode(slide["imagem_b64"])
+                st.image(final, width="stretch", caption=f"Página {slide['indice']}")
+                st.download_button(
+                    f"⬇️ Página {slide['indice']}",
+                    data=final,
+                    file_name=f"{slug}_{pauta['id']}_p{slide['indice']}.png",
+                    mime="image/png",
+                    key=f"baixar_slide_{slide['indice']}",
+                )
+                for aviso in slide.get("avisos") or []:
+                    st.caption(f"⚠️ {aviso}")
+
+    roteiro = post["roteiro"]
+    with st.container(border=True):
+        st.subheader("✍️ Roteiro e legenda")
+        for pagina in roteiro.get("paginas") or []:
+            linha = f"**{pagina.get('titulo')}**"
+            if pagina.get("apoio"):
+                linha += f" — {pagina['apoio']}"
+            st.markdown(linha)
+        st.divider()
+        st.code(roteiro.get("legenda") or "", language=None, wrap_lines=True)
+        st.download_button(
+            "⬇️ Baixar legenda (.txt)",
+            data=roteiro.get("legenda") or "",
+            file_name=f"{slug}_{pauta['id']}.txt",
+            mime="text/plain",
+        )
+
+    st.success("Pronto. Nada foi postado automaticamente — revise e publique manualmente.")
 else:
     for aviso in post["avisos"]:
         st.warning(aviso)

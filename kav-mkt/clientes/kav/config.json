@@ -1,0 +1,7 @@
+{
+  "nome": "Kav",
+  "tipo": "carrossel",
+  "paginas_padrao": 5,
+  "logo_posicao": "inferior-direito",
+  "dias_sem_repetir_pauta": 30
+}

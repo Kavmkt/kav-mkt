@@ -35,6 +35,10 @@ def carregar_cliente(slug: str) -> dict:
         "legenda_padrao": _ler_texto(pasta / "legenda.md"),
         "catalogo": _ler_json(pasta / "catalogo.json", {"produtos": []}),
         "produtos_coringa": _itens_da_secao(skill, "Produtos Coringa"),
+        # Clientes de conteúdo (config.json com "tipo": "carrossel") usam estes dois no
+        # lugar de catálogo/legenda de produto — ausentes para os demais, sem efeito.
+        "pautas": _ler_json(pasta / "pautas.json", {"pautas": []}),
+        "carrossel_padrao": _ler_texto(pasta / "carrossel.md"),
         "referencias": _carregar_referencias(pasta / "referencias"),
         # Versão do logo por cor de fundo; logo.png serve de reserva para as duas.
         "logos": {

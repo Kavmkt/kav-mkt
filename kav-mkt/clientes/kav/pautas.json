@@ -1,0 +1,35 @@
+{
+  "atualizado_em": "2026-09-24",
+  "pautas": [
+    {
+      "id": "produto-campeao",
+      "tema": "Como a Kav escolhe o produto campeão do dia pra postar",
+      "objetivo": "Mostrar o critério real (mais vendidos + sem repetir em 30 dias) por trás do agente de catálogo.",
+      "cta": "Manda mensagem pra ver como funciona na sua loja."
+    },
+    {
+      "id": "post-1-minuto",
+      "tema": "Um post inteiro pronto em menos de 1 minuto, com IA",
+      "objetivo": "Demonstrar o fluxo Catálogo → Legenda → Imagem de ponta a ponta.",
+      "cta": "Comenta 'quero' que a gente te mostra o processo."
+    },
+    {
+      "id": "erros-comuns",
+      "tema": "3 erros que fazem sua loja perder venda no Instagram",
+      "objetivo": "Educar sobre erros comuns de lojista que posta sozinho (sem frequência, sem padrão visual, sem legenda que converte).",
+      "cta": "Salva esse post pra não esquecer."
+    },
+    {
+      "id": "antes-depois",
+      "tema": "Antes x depois: loja sem rotina de posts x loja com automação",
+      "objetivo": "Contraste visual/narrativo entre a dor (tempo perdido, inconsistência) e a solução.",
+      "cta": "Chama no direct pra saber mais."
+    },
+    {
+      "id": "produto-coringa",
+      "tema": "O que é um 'produto coringa' e por que ele salva seu catálogo",
+      "objetivo": "Explicar o fallback do agente de catálogo de um jeito simples, mostrando cuidado com o cliente.",
+      "cta": "Segue pra ver mais bastidores."
+    }
+  ]
+}
