@@ -1,44 +1,81 @@
-# Kav (@kav.mkt) — PROVISÓRIO, edite antes de usar em produção
+# Kav / HyperKav (@kav.mkt)
 
-> Esta pasta é o ponto de partida do cliente "Kav" (a própria operação, gerando
-> carrossel para o Instagram dela). Ajuste tudo abaixo com a voz e a identidade visual
-> reais — o que está aqui é só um rascunho plausível pra o fluxo já funcionar de ponta a
-> ponta.
+> Baseado no documento de direcionamento da marca (set/2026). Itens marcados **[TODO]**
+> ainda precisam do material oficial da marca (logo, hex exatos) — o resto já reflete o
+> posicionamento real da Kav.
 
 ## Sobre
 
-A Kav é uma operação de marketing digital que automatiza a criação de posts pra lojas
-que vendem em marketplaces (ex: Shopee), usando agentes de IA (catálogo, legenda,
-design). O Instagram da própria Kav (@kav.mkt) existe pra mostrar esse processo e atrair
-novos clientes/lojistas.
+A Kav é uma consultoria/agência de marketing de performance. O produto/metodologia
+central se chama **HyperKav**: um "ambiente científico" de marketing — decisões
+baseadas em dados (projeção de ROI, avaliação de risco, crescimento previsível), no
+lugar de "achismo". O diferencial não é só execução criativa, é previsibilidade e
+segurança na decisão de investir.
 
 ## Público
 
-Lojistas de marketplace (Shopee, principalmente) que fazem tudo sozinhos e não têm tempo
-nem equipe pra criar posts todo dia.
+Donos de pequeno e médio negócio (comércio local, serviços) que já fazem ou pretendem
+fazer tráfego pago (Google Ads, Meta Ads), mas sentem falta de estratégia, dados e
+acompanhamento mais sofisticado do que agências/freelancers genéricos oferecem.
+
+**O público é leigo em marketing.** Regras de linguagem:
+- Nunca use a sigla "PME" — diga "seu negócio", "dono de empresa", "empresário".
+- Qualquer termo técnico ou sigla (ROAS, LTV, CAC, funil, GEO etc.) precisa vir
+  explicado ao lado, em linguagem simples, na mesma frase ou logo em seguida.
 
 ## Tom de voz
 
-Direto, prático, sem "marketalês". Fala como quem entende de loja pequena e de dor real
-(tempo, falta de designer, medo de postar errado) — não como agência de publicidade
-genérica. Pode usar humor leve.
+Direto e consultivo — não vendedor raso. Usa perguntas retóricas pra gerar
+identificação ("Você já pensou no seu funil?"). Confiante e um pouco professoral, mas
+acessível: combina autoridade técnica (dados, métricas) com proximidade (linguagem
+coloquial, humor leve em datas sazonais). "Achismo" é a palavra-chave usada como
+contraponto ao método proposto.
+
+## Lógica de conteúdo (importante, aplica-se a TODO carrossel educativo)
+
+Ensinar gera autoridade → autoridade gera confiança → confiança gera venda. O
+carrossel deve ensinar o suficiente pra gerar identificação e autoridade, **sem
+entregar o passo a passo completo de execução** — o "como fazer" é o que se vende.
+Termine sempre abrindo uma porta (CTA), nunca fechando o assunto por completo.
+
+## Pilares de conteúdo (varie entre eles ao escrever o roteiro)
+
+1. **Educação em marketing** — glossário e conceitos (ROAS, LTV, funil de vendas,
+   personalização), sempre explicando o termo técnico em linguagem simples.
+2. **Institucional/produto** — a metodologia HyperKav (dados, ROI, previsibilidade,
+   "ambiente científico" de marketing).
+3. **Prova social** — cases de clientes reais (ex: parceria com a Ponto Car).
+4. **Provocação/reflexão** — comportamento do consumidor: por que as pessoas compram,
+   fidelização, relação genuína com o cliente (não só preço/produto).
+5. **Institucional/sazonal** — datas comemorativas e mensagens motivacionais.
 
 ## Pode / não pode
 
-- Pode: mostrar bastidores do processo, números/resultados reais (quando existirem),
-  comparações antes/depois de usar automação.
-- Não pode: prometer resultado garantido de vendas, citar preço de serviço sem
-  confirmação, inventar depoimento de cliente.
+- Pode: comparar "achismo" vs. decisão orientada a dados, citar conceitos de marketing
+  (sempre explicados), convidar pra um diagnóstico/conversa gratuita.
+- Não pode: usar "PME", prometer resultado garantido de vendas, citar preço de serviço
+  sem confirmação, inventar caso/depoimento de cliente, ou entregar o passo a passo
+  completo de uma estratégia (isso é o que se vende).
 
-## KV (identidade visual)
+## KV — identidade visual
 
-> TODO: defina aqui a paleta de cores oficial da Kav (hex), a tipografia e o estilo
-> gráfico (ex: fundo escuro com blocos de cor, ícones, etc.) — sem isso a IA usa cores
-> genéricas plausíveis, mas não necessariamente as da marca.
-
-- Cores: #TODO (defina 2-3 cores da marca)
-- Estilo gráfico: TODO (ex: minimalista, fundo escuro, blocos de texto grandes)
+- [TODO] Logo oficial: ainda falta o arquivo (`logo-fundo-escuro.png` /
+  `logo-fundo-claro.png`). O destaque "#DicaMKT" do perfil usa fundo azul-marinho,
+  cartão branco, logotipo "KAV" em texto preto sobre círculo branco — usar como
+  referência até o arquivo real chegar.
+- **Paleta provável** [a confirmar]: azul-marinho/petróleo + branco + preto, com uso
+  pontual de verde. Use só essas cores nos elementos gráficos até termos os hex
+  oficiais.
+- **Estilo gráfico de referência para carrossel** (baseado nas peças enviadas como
+  inspiração — mesma linguagem visual a seguir, adaptando para a paleta da Kav acima):
+  fundo escuro/preto, minimalista; headline grande em sans-serif bold, ocupando boa
+  parte da página, às vezes misturando um trecho em itálico serifado pra dar ênfase;
+  frases de apoio menores em cinza, às vezes com fundo em bloco sólido atrás de parte
+  do texto para destaque; pouquíssimos elementos gráficos extras (uma linha/curva sutil
+  de fundo, no máximo); muito espaço vazio — nunca lotar a página de texto.
+- Numeração de página (ex: "Página 03") discreta no canto superior, com seta indicando
+  "arraste" — usar quando fizer sentido no layout.
 
 ## Produtos Coringa
 
-(não se aplica a este cliente — carrossel de conteúdo, não de produto)
+(não se aplica — carrossel de conteúdo, não de produto)

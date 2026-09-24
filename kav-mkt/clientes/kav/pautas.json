@@ -2,34 +2,46 @@
   "atualizado_em": "2026-09-24",
   "pautas": [
     {
-      "id": "produto-campeao",
-      "tema": "Como a Kav escolhe o produto campeão do dia pra postar",
-      "objetivo": "Mostrar o critério real (mais vendidos + sem repetir em 30 dias) por trás do agente de catálogo.",
-      "cta": "Manda mensagem pra ver como funciona na sua loja."
+      "id": "roas-glossario",
+      "tema": "O que é ROAS e por que todo dono de negócio que anuncia devia acompanhar isso",
+      "objetivo": "Pilar educação: explicar o termo técnico em linguagem simples (retorno sobre o que foi gasto em anúncio), sem entregar a fórmula de otimização completa.",
+      "cta": "Manda mensagem pra gente olhar o ROAS do seu anúncio."
     },
     {
-      "id": "post-1-minuto",
-      "tema": "Um post inteiro pronto em menos de 1 minuto, com IA",
-      "objetivo": "Demonstrar o fluxo Catálogo → Legenda → Imagem de ponta a ponta.",
-      "cta": "Comenta 'quero' que a gente te mostra o processo."
+      "id": "achismo-vs-dados",
+      "tema": "Achismo não é estratégia: por que decisão de marketing devia vir de dado, não de intuição",
+      "objetivo": "Pilar institucional/produto: apresentar a lógica por trás do HyperKav (ambiente científico) sem citar preço nem prometer resultado.",
+      "cta": "Clique no link da bio e fale com a gente."
     },
     {
-      "id": "erros-comuns",
-      "tema": "3 erros que fazem sua loja perder venda no Instagram",
-      "objetivo": "Educar sobre erros comuns de lojista que posta sozinho (sem frequência, sem padrão visual, sem legenda que converte).",
-      "cta": "Salva esse post pra não esquecer."
+      "id": "funil-de-vendas",
+      "tema": "Seu funil de vendas tem furo? Como transformar seguidor em cliente",
+      "objetivo": "Pilar educação: explicar o conceito de funil de vendas de forma simples, mostrando etapas sem detalhar a execução completa.",
+      "cta": "Comenta 'funil' que a gente te explica melhor."
     },
     {
-      "id": "antes-depois",
-      "tema": "Antes x depois: loja sem rotina de posts x loja com automação",
-      "objetivo": "Contraste visual/narrativo entre a dor (tempo perdido, inconsistência) e a solução.",
-      "cta": "Chama no direct pra saber mais."
+      "id": "ltv-fidelizacao",
+      "tema": "LTV: por que vender de novo pro mesmo cliente vale mais que correr atrás de cliente novo",
+      "objetivo": "Pilar educação + reflexão: explicar LTV (valor do cliente ao longo do tempo) e por que fidelização importa mais que só preço/produto.",
+      "cta": "Fala com a gente sobre como reter mais cliente."
     },
     {
-      "id": "produto-coringa",
-      "tema": "O que é um 'produto coringa' e por que ele salva seu catálogo",
-      "objetivo": "Explicar o fallback do agente de catálogo de um jeito simples, mostrando cuidado com o cliente.",
-      "cta": "Segue pra ver mais bastidores."
+      "id": "case-ponto-car",
+      "tema": "Como ajudamos a Ponto Car a abrir novos canais de venda com dados, não achismo",
+      "objetivo": "Pilar prova social: case real (Ponto Car), sem inventar número que não exista — usar só o que puder ser confirmado.",
+      "cta": "Quer um resultado parecido? Chama no direct."
+    },
+    {
+      "id": "preco-nao-e-tudo",
+      "tema": "Por que o cliente escolhe um produto parecido com o do concorrente (e não é só preço)",
+      "objetivo": "Pilar provocação/reflexão: gatilho de percepção de valor, relação genuína com o cliente.",
+      "cta": "Manda essa pergunta pra sua equipe pensar hoje."
+    },
+    {
+      "id": "diagnostico-gratuito",
+      "tema": "3 sinais de que seu negócio está deixando dinheiro na mesa por falta de estratégia de dados",
+      "objetivo": "Pilar institucional/produto com convite direto ao diagnóstico gratuito.",
+      "cta": "Chama a gente pra um diagnóstico gratuito."
     }
   ]
 }
