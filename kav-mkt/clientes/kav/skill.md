@@ -1,8 +1,8 @@
 # Kav / HyperKav (@kav.mkt)
 
-> Baseado no documento de direcionamento da marca (set/2026). Itens marcados **[TODO]**
-> ainda precisam do material oficial da marca (logo, hex exatos) — o resto já reflete o
-> posicionamento real da Kav.
+> Baseado no documento de direcionamento da marca (set/2026) e nas cores oficiais
+> enviadas em 25/09/2026. Itens marcados **[TODO]** ainda precisam de material da
+> marca — o resto já reflete o posicionamento e a identidade visual real da Kav.
 
 ## Sobre
 
@@ -59,13 +59,19 @@ Termine sempre abrindo uma porta (CTA), nunca fechando o assunto por completo.
 
 ## KV — identidade visual
 
-- [TODO] Logo oficial: ainda falta o arquivo (`logo-fundo-escuro.png` /
-  `logo-fundo-claro.png`). O destaque "#DicaMKT" do perfil usa fundo azul-marinho,
-  cartão branco, logotipo "KAV" em texto preto sobre círculo branco — usar como
-  referência até o arquivo real chegar.
-- **Paleta provável** [a confirmar]: azul-marinho/petróleo + branco + preto, com uso
-  pontual de verde. Use só essas cores nos elementos gráficos até termos os hex
-  oficiais.
+- [TODO] Logo oficial: ainda falta o arquivo em PNG transparente, só com a marca (ícone
+  e/ou wordmark "Kav"), pra colocar em `logo-fundo-escuro.png` / `logo-fundo-claro.png`.
+  O que chegou até agora (25/09) é um recorte da bio ("...inteligentes aqui" da frase
+  "Vendas inteligentes começam aqui") — não é o logotipo isolado. Até o arquivo certo
+  chegar, o app gera o post sem logo (funciona normalmente, só fica sem a marca
+  desenhada na imagem). O destaque "#DicaMKT" do perfil (fundo azul-marinho, cartão
+  branco, "KAV" em texto preto sobre círculo branco) segue como referência de estilo.
+- **Paleta oficial** (confirmada em 25/09/2026):
+  - `#0F286B` — azul-marinho (cor principal)
+  - `#001D32` — quase-preto azulado (fundo escuro / base)
+  - `#4D587B` — azul-acinzentado (apoio / textos secundários)
+  - `#EEB730` — dourado/amarelo (destaque, usar com moderação — accent color)
+  - `#EBEFFA` — lavanda muito claro (texto sobre fundo escuro / respiros claros)
 - **Estilo gráfico de referência para carrossel** (baseado nas peças enviadas como
   inspiração — mesma linguagem visual a seguir, adaptando para a paleta da Kav acima):
   fundo escuro/preto, minimalista; headline grande em sans-serif bold, ocupando boa
