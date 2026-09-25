@@ -59,13 +59,9 @@ Termine sempre abrindo uma porta (CTA), nunca fechando o assunto por completo.
 
 ## KV — identidade visual
 
-- [TODO] Logo oficial: ainda falta o arquivo em PNG transparente, só com a marca (ícone
-  e/ou wordmark "Kav"), pra colocar em `logo-fundo-escuro.png` / `logo-fundo-claro.png`.
-  O que chegou até agora (25/09) é um recorte da bio ("...inteligentes aqui" da frase
-  "Vendas inteligentes começam aqui") — não é o logotipo isolado. Até o arquivo certo
-  chegar, o app gera o post sem logo (funciona normalmente, só fica sem a marca
-  desenhada na imagem). O destaque "#DicaMKT" do perfil (fundo azul-marinho, cartão
-  branco, "KAV" em texto preto sobre círculo branco) segue como referência de estilo.
+- **Logo oficial** (recebido em 25/09/2026): wordmark "KAV", PNG transparente, em duas
+  versões — `logo-fundo-claro.png` (azul-marinho escuro, pra usar sobre fundo claro) e
+  `logo-fundo-escuro.png` (azul claro/gradiente, pra usar sobre fundo escuro).
 - **Paleta oficial** (confirmada em 25/09/2026):
   - `#0F286B` — azul-marinho (cor principal)
   - `#001D32` — quase-preto azulado (fundo escuro / base)
