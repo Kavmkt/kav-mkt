@@ -26,7 +26,10 @@ __PADRAO__
 
 Regras:
 - Página 1 é a capa: precisa parar o scroll (gancho forte, curto).
-- A última página fecha com uma virada, resumo ou CTA — nunca deixe o carrossel "solto".
+- A ÚLTIMA página é o fechamento: título e/ou apoio precisam formar uma CHAMADA PRA AÇÃO
+  clara e direta (ex: convite pra falar com a Kav, clicar no link da bio), coerente com o
+  CTA da legenda — nunca deixe o carrossel "solto" num ponto de desenvolvimento. É a
+  única página que leva o logo da marca.
 - Cada página tem POUCO texto (é imagem, não postagem de blog): título curto (até ~8
   palavras) + no máximo 1 frase de apoio (ou null se não precisar).
 - Não invente dado, número ou fato que não esteja no tema/objetivo/CTA informados —
@@ -58,16 +61,14 @@ Contexto: esta é a página __INDICE__ de __PAGINAS__ de um carrossel sobre "__T
 __CONTEXTO_REFERENCIA__
 
 DIREÇÃO DE ARTE OBRIGATÓRIA (norte de estilo — interprete livremente, não é um template
-fixo a repetir igual em toda página; varie a composição, não a linguagem visual):
-- FUNDO: nunca um bloco de cor 100% chapado/plano. Use o fundo escuro da paleta como
-  base e adicione UM tratamento de luz sutil — um glow/gradiente radial suave numa das
-  cores de destaque da marca (perto de um canto ou borda, nunca atrás do texto principal)
-  e/ou linhas finíssimas de grid ou um arco/curva decorativo de baixa opacidade. Discreto:
-  decora o fundo, nunca compete com o texto.
-- TIPOGRAFIA: título em sans-serif bold/black, dominando a página. Quando fizer sentido
-  com o texto, destaque UMA palavra ou expressão-chave em itálico serifado (serif
-  italic/script), criando contraste com o resto do título em sans-serif — é a assinatura
-  visual da Kav, não use em toda palavra, só na de maior impacto.
+fixo a repetir igual em toda página):
+- FUNDO: nunca um bloco de cor 100% chapado/plano. Use uma das cores escuras da paleta
+  como base e adicione UM tratamento de luz — um glow/gradiente radial numa das cores de
+  destaque da marca e/ou linhas finíssimas de grid ou um arco/curva decorativo de baixa
+  opacidade. Discreto: decora o fundo, nunca compete com o texto. A posição do glow e o
+  alinhamento do texto vêm da seção COMPOSIÇÃO DESTA PÁGINA abaixo — varie de página pra
+  página, não repita a mesma composição.
+- TIPOGRAFIA: veja a seção FONTES abaixo.
 - HIERARQUIA: o título é o elemento dominante da página; a frase de apoio (quando
   houver) é bem menor, mais discreta, pode ter um pequeno bloco/pílula de fundo sólido
   atrás de parte dela para destaque pontual — nunca do mesmo peso visual do título.
@@ -77,21 +78,36 @@ fixo a repetir igual em toda página; varie a composição, não a linguagem vis
   proporções exatas de nenhuma referência específica — capture só a linguagem visual
   (tratamento de fundo, tipografia, hierarquia, espaço) descrita acima.
 
+FONTES (use estes estilos tipográficos, sempre):
+- Texto base (título principal e frase de apoio): fonte geométrica sans-serif bold/black
+  no estilo da família Gotham — traços geométricos, alta legibilidade, peso forte.
+- Palavra(s) de destaque dentro do título: fonte serifada itálica elegante (estilo
+  Playfair Display/Didot itálico) — é a assinatura visual da Kav, use só na palavra ou
+  expressão de maior impacto do título, nunca no título inteiro nem na frase de apoio.
+
+COMPOSIÇÃO DESTA PÁGINA (varia página a página — mantenha a paleta e as fontes acima,
+mas mude a diagramação; páginas vizinhas do mesmo carrossel NUNCA podem ter o mesmo
+fundo/composição):
+__COMPOSICAO__
+
+CORES — regra rígida: use SOMENTE os tons hexadecimais da paleta da Kav listados nas
+diretrizes de marca acima. NUNCA use as cores de nenhuma imagem de referência de estilo
+enviada junto (mesmo que pareçam parecidas) — se a referência tiver outra cor dominante,
+ignore-a e aplique a paleta da Kav no lugar. Garanta contraste forte entre texto e fundo.
+
 MARGENS DE SEGURANÇA — texto e logo não podem invadir estas faixas:
 - Topo e rodapé: cerca de __MARGEM__% de cada lado é cortado no ajuste final da imagem —
   trate essa faixa como fora dos limites.
 - Todas as bordas (topo, rodapé e laterais): mantenha texto e logo a pelo menos
   __MARGEM_LATERAL__% de distância de qualquer borda.
-- Se houver guia de logo entre as referências, reproduza o logo pixel a pixel dali (mesma
-  escala, cores e posição), na área indicada (__AREA_LOGO__).
 
-CORES: use somente as cores de marca listadas acima para elementos gráficos (fundo, glow,
-blocos de texto, faixas). Garanta contraste forte entre texto e fundo.
+LOGO: __LOGO_INSTRUCAO__
 
 O brief (em inglês) deve definir, em um parágrafo denso: o fundo/cena gráfica da página
-seguindo a direção de arte acima (coerente com as outras páginas do carrossel), como o
-texto abaixo aparece nela (bloco, tipografia, tratamento, incluindo se alguma palavra vai
-em itálico serifado) e, se houver guia de logo, sua reprodução exata.
+seguindo a direção de arte, as fontes e a composição acima (coerente com as outras
+páginas do carrossel em paleta/fontes, mas com diagramação própria), como o texto abaixo
+aparece nela (bloco, tipografia, tratamento, qual palavra vai em itálico serifado) e a
+instrução de logo acima.
 
 Texto desta página (renderizar exatamente, palavra por palavra, em português):
 - Título: "__TITULO__"
@@ -120,6 +136,28 @@ _DESC_LOGO = (
     "except where the client's logo sits — reproduce that logo pixel-for-pixel, at that "
     "exact scale and position, without redrawing, recoloring or distorting it."
 )
+
+# Roda entre composições bem diferentes (alinhamento, posição do glow e — na 3ª — uma
+# inversão de contraste) pra páginas vizinhas nunca saírem parecidas, mesmo mantendo a
+# mesma paleta/fontes. Ver COMPOSIÇÃO DESTA PÁGINA em SYSTEM_IMAGEM.
+_VARIACOES_COMPOSICAO = [
+    "Alinhe o texto à ESQUERDA da página. O glow/gradiente de luz fica no canto "
+    "superior esquerdo do fundo. Fundo escuro da paleta em toda a página.",
+    "CENTRALIZE o texto horizontalmente na página. O glow/gradiente de luz fica no "
+    "canto inferior direito do fundo. Fundo escuro da paleta em toda a página.",
+    "Alinhe o texto à DIREITA da página. INVERTA o contraste das outras páginas: um "
+    "bloco/painel sólido numa das cores de destaque da marca cobre parte da página, com "
+    "o texto sobre esse painel (texto escuro sobre painel claro, ou texto claro sobre "
+    "painel de cor forte) — o resto da página mantém o fundo escuro da paleta.",
+]
+
+
+def _composicao_pagina(indice: int) -> str:
+    return _VARIACOES_COMPOSICAO[(indice - 1) % len(_VARIACOES_COMPOSICAO)]
+
+
+def _posicao_logo_centralizada(posicao: str) -> str:
+    return "superior-centro" if posicao.startswith("superior") else "inferior-centro"
 
 
 def gerar_roteiro(pauta: dict, cliente: dict, num_paginas: int) -> dict:
@@ -164,22 +202,30 @@ def gerar_imagens_carrossel(
     if not total:
         raise RuntimeError("O roteiro do carrossel não tem páginas.")
 
+    # Só a última página leva o logo (fechamento/CTA) — nas demais ele fica de fora
+    # tanto do brief quanto da geração, por pedido explícito do cliente.
     logo_arquivo, posicao_logo = _logo(cliente, referencia)
-    guia_logo = image_overlay.guia_posicao_logo(logo_arquivo, posicao_logo) if logo_arquivo else None
+    posicao_logo_final = _posicao_logo_centralizada(posicao_logo)
+    guia_logo_final = (
+        image_overlay.guia_posicao_logo(logo_arquivo, posicao_logo_final) if logo_arquivo else None
+    )
 
     slides = []
     imagem_capa_bytes = None
     for indice, pagina in enumerate(paginas, start=1):
+        eh_ultima = indice == total
         avisar(f"Gerando página {indice}/{total} do carrossel...")
-        brief = _gerar_brief_pagina(pagina, cliente, tema, indice, total, referencia, posicao_logo)
+        brief = _gerar_brief_pagina(
+            pagina, cliente, tema, indice, total, referencia, posicao_logo_final, eh_ultima
+        )
 
         referencias_imagem = []
         if referencia:
             referencias_imagem.append((referencia["arquivo"].read_bytes(), _DESC_LAYOUT))
         if imagem_capa_bytes:
             referencias_imagem.append((imagem_capa_bytes, _DESC_ESTILO_CARROSSEL))
-        if guia_logo:
-            referencias_imagem.append((guia_logo, _DESC_LOGO))
+        if eh_ultima and guia_logo_final:
+            referencias_imagem.append((guia_logo_final, _DESC_LOGO))
 
         avisos_pagina = []
         bruta = None
@@ -214,7 +260,14 @@ def gerar_imagens_carrossel(
 
 
 def _gerar_brief_pagina(
-    pagina: dict, cliente: dict, tema: str, indice: int, total: int, referencia: Optional[dict], posicao_logo: str
+    pagina: dict,
+    cliente: dict,
+    tema: str,
+    indice: int,
+    total: int,
+    referencia: Optional[dict],
+    posicao_logo_final: str,
+    eh_ultima: bool,
 ) -> str:
     partes_contexto = []
     if referencia:
@@ -226,8 +279,9 @@ def _gerar_brief_pagina(
     if indice > 1:
         partes_contexto.append(
             "A capa já gerada deste mesmo carrossel também está entre as referências — "
-            "essa sim mantenha a MESMA identidade visual (paleta, tipografia, tratamento "
-            "de fundo), variando só a composição; o conteúdo desta página é novo."
+            "mantenha dela só a PALETA e as FONTES; a composição/diagramação desta "
+            "página é diferente, conforme a seção COMPOSIÇÃO DESTA PÁGINA abaixo; o "
+            "conteúdo também é novo."
         )
     if not partes_contexto:
         partes_contexto.append(
@@ -236,12 +290,23 @@ def _gerar_brief_pagina(
             "páginas vão seguir o que você definir aqui."
         )
     contexto = " ".join(partes_contexto)
+    if eh_ultima:
+        logo_instrucao = (
+            "Esta é a ÚLTIMA página (fechamento/CTA) — a ÚNICA do carrossel que leva o "
+            "logo da Kav. Há um guia de logo entre as referências: reproduza-o pixel a "
+            "pixel (mesma escala, cores e posição), centralizado horizontalmente, na "
+            f"área indicada ({AREAS_LOGO.get(posicao_logo_final, 'bottom-center')}), com "
+            "espaço vazio ao redor dele."
+        )
+    else:
+        logo_instrucao = "NÃO inclua o logo da Kav nesta página — só a última página do carrossel leva o logo."
     system = (
         SYSTEM_IMAGEM.replace("__SKILL__", cliente["skill"])
         .replace("__CONTEXTO_REFERENCIA__", contexto)
+        .replace("__COMPOSICAO__", _composicao_pagina(indice))
+        .replace("__LOGO_INSTRUCAO__", logo_instrucao)
         .replace("__MARGEM__", str(_margem_corte_vertical()))
         .replace("__MARGEM_LATERAL__", str(MARGEM_SEGURANCA_BORDA))
-        .replace("__AREA_LOGO__", AREAS_LOGO.get(posicao_logo, "bottom-right corner"))
         .replace("__INDICE__", str(indice))
         .replace("__PAGINAS__", str(total))
         .replace("__TEMA__", tema)
