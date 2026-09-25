@@ -1,5 +1,6 @@
 {
-  "atualizado_em": "2026-09-24",
+  "atualizado_em": "2026-09-25",
+  "nota": "Removido o case da Ponto Car (pilar prova social): sem número real pra citar, a IA estava inventando frases tipo 'resultados reais baseados em dados sólidos' — proibido pela skill. Reative um case só quando tiver um resultado concreto e confirmado pra colocar no campo 'objetivo'.",
   "pautas": [
     {
       "id": "roas-glossario",
@@ -24,12 +25,6 @@
       "tema": "LTV: por que vender de novo pro mesmo cliente vale mais que correr atrás de cliente novo",
       "objetivo": "Pilar educação + reflexão: explicar LTV (valor do cliente ao longo do tempo) e por que fidelização importa mais que só preço/produto.",
       "cta": "Fala com a gente sobre como reter mais cliente."
-    },
-    {
-      "id": "case-ponto-car",
-      "tema": "Como ajudamos a Ponto Car a abrir novos canais de venda com dados, não achismo",
-      "objetivo": "Pilar prova social: case real (Ponto Car), sem inventar número que não exista — usar só o que puder ser confirmado.",
-      "cta": "Quer um resultado parecido? Chama no direct."
     },
     {
       "id": "preco-nao-e-tudo",

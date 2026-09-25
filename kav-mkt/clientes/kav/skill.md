@@ -68,13 +68,19 @@ Termine sempre abrindo uma porta (CTA), nunca fechando o assunto por completo.
   - `#4D587B` — azul-acinzentado (apoio / textos secundários)
   - `#EEB730` — dourado/amarelo (destaque, usar com moderação — accent color)
   - `#EBEFFA` — lavanda muito claro (texto sobre fundo escuro / respiros claros)
-- **Estilo gráfico de referência para carrossel** (baseado nas peças enviadas como
-  inspiração — mesma linguagem visual a seguir, adaptando para a paleta da Kav acima):
-  fundo escuro/preto, minimalista; headline grande em sans-serif bold, ocupando boa
-  parte da página, às vezes misturando um trecho em itálico serifado pra dar ênfase;
-  frases de apoio menores em cinza, às vezes com fundo em bloco sólido atrás de parte
-  do texto para destaque; pouquíssimos elementos gráficos extras (uma linha/curva sutil
-  de fundo, no máximo); muito espaço vazio — nunca lotar a página de texto.
+- **Estilo gráfico do carrossel — é um NORTE, não um template a copiar literalmente**
+  (interprete livremente dentro da paleta da Kav, varie a composição de página pra
+  página; nunca repita layout/texto/marca de nenhuma referência específica, só a
+  linguagem visual abaixo):
+  - Fundo escuro da paleta como base, nunca um bloco 100% chapado — some um glow/gradiente
+    radial sutil numa cor de destaque (perto de um canto, nunca atrás do texto) e/ou
+    linhas finíssimas de grid ou uma curva decorativa discreta.
+  - Título grande em sans-serif bold, dominando a página; quando fizer sentido, destaque
+    UMA palavra-chave em itálico serifado pra dar contraste — é a assinatura visual da
+    Kav, não usar em toda palavra.
+  - Frase de apoio bem menor e mais discreta que o título (pode ter um pequeno bloco de
+    fundo sólido atrás de parte dela), nunca do mesmo peso visual do título.
+  - Muito espaço negativo — poucos elementos bem posicionados, nunca a página lotada.
 - Numeração de página (ex: "Página 03") discreta no canto superior, com seta indicando
   "arraste" — usar quando fizer sentido no layout.
 

@@ -29,7 +29,10 @@ Regras:
 - A última página fecha com uma virada, resumo ou CTA — nunca deixe o carrossel "solto".
 - Cada página tem POUCO texto (é imagem, não postagem de blog): título curto (até ~8
   palavras) + no máximo 1 frase de apoio (ou null se não precisar).
-- Não invente dado, número ou fato que não esteja no tema/objetivo/CTA informados.
+- Não invente dado, número ou fato que não esteja no tema/objetivo/CTA informados —
+  isso vale também para frases genéricas de resultado ("resultados reais", "comprovado",
+  "transformou tudo") quando não há nenhum número/fato concreto informado: nesse caso,
+  fale em termos de processo ("ajudamos a abrir novos canais"), nunca afirme resultado.
 
 Responda APENAS com um objeto JSON, sem texto antes ou depois:
 {
@@ -54,6 +57,26 @@ __SKILL__
 Contexto: esta é a página __INDICE__ de __PAGINAS__ de um carrossel sobre "__TEMA__".
 __CONTEXTO_REFERENCIA__
 
+DIREÇÃO DE ARTE OBRIGATÓRIA (norte de estilo — interprete livremente, não é um template
+fixo a repetir igual em toda página; varie a composição, não a linguagem visual):
+- FUNDO: nunca um bloco de cor 100% chapado/plano. Use o fundo escuro da paleta como
+  base e adicione UM tratamento de luz sutil — um glow/gradiente radial suave numa das
+  cores de destaque da marca (perto de um canto ou borda, nunca atrás do texto principal)
+  e/ou linhas finíssimas de grid ou um arco/curva decorativo de baixa opacidade. Discreto:
+  decora o fundo, nunca compete com o texto.
+- TIPOGRAFIA: título em sans-serif bold/black, dominando a página. Quando fizer sentido
+  com o texto, destaque UMA palavra ou expressão-chave em itálico serifado (serif
+  italic/script), criando contraste com o resto do título em sans-serif — é a assinatura
+  visual da Kav, não use em toda palavra, só na de maior impacto.
+- HIERARQUIA: o título é o elemento dominante da página; a frase de apoio (quando
+  houver) é bem menor, mais discreta, pode ter um pequeno bloco/pílula de fundo sólido
+  atrás de parte dela para destaque pontual — nunca do mesmo peso visual do título.
+- ESPAÇO: espaço negativo generoso. Não preencha a página; deixe respiro real nas
+  margens e entre os elementos — poucos elementos bem posicionados, não muitos.
+- Isso é DIREÇÃO DE ESTILO, não uma imagem a copiar: não repita layout, texto, marca ou
+  proporções exatas de nenhuma referência específica — capture só a linguagem visual
+  (tratamento de fundo, tipografia, hierarquia, espaço) descrita acima.
+
 MARGENS DE SEGURANÇA — texto e logo não podem invadir estas faixas:
 - Topo e rodapé: cerca de __MARGEM__% de cada lado é cortado no ajuste final da imagem —
   trate essa faixa como fora dos limites.
@@ -62,12 +85,13 @@ MARGENS DE SEGURANÇA — texto e logo não podem invadir estas faixas:
 - Se houver guia de logo entre as referências, reproduza o logo pixel a pixel dali (mesma
   escala, cores e posição), na área indicada (__AREA_LOGO__).
 
-CORES: use somente as cores de marca listadas acima para elementos gráficos (fundo,
+CORES: use somente as cores de marca listadas acima para elementos gráficos (fundo, glow,
 blocos de texto, faixas). Garanta contraste forte entre texto e fundo.
 
 O brief (em inglês) deve definir, em um parágrafo denso: o fundo/cena gráfica da página
-(coerente com as outras páginas do carrossel), como o texto abaixo aparece nela (bloco,
-tipografia, tratamento) e, se houver guia de logo, sua reprodução exata.
+seguindo a direção de arte acima (coerente com as outras páginas do carrossel), como o
+texto abaixo aparece nela (bloco, tipografia, tratamento, incluindo se alguma palavra vai
+em itálico serifado) e, se houver guia de logo, sua reprodução exata.
 
 Texto desta página (renderizar exatamente, palavra por palavra, em português):
 - Título: "__TITULO__"
@@ -82,9 +106,10 @@ _DESC_LAYOUT = (
     "graphic elements) — not its exact content."
 )
 _DESC_ESTILO_CARROSSEL = (
-    "the cover page of this same carousel, already generated. Reproduce the EXACT SAME "
-    "visual identity (background style, color palette, typography, graphic treatment) on "
-    "this new page — same series, different content."
+    "the cover page of this same carousel, already generated. Keep the SAME visual "
+    "identity (color palette, typography style, background treatment) as this cover — "
+    "same series, different content — but vary the composition/layout page to page, "
+    "don't repeat it identically."
 )
 _DESC_LOGO = (
     "a template the exact same pixel dimensions as the final image, transparent everywhere "
