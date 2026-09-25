@@ -106,7 +106,9 @@ def gerar_carrossel(
         return post
 
     post["referencia"] = escolher_referencia(cliente)
-    post["slides"] = gerar_imagens_carrossel(roteiro, cliente, pauta.get("tema", ""), post["referencia"], etapa=avisar)
+    post["slides"] = gerar_imagens_carrossel(
+        roteiro, cliente, pauta.get("tema", ""), post["referencia"], cta=pauta.get("cta"), etapa=avisar
+    )
 
     try:
         historico.registrar(slug, {

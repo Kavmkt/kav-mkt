@@ -228,7 +228,8 @@ elif eh_carrossel:
     with st.container(border=True):
         st.subheader("✍️ Roteiro e legenda")
         for pagina in roteiro.get("paginas") or []:
-            linha = f"**{pagina.get('titulo')}**"
+            linha = f"*{pagina['eyebrow']}* " if pagina.get("eyebrow") else ""
+            linha += f"**{pagina.get('titulo')}**"
             if pagina.get("apoio"):
                 linha += f" — {pagina['apoio']}"
             st.markdown(linha)

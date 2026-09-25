@@ -68,25 +68,29 @@ Termine sempre abrindo uma porta (CTA), nunca fechando o assunto por completo.
   - `#4D587B` — azul-acinzentado (apoio / textos secundários)
   - `#EEB730` — dourado/amarelo (destaque, usar com moderação — accent color)
   - `#EBEFFA` — lavanda muito claro (texto sobre fundo escuro / respiros claros)
-- **Referências visuais** (`referencias/`, recebidas em 24/09/2026): 4 peças de outras
-  marcas/designers, usadas só como NORTE de estilo — a IA recebe uma sorteada a cada
-  post com instrução explícita de ignorar texto/marca/watermark delas e usar só a
-  linguagem visual (tipografia, luz/gradiente, espaçamento).
-- **Estilo gráfico do carrossel — é um NORTE, não um template a copiar literalmente**
-  (interprete livremente dentro da paleta da Kav, varie a composição de página pra
-  página; nunca repita layout/texto/marca de nenhuma referência específica, só a
-  linguagem visual abaixo):
-  - Fundo escuro da paleta como base, nunca um bloco 100% chapado — some um glow/gradiente
-    radial sutil numa cor de destaque (perto de um canto, nunca atrás do texto) e/ou
-    linhas finíssimas de grid ou uma curva decorativa discreta.
-  - Título grande em sans-serif bold, dominando a página; quando fizer sentido, destaque
-    UMA palavra-chave em itálico serifado pra dar contraste — é a assinatura visual da
-    Kav, não usar em toda palavra.
-  - Frase de apoio bem menor e mais discreta que o título (pode ter um pequeno bloco de
-    fundo sólido atrás de parte dela), nunca do mesmo peso visual do título.
-  - Muito espaço negativo — poucos elementos bem posicionados, nunca a página lotada.
-- Numeração de página (ex: "Página 03") discreta no canto superior, com seta indicando
-  "arraste" — usar quando fizer sentido no layout.
+- **Estilo gráfico do carrossel — FIXO, baseado num carrossel real aprovado pelo cliente
+  (25/09/2026), seguir à risca** (não é mais um "norte" solto — ver `agente_carrossel.py`
+  pro prompt completo):
+  - Fundo **100% chapado**, uma cor sólida só — **sem gradiente, sem glow, sem grid, sem
+    textura**. Nada de efeito de luz no fundo (testamos e ficou artificial/genérico).
+  - Cor do fundo **alterna ao longo do carrossel**: a maior parte das páginas em claro
+    (`#EBEFFA`, texto em `#001D32`), as últimas ~40% em escuro (`#001D32`, texto em
+    `#EBEFFA`/branco) — sempre fechando escuro no CTA. É essa alternância página a
+    página que dá o dinamismo, não um painel dentro da página.
+  - Texto **sempre alinhado à esquerda** — nunca centralizado, nunca à direita.
+  - Estrutura por página: `eyebrow` (linha pequena opcional antes do título, ausente na
+    capa) → `título` (grande, dominante) → `apoio` (frase solta abaixo, sem caixa/pílula
+    atrás).
+  - Palavra de maior impacto dentro do título em itálico serifado (Playfair
+    Display/Didot), sempre na cor dourada `#EEB730` — em qualquer fundo, claro ou escuro.
+  - Cabeçalho e rodapé pequenos e fixos em **toda** página (discretos, caixa alta):
+    `@KAV.MKT` (superior esquerdo), `KAV` (superior direito), `KAV` (inferior esquerdo),
+    `KAVOFICIAL.COM.BR` (inferior direito).
+  - **Logo desenhado por extenso e botão de CTA (pílula dourada) só na última página**,
+    centralizado — nenhuma outra página leva o logo gráfico.
+  - Muito espaço negativo — poucos elementos, nunca a página lotada.
+  - Sem fotografia de pessoas (não temos fotos reais do fundador/equipe pra usar como
+    referência) — carrossel 100% tipográfico.
 
 ## Produtos Coringa
 
