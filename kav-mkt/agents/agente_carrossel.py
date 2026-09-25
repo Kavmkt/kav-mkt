@@ -102,8 +102,12 @@ aspas, exatamente em português. Sem explicações, sem markdown, sem listas.
 """
 
 _DESC_LAYOUT = (
-    "this brand's layout reference. Match its visual identity (colors, typography style, "
-    "graphic elements) — not its exact content."
+    "a LOOSE mood/style reference from a different, unrelated brand — use it ONLY as "
+    "inspiration for the general visual language (typography boldness/contrast, use of "
+    "light/gradient accents, spacing, overall energy). Do NOT copy its exact layout, "
+    "composition, text or content, and completely IGNORE and never reproduce any logo, "
+    "handle, watermark, brand name or credit visible in it — none of that belongs to "
+    "this client. Reinterpret the style using this client's own colors, logo and copy."
 )
 _DESC_ESTILO_CARROSSEL = (
     "the cover page of this same carousel, already generated. Keep the SAME visual "
@@ -212,17 +216,26 @@ def gerar_imagens_carrossel(
 def _gerar_brief_pagina(
     pagina: dict, cliente: dict, tema: str, indice: int, total: int, referencia: Optional[dict], posicao_logo: str
 ) -> str:
-    tem_referencia_visual = bool(referencia) or indice > 1
-    contexto = (
-        "Há uma imagem de referência de layout do cliente e/ou a capa já gerada deste "
-        "mesmo carrossel entre as referências enviadas — mantenha a MESMA identidade "
-        "visual (paleta, tipografia, estilo gráfico) vista nelas; o conteúdo desta "
-        "página é novo."
-        if tem_referencia_visual
-        else "Não há referência visual ainda (esta é a capa): defina você mesmo o estilo "
-        "gráfico, seguindo o KV do cliente — as próximas páginas vão seguir o que você "
-        "definir aqui."
-    )
+    partes_contexto = []
+    if referencia:
+        partes_contexto.append(
+            "Há uma imagem de referência entre as enviadas — é só um NORTE de estilo de "
+            "uma marca diferente (não copie layout/texto/marca dela, só a linguagem "
+            "visual: tipografia, uso de luz/gradiente, espaçamento)."
+        )
+    if indice > 1:
+        partes_contexto.append(
+            "A capa já gerada deste mesmo carrossel também está entre as referências — "
+            "essa sim mantenha a MESMA identidade visual (paleta, tipografia, tratamento "
+            "de fundo), variando só a composição; o conteúdo desta página é novo."
+        )
+    if not partes_contexto:
+        partes_contexto.append(
+            "Não há referência visual ainda (esta é a capa): defina você mesmo o estilo "
+            "gráfico, seguindo a direção de arte e o KV do cliente acima — as próximas "
+            "páginas vão seguir o que você definir aqui."
+        )
+    contexto = " ".join(partes_contexto)
     system = (
         SYSTEM_IMAGEM.replace("__SKILL__", cliente["skill"])
         .replace("__CONTEXTO_REFERENCIA__", contexto)

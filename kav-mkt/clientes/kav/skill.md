@@ -68,6 +68,10 @@ Termine sempre abrindo uma porta (CTA), nunca fechando o assunto por completo.
   - `#4D587B` — azul-acinzentado (apoio / textos secundários)
   - `#EEB730` — dourado/amarelo (destaque, usar com moderação — accent color)
   - `#EBEFFA` — lavanda muito claro (texto sobre fundo escuro / respiros claros)
+- **Referências visuais** (`referencias/`, recebidas em 24/09/2026): 4 peças de outras
+  marcas/designers, usadas só como NORTE de estilo — a IA recebe uma sorteada a cada
+  post com instrução explícita de ignorar texto/marca/watermark delas e usar só a
+  linguagem visual (tipografia, luz/gradiente, espaçamento).
 - **Estilo gráfico do carrossel — é um NORTE, não um template a copiar literalmente**
   (interprete livremente dentro da paleta da Kav, varie a composição de página pra
   página; nunca repita layout/texto/marca de nenhuma referência específica, só a
