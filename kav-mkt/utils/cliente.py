@@ -10,6 +10,7 @@ from typing import Optional
 CLIENTES_DIR = Path(__file__).resolve().parent.parent / "clientes"
 EXTENSOES_IMAGEM = {".png", ".jpg", ".jpeg", ".webp"}
 MAX_REFERENCIAS = 10
+MAX_FOTOS = 500
 
 
 def listar_clientes() -> list:
@@ -40,6 +41,10 @@ def carregar_cliente(slug: str) -> dict:
         "pautas": _ler_json(pasta / "pautas.json", {"pautas": []}),
         "carrossel_padrao": _ler_texto(pasta / "carrossel.md"),
         "referencias": _carregar_referencias(pasta / "referencias"),
+        # Clientes "de fotos" (config.json com "tipo": "fotos", ex: nn-restaurante) usam
+        # este repositório de fotos reais no lugar de catálogo/pautas — ausente (lista
+        # vazia) para os demais clientes, sem efeito.
+        "fotos": _carregar_fotos(pasta / "fotos"),
         # Versão do logo por cor de fundo; logo.png serve de reserva para as duas.
         "logos": {
             "fundo-escuro": _existente(pasta / "logo-fundo-escuro.png") or logo_generico,
@@ -53,6 +58,19 @@ def _carregar_referencias(pasta: Path) -> list:
     referencias.json (onde o logo fica em cada layout) e podem faltar."""
     metadados = _ler_json(pasta / "referencias.json", {})
     arquivos = sorted(p for p in pasta.glob("*") if p.suffix.lower() in EXTENSOES_IMAGEM)[:MAX_REFERENCIAS]
+    return [{**metadados.get(p.name, {}), "arquivo": p} for p in arquivos]
+
+
+def _carregar_fotos(pasta: Path) -> list:
+    """Lista de {"arquivo", "categoria", "nome", "descricao", "preco", ...} do
+    repositório de fotos reais do cliente (clientes/<slug>/fotos/) — usado pelo Agente
+    de Repositório de Fotos (agents/agente_foto.py). Metadados vêm de fotos.json (chave
+    = nome do arquivo, ver fotos/README.md); pasta ausente (clientes de produto/
+    carrossel) retorna lista vazia, sem efeito."""
+    if not pasta.exists():
+        return []
+    metadados = _ler_json(pasta / "fotos.json", {})
+    arquivos = sorted(p for p in pasta.glob("*") if p.suffix.lower() in EXTENSOES_IMAGEM)[:MAX_FOTOS]
     return [{**metadados.get(p.name, {}), "arquivo": p} for p in arquivos]
 
 

@@ -25,7 +25,7 @@ except Exception:
     pass  # sem secrets.toml (rodando local só com .env)
 
 from agents.agente_design import ajustar_imagem  # noqa: E402
-from orchestrator import gerar_carrossel, gerar_post  # noqa: E402
+from orchestrator import gerar_carrossel, gerar_post, gerar_post_fotos  # noqa: E402
 from utils import historico  # noqa: E402
 from utils.cliente import carregar_cliente, listar_clientes  # noqa: E402
 
@@ -38,6 +38,10 @@ def _eh_carrossel(cliente: dict) -> bool:
     return cliente["config"].get("tipo") == "carrossel"
 
 
+def _eh_fotos(cliente: dict) -> bool:
+    return cliente["config"].get("tipo") == "fotos"
+
+
 @st.cache_data(ttl=300, show_spinner=False)
 def _historico_recente(slug: str) -> list:
     return historico.carregar(slug)
@@ -46,6 +50,8 @@ def _historico_recente(slug: str) -> list:
 def _status_cliente(cliente: dict) -> list:
     if _eh_carrossel(cliente):
         return _status_cliente_carrossel(cliente)
+    if _eh_fotos(cliente):
+        return _status_cliente_fotos(cliente)
     produtos = cliente["catalogo"].get("produtos") or []
     atualizado = cliente["catalogo"].get("atualizado_em")
     legenda_provisoria = "PROVISÓRIO" in cliente["legenda_padrao"]
@@ -53,6 +59,26 @@ def _status_cliente(cliente: dict) -> list:
         (_api_key_configurada(), "Chave da OpenAI"),
         (bool(produtos), f"Catálogo: {len(produtos)} produtos" + (f" ({atualizado})" if atualizado else "")),
         (bool(cliente["referencias"]), f"Referências de layout: {len(cliente['referencias'])}/10"),
+        (bool(cliente["logos"]["fundo-escuro"]), "Logo para fundo escuro"),
+        (bool(cliente["logos"]["fundo-claro"]), "Logo para fundo claro"),
+        (
+            bool(cliente["legenda_padrao"]) and not legenda_provisoria,
+            "Padrão de legenda" + (" (provisório)" if legenda_provisoria else ""),
+        ),
+        (
+            historico.usa_github(),
+            "Histórico salvo no GitHub" if historico.usa_github() else "Histórico só local (some ao reiniciar)",
+        ),
+    ]
+
+
+def _status_cliente_fotos(cliente: dict) -> list:
+    fotos = cliente.get("fotos") or []
+    legenda_provisoria = "PROVISÓRIO" in cliente["legenda_padrao"]
+    return [
+        (_api_key_configurada(), "Chave da OpenAI"),
+        (bool(fotos), f"Repositório de fotos: {len(fotos)} imagens"),
+        (bool(cliente["referencias"]), f"Referências de layout: {len(cliente['referencias'])}/10 (opcional)"),
         (bool(cliente["logos"]["fundo-escuro"]), "Logo para fundo escuro"),
         (bool(cliente["logos"]["fundo-claro"]), "Logo para fundo claro"),
         (
@@ -121,6 +147,7 @@ with st.sidebar.container(border=True):
         st.markdown(f"{'✅' if ok else '⚠️'} {texto}")
 
 eh_carrossel = _eh_carrossel(cliente)
+eh_fotos = _eh_fotos(cliente)
 
 num_paginas = 1
 if eh_carrossel:
@@ -131,7 +158,7 @@ if eh_carrossel:
 com_imagem = st.sidebar.checkbox(
     "🎨 Gerar imagem",
     value=True,
-    help="Desmarque para testar só o texto: gasta menos crédito e a pauta/produto não entra no histórico.",
+    help="Desmarque para testar só o texto: gasta menos crédito e a pauta/produto/foto não entra no histórico.",
 )
 criar = st.sidebar.button(
     "🚀 Criar carrossel" if eh_carrossel else "🚀 Criar post",
@@ -150,6 +177,20 @@ with st.sidebar.expander("ℹ️ Como funciona"):
    capa já gerada entra como referência, pra manter a mesma identidade visual.
 
 Nada é postado automaticamente.
+            """
+        )
+    elif eh_fotos:
+        st.markdown(
+            """
+1. **Repositório de fotos** — sorteia uma foto real (prato, buffet, ambiente) que não
+   foi usada nos últimos dias.
+2. **Legenda** — escreve chamada, selo do prato e legenda no padrão do cliente.
+3. **Design** — sorteia (se houver) 1 referência de layout e aplica o tratamento
+   gráfico (headline, selo e logo pequeno) **sobre a foto real**, sem gerar uma cena
+   nova — a referência de layout e a foto real vão juntas para a IA de imagem.
+
+Nada é postado automaticamente. Suba novas fotos em `clientes/<cliente>/fotos/` — ver
+`clientes/<cliente>/fotos/README.md`.
             """
         )
     else:
@@ -177,6 +218,8 @@ if st.session_state.get("post_cliente") != slug:
 st.title(cliente["nome"])
 if eh_carrossel:
     st.caption("Pauta → Roteiro → Imagens (1 a 7 páginas) · texto com gpt-4o-mini, imagem com GPT Image 2.5")
+elif eh_fotos:
+    st.caption("Repositório de fotos → Legenda → Imagem · texto com gpt-4o-mini, imagem com GPT Image 2.5")
 else:
     st.caption("Catálogo → Legenda → Imagem · texto com gpt-4o-mini, imagem com GPT Image 2.5")
 
@@ -188,6 +231,8 @@ if criar:
                 st.session_state.post = gerar_carrossel(
                     slug, num_paginas=num_paginas, com_imagem=com_imagem, etapa=status.write
                 )
+            elif eh_fotos:
+                st.session_state.post = gerar_post_fotos(slug, com_imagem=com_imagem, etapa=status.write)
             else:
                 st.session_state.post = gerar_post(slug, com_imagem=com_imagem, etapa=status.write)
             status.update(label="Pronto", state="complete", expanded=False)
@@ -241,6 +286,77 @@ elif eh_carrossel:
             file_name=f"{slug}_{pauta['id']}.txt",
             mime="text/plain",
         )
+
+    st.success("Pronto. Nada foi postado automaticamente — revise e publique manualmente.")
+elif eh_fotos:
+    for aviso in post["avisos"]:
+        st.warning(aviso)
+
+    col_imagem, col_texto = st.columns(2)
+
+    with col_imagem, st.container(border=True):
+        st.subheader("🎨 Imagem")
+        imagem = post["imagem"]
+        if not imagem:
+            st.caption("Modo teste: imagem não gerada.")
+        else:
+            final = base64.b64decode(imagem["imagem_b64"])
+            st.image(final, width="stretch")
+            st.download_button(
+                "⬇️ Baixar imagem (.png)", data=final, file_name=f"{slug}_{post['foto']['id']}.png", mime="image/png"
+            )
+            detalhes = [
+                f"Layout: {imagem['referencia_layout']}" if imagem.get("referencia_layout") else "Sem referência de layout",
+                "sobre a foto real do repositório" if imagem.get("com_foto_real") else None,
+                f"{imagem.get('modelo')} · gerado em {imagem.get('tamanho_gerado') or '?'} · cortado para {imagem.get('tamanho')}",
+            ]
+            st.caption(" · ".join(d for d in detalhes if d))
+
+            with st.form("form_ajuste_fotos", clear_on_submit=True):
+                instrucao = st.text_input(
+                    "🔧 Pedir uma alteração nesta imagem",
+                    placeholder="Ex: aumente o texto / deixe o selo mais discreto",
+                )
+                aplicar = st.form_submit_button("🪄 Aplicar alteração")
+            st.caption("Usa o gpt-image-2.5-sunburst (edição com fidelidade). Cada ajuste é mais uma chamada de imagem.")
+            if aplicar and instrucao.strip():
+                try:
+                    with st.spinner("Aplicando o ajuste..."):
+                        novo = ajustar_imagem(base64.b64decode(imagem["imagem_b64"]), instrucao)
+                    post["imagem"] = {**imagem, **novo}
+                    st.rerun()
+                except Exception as exc:
+                    st.error(f"Não consegui aplicar o ajuste: {exc}")
+
+    with col_texto:
+        foto = post["foto"]
+        with st.container(border=True):
+            st.subheader("📸 Foto usada")
+            st.image(str(foto["arquivo"]), width=220)
+            st.markdown(f"**{foto.get('nome') or foto['arquivo'].name}**")
+            detalhes = [foto.get("categoria"), foto.get("preco")]
+            if any(detalhes):
+                st.caption(" · ".join(str(d) for d in detalhes if d))
+            if foto.get("descricao"):
+                st.caption(foto["descricao"])
+
+        copy = post["copy"]
+        with st.container(border=True):
+            st.subheader("✍️ Legenda")
+            st.markdown(f"**Chamada da imagem:** {copy.get('headline_imagem')}")
+            if copy.get("selo_produto"):
+                st.markdown(f"**Selo do prato:** {copy['selo_produto']}")
+            st.code(copy.get("legenda") or "", language=None, wrap_lines=True)
+            st.download_button(
+                "⬇️ Baixar legenda (.txt)",
+                data=copy.get("legenda") or "",
+                file_name=f"{slug}_{foto['id']}.txt",
+                mime="text/plain",
+            )
+
+        if post["brief"]:
+            with st.expander("Brief usado para gerar a imagem"):
+                st.code(post["brief"], language=None, wrap_lines=True)
 
     st.success("Pronto. Nada foi postado automaticamente — revise e publique manualmente.")
 else:

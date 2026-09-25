@@ -16,7 +16,10 @@ from typing import Callable, Optional
 from agents.agente_carrossel import gerar_imagens_carrossel, gerar_roteiro
 from agents.agente_catalogo import escolher_produto
 from agents.agente_design import escolher_referencia, gerar_brief, gerar_imagem
+from agents.agente_design_fotos import gerar_brief_foto, gerar_imagem_foto
+from agents.agente_foto import escolher_foto
 from agents.agente_legenda import gerar_legenda
+from agents.agente_legenda_fotos import gerar_legenda_foto
 from agents.agente_pauta import escolher_pauta
 from utils import historico
 from utils.cliente import CLIENTES_DIR, carregar_cliente
@@ -119,6 +122,58 @@ def gerar_carrossel(
         })
     except Exception as exc:  # o carrossel já está pronto — só avisa
         avisos.append(f"Não consegui salvar no histórico ({exc}); esta pauta pode se repetir nos próximos carrosséis.")
+    return post
+
+
+def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callable[[str], None]] = None) -> dict:
+    """Cria o post para um cliente "de fotos" (config.json com "tipo": "fotos") — mesmo
+    espírito do `gerar_post`, mas com o Agente de Repositório de Fotos no lugar do
+    Agente de Catálogo: em vez de um produto de loja, sorteia uma foto real do cliente
+    (clientes/<slug>/fotos/) e monta a peça em cima dela, sem gerar uma cena do zero.
+    Isolado de `gerar_post`: nenhum cliente de catálogo passa por aqui, e vice-versa.
+    """
+    avisar = etapa or (lambda _texto: None)
+    cliente = carregar_cliente(slug)
+
+    avisar("Escolhendo uma foto do repositório...")
+    foto = escolher_foto(cliente)
+    avisos = list(foto.pop("avisos", []))
+
+    avisar(f"Escrevendo chamada e legenda para: {foto.get('nome') or foto['arquivo'].name}")
+    copy = gerar_legenda_foto(foto, cliente)
+    post = {
+        "cliente": cliente["nome"],
+        "foto": foto,
+        "copy": copy,
+        "referencia": None,
+        "brief": None,
+        "imagem": None,
+        "avisos": avisos,
+    }
+
+    if not com_imagem:
+        avisos.append("Modo teste (sem imagem): esta foto não entrou no histórico.")
+        return post
+
+    # Sorteada antes do brief: a posição do logo depende do layout escolhido.
+    post["referencia"] = escolher_referencia(cliente)
+    avisar("Montando o brief visual...")
+    post["brief"] = gerar_brief_foto(copy, foto, cliente, post["referencia"])
+    avisar("Gerando a imagem (pode levar até 1 minuto)...")
+    post["imagem"] = gerar_imagem_foto(post["brief"], foto, cliente, post["referencia"])
+    if post["imagem"].get("aviso"):
+        avisos.append(post["imagem"]["aviso"])
+
+    try:
+        historico.registrar(slug, {
+            "produto_id": foto["id"],
+            "produto_nome": foto.get("nome") or foto["arquivo"].name,
+            "headline": copy.get("headline_imagem"),
+            "legenda": copy.get("legenda"),
+            "referencia_layout": post["imagem"].get("referencia_layout"),
+        })
+    except Exception as exc:  # o post já está pronto — só avisa
+        avisos.append(f"Não consegui salvar no histórico ({exc}); esta foto pode se repetir nos próximos posts.")
     return post
 
 

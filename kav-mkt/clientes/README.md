@@ -37,6 +37,28 @@ muda:
 O seletor de cliente na barra lateral do app funciona igual para os dois tipos — só a
 tela muda de acordo com `config.json`.
 
+## Cliente "de fotos" (ex: `nn-restaurante/`)
+
+Terceiro tipo, usado por clientes que têm um repositório de fotos reais (pratos,
+ambiente, equipe etc.) em vez de catálogo de loja ou pautas de conteúdo — hoje só o NN
+Restaurante. O que muda:
+
+| Arquivo | No cliente de produto | No cliente de fotos |
+|---|---|---|
+| `config.json` | — | tem `"tipo": "fotos"` |
+| `catalogo.json` / `pautas.json` | um dos dois | não usado |
+| `fotos/` | não existe | repositório de fotos reais + `fotos.json` (ver `clientes/nn-restaurante/fotos/README.md`) |
+| `legenda.md` | padrão de legenda de produto | padrão de legenda a partir da foto |
+| `referencias/` | opcional | opcional — define só o tratamento gráfico a copiar, nunca a cena (que vem da foto real) |
+
+Fluxo: Agente de Repositório de Fotos (`agents/agente_foto.py`) sorteia uma foto →
+Agente de Legenda (`agents/agente_legenda_fotos.py`) escreve o texto → Agente de Design
+(`agents/agente_design_fotos.py`) envia a foto real + (se houver) a referência de
+layout sorteada na mesma chamada ao gerador de imagem, com instrução de manter a foto
+praticamente inalterada e só aplicar o tratamento gráfico (headline, selo e logo
+pequeno) por cima. Esses três agentes são isolados dos equivalentes de
+catálogo/carrossel — mudar um não afeta o outro.
+
 ## Adicionar um cliente novo
 
 1. Copie a pasta `ponto-car/` com o novo nome (ex: `clientes/auto-pecas-silva/`).
