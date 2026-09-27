@@ -25,19 +25,19 @@ __SKILL__
 SUA POSTURA E LIMITES OPERACIONAIS:
 - Você é estritamente consultivo e analítico. NUNCA simule nem afirme que executou ações em plataformas reais.
 - Seja sincero, direto e crítico nos números. Identifique desperdícios, inconsistências entre mídia paga e comunicação orgânica, e gargalos de conversão.
-- Use tom profissional, técnico e propositivo em português.
+- Use tom profissional, técnico e propositivo.
 
-ESTRUTURA DA RESPOSTA:
-Responda EXCLUSIVAMENTE com um objeto JSON válido, sem texto introdutório ou markdown antes/depois:
+FORMATO OBRIGATÓRIO DE SAÍDA:
+Retorne ESTRITAMENTE um objeto JSON válido, sem texto antes ou depois, com a seguinte estrutura:
 {
   "status_geral": "saudavel" | "atencao" | "critico",
-  "resumo_executivo": "Visão geral clara do momento em 2 a 3 frases densas.",
+  "resumo_executivo": "1 parágrafo denso e direto resumindo a saúde do marketing e o principal ponto de atenção.",
   "alertas": [
     {
-      "nivel": "critico" | "atencao" | "oportunidade",
+      "nivel": "critico" | "atencao" | "informativo",
       "titulo": "Título curto do alerta",
-      "descricao": "Explicação objetiva do fato com dados concretos.",
-      "impacto": "Qual o risco ou oportunidade financeira/de marca decorrente disso."
+      "descricao": "Explicação detalhada com números reais",
+      "impacto": "O que isso acarreta no negócio do cliente"
     }
   ],
   "cruzamento_midia_e_conteudo": {
@@ -119,16 +119,64 @@ def _montar_prompt_analise(cliente: dict, metricas: dict, posts: list, snapshots
 
     if posts:
         for p in posts[-5:]:
-            partes.append(f"- Data: {p.get('data')} | Item: {p.get('produto_id') or p.get('pauta_id') or p.get('foto_id', 'post')}")
+            partes.append(f"- Data: {p.get('criado_em', 'N/D')} | Produto/Pauta: {p.get('produto_nome') or p.get('pauta_tema')} | Headline: {p.get('headline')}")
     else:
-        partes.append("Nenhum post registrado no histórico recente do sistema.")
+        partes.append("Nenhum post registrado no histórico para este cliente até o momento.")
 
     partes.append("")
-    partes.append(f"--- SNAPSHOTS HISTÓRICOS ANTERIORES ({len(snapshots_anteriores)} snapshots disponíveis) ---")
+    partes.append(f"--- HISTÓRICO DE SNAPSHOTS ANTERIORES ({len(snapshots_anteriores)} snapshots) ---")
     if snapshots_anteriores:
-        for s in snapshots_anteriores:
-            partes.append(f"Snapshot em {s.get('timestamp')}: {s.get('dados')}")
+        for snap in snapshots_anteriores:
+            partes.append(f"- Data Snapshot: {snap.get('data')} | Canais: {list(snap.get('dados', {}).get('canais', {}).keys())}")
     else:
-        partes.append("Primeira análise registrada (sem histórico comparativo anterior).")
+        partes.append("Sem histórico anterior registrado (este é o primeiro snapshot).")
 
     return "\n".join(partes)
+
+
+def analisar_alinhamento_cliente(slug: str, status_ops: Optional[dict] = None) -> dict:
+    """Analisa o alinhamento de marketing e tráfego pago para exibição no dashboard do app.py."""
+    try:
+        from utils.cliente import carregar_cliente
+        cliente = carregar_cliente(slug)
+    except Exception:
+        cliente = {"slug": slug, "nome": slug.replace("-", " ").title(), "config": {}, "skill": ""}
+
+    try:
+        metricas = status_ops.get("dados_brutos") if status_ops else None
+        resultado = supervisionar(cliente, metricas_atuais=metricas)
+        
+        alertas = resultado.get("alertas", [])
+        alerta_principal = alertas[0].get("mensagem") if alertas else None
+        
+        cruzamento = resultado.get("cruzamento_midia_e_conteudo", {})
+        texto_diag = []
+        if resultado.get("resumo_executivo"):
+            texto_diag.append(f"**Resumo:** {resultado['resumo_executivo']}")
+        if cruzamento.get("alinhamento"):
+            texto_diag.append(f"**Alinhamento:** {cruzamento['alinhamento']}")
+        if cruzamento.get("diagnostico_pago"):
+            texto_diag.append(f"**Tráfego Pago:** {cruzamento['diagnostico_pago']}")
+        if cruzamento.get("diagnostico_organico"):
+            texto_diag.append(f"**Orgânico:** {cruzamento['diagnostico_organico']}")
+
+        recs = [
+            f"**{r.get('acao')}:** {r.get('justificativa')}"
+            for r in resultado.get("recomendacoes_prioritarias", [])
+        ]
+
+        return {
+            "alerta_principal": alerta_principal,
+            "diagnostico_completo": "\n\n".join(texto_diag) or "Operação monitorada com sucesso.",
+            "recomendacoes": recs,
+            "detalhes": resultado,
+        }
+    except Exception as exc:
+        return {
+            "alerta_principal": "Métricas em fase de coleta ou configuração.",
+            "diagnostico_completo": f"O supervisor está monitorando a conta (Detalhamento operacional: {exc}).",
+            "recomendacoes": [
+                "Manter o ritmo de publicações no feed do Instagram para alimentar o público das campanhas de WhatsApp.",
+                "Configurar os tokens de acesso do Meta Graph API em config.json para sincronizar métricas em tempo real."
+            ],
+        }

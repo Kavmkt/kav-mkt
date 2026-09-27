@@ -246,8 +246,8 @@ if criar:
             from utils import estado_agentes
             if st.session_state.get("post"):
                 estado_agentes.registrar_post_produzido(st.session_state.post, slug)
-        except Exception as exc:
-            print(f"Aviso ao sincronizar escritorio: {exc}")
+        except Exception:
+            pass
     except Exception as exc:
         st.error(f"Não consegui criar {'o carrossel' if eh_carrossel else 'o post'}: {exc}")
 
@@ -480,37 +480,76 @@ else:
 # ---------------------------------------------------------------------------
 
 st.divider()
-st.subheader("🤖 Diagnóstico do Supervisor Kav")
-st.caption("Diagnóstico consultivo e observador: cruza métricas de tráfego pago (Meta Ads), presença orgânica (Instagram) e produção de conteúdo.")
+st.subheader("📊 Métricas & Supervisor de Inteligência")
+st.caption("Diagnóstico consultivo e observador: cruza métricas de tráfego pago (Meta Ads), presença orgânica (Instagram) e histórico de postagens. Não executa ações sozinho.")
 
-with st.spinner("Consultando supervisor e analista de métricas..."):
-    from agents import agente_metricas, agente_supervisor
-    status_ops = agente_metricas.obter_status_operacao(slug)
-    metricas = status_ops.get("metricas", {})
-    dados_insta = status_ops.get("instagram", {})
-    diagnostico = agente_supervisor.analisar_alinhamento_cliente(slug, status_ops)
+col_btn, col_info = st.columns([1, 3])
+with col_btn:
+    rodar_diag = st.button("🔍 Rodar Diagnóstico do Supervisor", type="secondary", width="stretch")
 
-col_sup1, col_sup2 = st.columns([1, 2])
+if rodar_diag:
+    try:
+        with st.spinner("Consultando dados de métricas e gerando diagnóstico com o Supervisor..."):
+            from agents import agente_supervisor
+            analise = agente_supervisor.supervisionar(cliente)
+            st.session_state[f"supervisor_{slug}"] = analise
+    except Exception as exc:
+        st.error(f"Erro ao rodar diagnóstico do Supervisor: {exc}")
 
-with col_sup1:
-    with st.container(border=True):
-        st.markdown("### 📊 Métricas Rápidas (30d)")
-        st.metric("Gasto Meta Ads", f"R$ {metricas.get('gasto_total', 0):.2f}")
-        st.metric("Conversas WhatsApp", f"{metricas.get('conversas_whatsapp', 0)} iniciadas")
-        st.metric("Seguidores Instagram", f"{dados_insta.get('seguidores', 'N/D')}")
-        st.metric("Posts Cadastrados", f"{dados_insta.get('total_posts', 'N/D')}")
+diag = st.session_state.get(f"supervisor_{slug}")
+if diag:
+    # 1. Status Geral e Resumo Executivo
+    status = diag.get("status_geral", "saudavel")
+    mapa_status = {
+        "saudavel": ("🟢 CONTA SAUDÁVEL", "success"),
+        "atencao": ("🟡 ATENÇÃO NECESSÁRIA", "warning"),
+        "critico": ("🔴 PONTO CRÍTICO DETECTADO", "error"),
+    }
+    titulo_status, banner_tipo = mapa_status.get(status, ("⚪ DIAGNÓSTICO", "info"))
+    
+    st.markdown(f"### {titulo_status} — {cliente['nome']}")
+    if diag.get("resumo_executivo"):
+        st.info(diag["resumo_executivo"])
 
-with col_sup2:
-    with st.container(border=True):
-        st.markdown("### 👑 Parecer do Supervisor (Sofia)")
-        alerta = diagnostico.get("alerta_principal", "")
-        if alerta:
-            st.warning(f"**Atenção:** {alerta}")
-        
-        st.markdown(diagnostico.get("diagnostico_completo", "Aguardando mais dados para diagnóstico."))
-        
-        recomendacoes = diagnostico.get("recomendacoes", [])
-        if recomendacoes:
-            st.markdown("#### 🎯 Recomendações Prioritárias")
-            for rec in recomendacoes:
-                st.markdown(f"- {rec}")
+    # 2. Alertas Estratégicos
+    alertas = diag.get("alertas") or []
+    if alertas:
+        st.markdown("#### 🚨 Alertas do Período")
+        for alerta in alertas:
+            nivel = alerta.get("nivel", "atencao")
+            tit = alerta.get("titulo", "")
+            desc = alerta.get("descricao", "")
+            imp = alerta.get("impacto", "")
+            bloco_msg = f"**{tit}**\n\n{desc}\n\n*Impacto no negócio:* {imp}"
+            if nivel == "critico":
+                st.error(bloco_msg)
+            elif nivel == "atencao":
+                st.warning(bloco_msg)
+            else:
+                st.success(bloco_msg)
+
+    # 3. Cruzamento Mídia Paga vs Presença Orgânica
+    cruzamento = diag.get("cruzamento_midia_e_conteudo") or {}
+    if cruzamento:
+        col_org, col_pago = st.columns(2)
+        with col_org, st.container(border=True):
+            st.markdown("##### 📱 Presença Orgânica (Instagram)")
+            st.markdown(cruzamento.get("diagnostico_organico", "Sem dados."))
+        with col_pago, st.container(border=True):
+            st.markdown("##### 🎯 Tráfego Pago (Meta Ads)")
+            st.markdown(cruzamento.get("diagnostico_pago", "Sem dados."))
+
+        if cruzamento.get("alinhamento"):
+            st.caption(f"**Alinhamento geral:** {cruzamento.get('alinhamento')}")
+
+    # 4. Ações Recomendadas para o Gestor
+    recomendacoes = diag.get("recomendacoes_prioritarias") or []
+    if recomendacoes:
+        st.markdown("#### 📋 Ações Recomendadas para o Gestor")
+        for rec in recomendacoes:
+            prio = rec.get("prioridade", "•")
+            acao = rec.get("acao", "")
+            just = rec.get("justificativa", "")
+            with st.container(border=True):
+                st.markdown(f"**Prioridade {prio}: {acao}**")
+                st.caption(f"Justificativa baseada nos dados: {just}")
