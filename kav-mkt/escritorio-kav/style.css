@@ -238,31 +238,31 @@ body {
 /* Positions of Stations in Room */
 .station-supervisor {
   top: 130px;
-  left: 390px; /* Center top */
+  left: 390px;
   z-index: 20;
 }
 
 .station-metricas {
   top: 260px;
-  left: 120px; /* Left middle */
+  left: 120px;
   z-index: 25;
 }
 
 .station-copywriter {
   top: 260px;
-  right: 120px; /* Right middle */
+  right: 120px;
   z-index: 25;
 }
 
 .station-pesquisador {
   top: 420px;
-  left: 230px; /* Bottom left */
+  left: 230px;
   z-index: 30;
 }
 
 .station-designer {
   top: 420px;
-  right: 230px; /* Bottom right */
+  right: 230px;
   z-index: 30;
 }
 
@@ -351,28 +351,28 @@ body {
   animation: floatAvatar 3s ease-in-out infinite;
 }
 
-/* Different avatar illustrations / icons */
-.avatar-sofia {
+/* Nomes Clássicos dos Avatares */
+.avatar-augusto, .avatar-sofia {
   background: linear-gradient(135deg, #F59E0B, #B45309);
   background-image: radial-gradient(circle at 35% 35%, #FDE68A 0%, #D97706 70%);
 }
 
-.avatar-marcos {
+.avatar-vicente, .avatar-marcos {
   background: linear-gradient(135deg, #3B82F6, #1D4ED8);
   background-image: radial-gradient(circle at 35% 35%, #93C5FD 0%, #2563EB 70%);
 }
 
-.avatar-beatriz {
+.avatar-clarice, .avatar-beatriz {
   background: linear-gradient(135deg, #EC4899, #BE185D);
   background-image: radial-gradient(circle at 35% 35%, #FBCFE8 0%, #DB2777 70%);
 }
 
-.avatar-lucas {
+.avatar-joaquim, .avatar-lucas {
   background: linear-gradient(135deg, #10B981, #047857);
   background-image: radial-gradient(circle at 35% 35%, #A7F3D0 0%, #059669 70%);
 }
 
-.avatar-enzo {
+.avatar-benedito, .avatar-enzo {
   background: linear-gradient(135deg, #8B5CF6, #6D28D9);
   background-image: radial-gradient(circle at 35% 35%, #DDD6FE 0%, #7C3AED 70%);
 }
@@ -401,7 +401,7 @@ body {
 .badge-dot.status-trabalhando { background: var(--status-working); box-shadow: 0 0 6px var(--status-working); }
 .badge-dot.status-alerta { background: var(--status-alert); box-shadow: 0 0 6px var(--status-alert); }
 
-/* Decorative Furniture Elements */
+/* Furniture Elements */
 .laptop.pro {
   width: 32px;
   height: 20px;
