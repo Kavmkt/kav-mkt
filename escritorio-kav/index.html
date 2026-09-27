@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kav — Escritório Virtual de Agentes de IA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header / Top Bar -->
+  <header class="top-nav">
+    <div class="brand">
+      <div class="brand-logo">KAV</div>
+      <div class="brand-meta">
+        <h1>Escritório Virtual</h1>
+        <span class="sub">@kav.mkt · Sistema Multi-Agente Autônomo</span>
+      </div>
+    </div>
+
+    <div class="status-center">
+      <div class="pill client-pill">
+        <span class="dot live"></span>
+        <span>Cliente Piloto: <strong>NN Restaurante</strong></span>
+      </div>
+      <div class="pill team-pill">
+        <span>Equipe: <strong>5 Agentes Ativos</strong></span>
+      </div>
+      <div class="pill time-pill" id="live-clock">--:--:--</div>
+    </div>
+
+    <div class="actions">
+      <button id="btn-refresh" class="btn btn-secondary" title="Recarregar estado atual dos agentes">
+        🔄 Atualizar
+      </button>
+      <button id="btn-demo" class="btn btn-primary" title="Demonstrar o fluxo completo dos agentes trabalhando em cadeia">
+        ⚡ Simular Ciclo de Trabalho
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Isometric Office Canvas / Container -->
+  <main class="office-container">
+    <div class="isometric-world">
+      <!-- Office Wall Decor & Whiteboard -->
+      <div class="wall-board">
+        <div class="board-header">🎯 METAS & DIRETRIZES KAV</div>
+        <div class="board-content">
+          <div class="board-metric">
+            <span class="label">Meta Ads (30d)</span>
+            <span class="val highlight">R$ 260,79</span>
+          </div>
+          <div class="board-metric">
+            <span class="label">Conversas WhatsApp</span>
+            <span class="val highlight">53 iniciadas</span>
+          </div>
+          <div class="board-metric">
+            <span class="label">Feed Orgânico</span>
+            <span class="val warning">6 meses parado ⚠️</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floor Grid & Workstations -->
+      <div class="office-floor">
+
+        <!-- 1. Estação Supervisor (Centro / Diretoria) -->
+        <div class="workstation station-supervisor" data-agent="supervisor">
+          <div class="speech-bubble" id="bubble-supervisor">
+            <span class="agent-tag">Supervisor</span>
+            <p class="bubble-text">Monitorando contas e alinhamento entre tráfego e conteúdo.</p>
+          </div>
+          <div class="desk supervisor-desk">
+            <div class="desk-surface">
+              <div class="laptop pro"></div>
+              <div class="coffee-mug gold"></div>
+              <div class="dashboard-holo"></div>
+            </div>
+            <div class="avatar-entity" id="avatar-supervisor">
+              <div class="avatar-sprite avatar-sofia"></div>
+              <div class="name-badge">
+                <span class="badge-dot status-online"></span>
+                <span>Sofia · Supervisor</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Estação Analista de Métricas -->
+        <div class="workstation station-metricas" data-agent="metricas">
+          <div class="speech-bubble" id="bubble-metricas">
+            <span class="agent-tag">Métricas</span>
+            <p class="bubble-text">Conectado à Graph API do Meta Ads. 53 conversas ativas.</p>
+          </div>
+          <div class="desk analytics-desk">
+            <div class="desk-surface">
+              <div class="multi-monitors">
+                <div class="screen screen-left"></div>
+                <div class="screen screen-main"></div>
+              </div>
+              <div class="server-rack-small"></div>
+            </div>
+            <div class="avatar-entity" id="avatar-metricas">
+              <div class="avatar-sprite avatar-marcos"></div>
+              <div class="name-badge">
+                <span class="badge-dot status-online"></span>
+                <span>Marcos · Métricas</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Estação Redatora / Copywriter -->
+        <div class="workstation station-copywriter" data-agent="copywriter">
+          <div class="speech-bubble" id="bubble-copywriter">
+            <span class="agent-tag">Copywriter</span>
+            <p class="bubble-text">Escrevendo chamadas e legendas no padrão do cliente.</p>
+          </div>
+          <div class="desk copy-desk">
+            <div class="desk-surface">
+              <div class="keyboard-mech"></div>
+              <div class="paper-stack"></div>
+              <div class="coffee-mug navy"></div>
+            </div>
+            <div class="avatar-entity" id="avatar-copywriter">
+              <div class="avatar-sprite avatar-beatriz"></div>
+              <div class="name-badge">
+                <span class="badge-dot status-online"></span>
+                <span>Beatriz · Copywriter</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Estação Designer / Diretor de Arte -->
+        <div class="workstation station-designer" data-agent="designer">
+          <div class="speech-bubble" id="bubble-designer">
+            <span class="agent-tag">Designer</span>
+            <p class="bubble-text">Diagramando layouts 1080x1440 sobre as fotos reais.</p>
+          </div>
+          <div class="desk design-desk">
+            <div class="desk-surface">
+              <div class="drawing-tablet"></div>
+              <div class="pantone-swatch"></div>
+              <div class="post-preview-holo"></div>
+            </div>
+            <div class="avatar-entity" id="avatar-designer">
+              <div class="avatar-sprite avatar-lucas"></div>
+              <div class="name-badge">
+                <span class="badge-dot status-online"></span>
+                <span>Lucas · Designer</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Estação Curador de Catálogo & Acervo -->
+        <div class="workstation station-pesquisador" data-agent="pesquisador">
+          <div class="speech-bubble" id="bubble-pesquisador">
+            <span class="agent-tag">Curador</span>
+            <p class="bubble-text">33 fotos no acervo. Rotação ativa sem repetições em 45 dias.</p>
+          </div>
+          <div class="desk curator-desk">
+            <div class="desk-surface">
+              <div class="photo-album"></div>
+              <div class="catalog-box"></div>
+            </div>
+            <div class="avatar-entity" id="avatar-pesquisador">
+              <div class="avatar-sprite avatar-enzo"></div>
+              <div class="name-badge">
+                <span class="badge-dot status-online"></span>
+                <span>Enzo · Curador</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div> <!-- /office-floor -->
+    </div> <!-- /isometric-world -->
+  </main>
+
+  <!-- Live Feed Ticker at Bottom -->
+  <footer class="activity-bar">
+    <div class="feed-label">
+      <span class="pulse-indicator"></span>
+      <span>FEED EM TEMPO REAL:</span>
+    </div>
+    <div class="feed-ticker-container">
+      <div class="feed-ticker" id="feed-ticker">
+        Carregando atividades dos agentes da Kav...
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal / Crachá Detalhado do Funcionário -->
+  <div class="modal-overlay" id="agent-modal">
+    <div class="modal-card">
+      <button class="btn-close" id="modal-close">&times;</button>
+      <div class="modal-header">
+        <div class="modal-avatar-preview" id="modal-avatar-icon"></div>
+        <div>
+          <h2 id="modal-name">Nome do Agente</h2>
+          <span class="modal-role" id="modal-role">Cargo</span>
+          <span class="modal-dept" id="modal-dept">Departamento</span>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-section">
+          <h4>STATUS ATUAL</h4>
+          <div class="status-indicator-box">
+            <span class="badge-dot" id="modal-status-dot"></span>
+            <span id="modal-status-text">Online</span>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <h4>EM EXECUÇÃO</h4>
+          <p class="task-desc" id="modal-current-task">Monitorando contas e campanhas.</p>
+        </div>
+
+        <div class="modal-section">
+          <h4>FALA DO AVATAR</h4>
+          <div class="quote-box" id="modal-speech">"..."</div>
+        </div>
+
+        <div class="modal-section">
+          <h4>HISTÓRICO RECENTE</h4>
+          <ul class="activity-history-list" id="modal-history">
+            <li>Nenhuma atividade registrada ainda.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

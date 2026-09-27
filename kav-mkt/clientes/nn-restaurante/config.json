@@ -2,5 +2,9 @@
   "nome": "NN Restaurante",
   "tipo": "fotos",
   "logo_posicao": "inferior-direito",
-  "dias_sem_repetir_foto": 45
+  "dias_sem_repetir_foto": 45,
+  "meta": {
+    "ad_account_id": "act_1287739712222302",
+    "instagram_account_id": "17841447712158579"
+  }
 }
