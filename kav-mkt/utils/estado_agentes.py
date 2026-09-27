@@ -4,8 +4,12 @@ Registra em tempo real a atividade, status e mensagens de cada agente (avatar/fu
 para que o front-end visual (escritório estilo Habbo/isométrico) leia e exiba dinamicamente
 o time trabalhando.
 
-Desacoplado por dados: os agentes apenas chamam `atualizar_agente()`, e o front-end lê
-o arquivo de estado (localmente ou via branch 'dados' do GitHub).
+Nomes clássicos dos funcionários:
+- Augusto (Supervisor de Inteligência & Estratégia)
+- Vicente (Analista de Performance & Tráfego)
+- Clarice (Redatora de Conteúdo & Copywriter)
+- Joaquim (Diretor de Arte & Designer)
+- Benedito (Curador de Acervo & Catálogo)
 """
 import base64
 import json
@@ -24,7 +28,7 @@ FUSO = ZoneInfo("America/Sao_Paulo")
 FUNCIONARIOS_PADRAO = {
     "supervisor": {
         "id": "supervisor",
-        "nome": "Sofia",
+        "nome": "Augusto",
         "cargo": "Head de Inteligência & Estratégia",
         "departamento": "Diretoria",
         "avatar": "supervisor",
@@ -41,7 +45,7 @@ FUNCIONARIOS_PADRAO = {
     },
     "metricas": {
         "id": "metricas",
-        "nome": "Marcos",
+        "nome": "Vicente",
         "cargo": "Analista de Tráfego & Performance",
         "departamento": "Performance",
         "avatar": "metricas",
@@ -58,7 +62,7 @@ FUNCIONARIOS_PADRAO = {
     },
     "copywriter": {
         "id": "copywriter",
-        "nome": "Beatriz",
+        "nome": "Clarice",
         "cargo": "Redatora de Conteúdo & Copywriter",
         "departamento": "Criação",
         "avatar": "copywriter",
@@ -75,7 +79,7 @@ FUNCIONARIOS_PADRAO = {
     },
     "designer": {
         "id": "designer",
-        "nome": "Lucas",
+        "nome": "Joaquim",
         "cargo": "Diretor de Arte & Designer",
         "departamento": "Criação",
         "avatar": "designer",
@@ -92,7 +96,7 @@ FUNCIONARIOS_PADRAO = {
     },
     "pesquisador": {
         "id": "pesquisador",
-        "nome": "Enzo",
+        "nome": "Benedito",
         "cargo": "Curador de Acervo & Catálogo",
         "departamento": "Planejamento",
         "avatar": "pesquisador",

@@ -4,7 +4,7 @@
 const AGENTES_INICIAIS = {
   supervisor: {
     id: "supervisor",
-    nome: "Sofia",
+    nome: "Augusto",
     cargo: "Head de Inteligência & Estratégia",
     departamento: "Diretoria",
     status: "alerta",
@@ -18,7 +18,7 @@ const AGENTES_INICIAIS = {
   },
   metricas: {
     id: "metricas",
-    nome: "Marcos",
+    nome: "Vicente",
     cargo: "Analista de Tráfego & Performance",
     departamento: "Performance",
     status: "trabalhando",
@@ -32,7 +32,7 @@ const AGENTES_INICIAIS = {
   },
   copywriter: {
     id: "copywriter",
-    nome: "Beatriz",
+    nome: "Clarice",
     cargo: "Redatora de Conteúdo & Copywriter",
     departamento: "Criação",
     status: "online",
@@ -46,7 +46,7 @@ const AGENTES_INICIAIS = {
   },
   designer: {
     id: "designer",
-    nome: "Lucas",
+    nome: "Joaquim",
     cargo: "Diretor de Arte & Designer",
     departamento: "Criação",
     status: "trabalhando",
@@ -60,7 +60,7 @@ const AGENTES_INICIAIS = {
   },
   pesquisador: {
     id: "pesquisador",
-    nome: "Enzo",
+    nome: "Benedito",
     cargo: "Curador de Acervo & Catálogo",
     departamento: "Planejamento",
     status: "online",
@@ -142,11 +142,11 @@ function renderizarEscritorio() {
 function atualizarFeedTicker() {
   const ticker = document.getElementById("feed-ticker");
   const frases = [
-    `Sofia (Supervisor): "${estadoAgentes.supervisor.fala}"`,
-    `Marcos (Métricas): "${estadoAgentes.metricas.fala}"`,
-    `Beatriz (Copywriter): "${estadoAgentes.copywriter.fala}"`,
-    `Lucas (Designer): "${estadoAgentes.designer.fala}"`,
-    `Enzo (Curador): "${estadoAgentes.pesquisador.fala}"`
+    `Augusto (Supervisor): "${estadoAgentes.supervisor.fala}"`,
+    `Vicente (Métricas): "${estadoAgentes.metricas.fala}"`,
+    `Clarice (Copywriter): "${estadoAgentes.copywriter.fala}"`,
+    `Joaquim (Designer): "${estadoAgentes.designer.fala}"`,
+    `Benedito (Curador): "${estadoAgentes.pesquisador.fala}"`
   ];
   ticker.textContent = frases.join("  ✦  ");
 }
@@ -233,31 +233,31 @@ function rodarDemonstracao() {
     {
       agente: "pesquisador",
       status: "trabalhando",
-      fala: "Varrendo acervo... Prato selecionado: 'Virado à Paulista'!",
+      fala: "Varrendo acervo... Prato selecionado por Benedito: 'Virado à Paulista'!",
       atividade: "Sorteando foto real do NN Restaurante sem repetição nos últimos 45 dias"
     },
     {
       agente: "copywriter",
       status: "trabalhando",
-      fala: "Criando headline e legenda de água na boca no padrão do cliente...",
+      fala: "Clarice criando headline e legenda clássica no padrão do cliente...",
       atividade: "Escrevendo copy: 'Tradição no almoço de terça' + chamada de entrega no raio de 3km"
     },
     {
       agente: "designer",
       status: "trabalhando",
-      fala: "Aplicando headline, selo e logo sobre a foto real em 1080x1440...",
+      fala: "Joaquim aplicando headline, selo e logo sobre a foto real em 1080x1440...",
       atividade: "Renderizando arte visual final mantendo a foto do prato intacta"
     },
     {
       agente: "metricas",
       status: "trabalhando",
-      fala: "Puxando dados do Meta Ads... 53 conversas no WhatsApp iniciadas nos últimos 30 dias!",
+      fala: "Vicente puxando Meta Ads: 53 conversas no WhatsApp iniciadas nos últimos 30 dias!",
       atividade: "Monitorando custo por conversa e cliques nas campanhas do Meta"
     },
     {
       agente: "supervisor",
       status: "alerta",
-      fala: "Diagnóstico gerado: Tráfego pago excelente, mas precisamos postar este Virado hoje no feed!",
+      fala: "Augusto gerou diagnóstico: Tráfego pago excelente, mas precisamos postar este Virado hoje no feed!",
       atividade: "Supervisionando alinhamento: WhatsApp ativo vs. feed parado"
     }
   ];

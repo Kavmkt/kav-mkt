@@ -6,7 +6,7 @@
   "funcionarios": {
     "supervisor": {
       "id": "supervisor",
-      "nome": "Sofia",
+      "nome": "Augusto",
       "cargo": "Head de Inteligência & Estratégia",
       "departamento": "Diretoria",
       "status": "alerta",
@@ -22,7 +22,7 @@
     },
     "metricas": {
       "id": "metricas",
-      "nome": "Marcos",
+      "nome": "Vicente",
       "cargo": "Analista de Tráfego & Performance",
       "departamento": "Performance",
       "status": "trabalhando",
@@ -38,7 +38,7 @@
     },
     "copywriter": {
       "id": "copywriter",
-      "nome": "Beatriz",
+      "nome": "Clarice",
       "cargo": "Redatora de Conteúdo & Copywriter",
       "departamento": "Criação",
       "status": "online",
@@ -54,7 +54,7 @@
     },
     "designer": {
       "id": "designer",
-      "nome": "Lucas",
+      "nome": "Joaquim",
       "cargo": "Diretor de Arte & Designer",
       "departamento": "Criação",
       "status": "trabalhando",
@@ -70,7 +70,7 @@
     },
     "pesquisador": {
       "id": "pesquisador",
-      "nome": "Enzo",
+      "nome": "Benedito",
       "cargo": "Curador de Acervo & Catálogo",
       "departamento": "Planejamento",
       "status": "online",
