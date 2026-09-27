@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Módulo de leitura de métricas do Google Ads via API REST e GAQL puro (usando `requests`).
 
 Implementação leve e desacoplada, sem a dependência pesada da biblioteca oficial `google-ads`.

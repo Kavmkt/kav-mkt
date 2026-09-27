@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Agente de Design (Fotos): escreve o brief e gera a imagem final para clientes "de
 fotos" (config.json com "tipo": "fotos") — hoje só o NN Restaurante.
 

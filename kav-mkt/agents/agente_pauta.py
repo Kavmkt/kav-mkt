@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Agente de Pauta: escolhe sozinho o tema do carrossel a partir de
 clientes/<slug>/pautas.json, sem repetir temas usados nos últimos N dias
 (config: dias_sem_repetir_pauta, padrão 30).

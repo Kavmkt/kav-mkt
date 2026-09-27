@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Agente de Legenda (Fotos): a partir da foto escolhida pelo Agente de Repositório de
 Fotos, escreve a chamada da imagem, o selo do prato e a legenda completa do post,
 seguindo à risca o padrão de legenda do cliente (clientes/<slug>/legenda.md).

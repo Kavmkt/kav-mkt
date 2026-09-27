@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Agente de Carrossel: escreve o roteiro (texto de cada página) e gera as imagens de um
 carrossel de Instagram (1 a 7 páginas) para clientes de conteúdo (config.json com
 "tipo": "carrossel"), a partir de uma pauta escolhida pelo Agente de Pauta.

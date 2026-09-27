@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Coletor de metricas do Meta (Instagram Organico + Meta Ads) via Graph API / Marketing API.
 
 Apenas leitura: nao cria, nao pausa e nao altera nenhuma campanha ou anuncio.

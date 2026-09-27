@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Gerenciador de Estado do Escritório Virtual da Kav (@kav.mkt).
 
 Registra em tempo real a atividade, status e mensagens de cada agente (avatar/funcionário)
@@ -198,12 +199,20 @@ def registrar_post_produzido(post: dict, cliente_slug: str) -> None:
 
         if "foto" in post:
             foto = post["foto"]
-            copy = post.get("copy", {})
+            estrategia = post.get("estrategia")
             prato_nome = foto.get("nome") or getattr(foto.get("arquivo"), "name", "Prato da Casa")
             categoria = foto.get("categoria") or "Almoço Executivo"
-            headline = copy.get("headline_imagem") or prato_nome
-            selo = copy.get("selo_produto") or "Prato do Dia"
-            legenda = copy.get("legenda", "")
+            if estrategia:
+                # Post de campanha (tráfego pago): usa os campos do Estrategista de
+                # Performance em vez dos de copy orgânica.
+                headline = estrategia.get("headline_impacto") or prato_nome
+                selo = estrategia.get("selo_produto") or "Peça de Campanha"
+                legenda = estrategia.get("copy_anuncio", "")
+            else:
+                copy = post.get("copy", {})
+                headline = copy.get("headline_imagem") or prato_nome
+                selo = copy.get("selo_produto") or "Prato do Dia"
+                legenda = copy.get("legenda", "")
             if post.get("imagem") and post["imagem"].get("imagem_b64"):
                 imagem_b64 = post["imagem"]["imagem_b64"]
         elif "produto" in post:
@@ -238,6 +247,8 @@ def registrar_post_produzido(post: dict, cliente_slug: str) -> None:
             "legenda": legenda,
             "imagem_b64": imagem_b64,
             "criadores": "Curadoria: Benedito · Texto: Clarice · Arte: Joaquim",
+            "tipo_post": post.get("tipo_post", "organico"),
+            "angulo_conversao": (post.get("estrategia") or {}).get("angulo_conversao"),
         }
 
         producao = estado.get("producao_recente", [])
@@ -304,7 +315,6 @@ def _escrever(conteudo: str, sha: Optional[str]) -> None:
 
     pastas_destino = [
         BASE_DIR / "escritorio-kav",
-        BASE_DIR.parent / "escritorio-kav",
         BASE_DIR / "data",
     ]
     for p in pastas_destino:

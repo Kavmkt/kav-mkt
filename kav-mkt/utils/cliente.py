@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Carrega a pasta de um cliente (clientes/<slug>/) e devolve um dict padronizado com
 todas as informações necessárias para os agentes trabalharem."""
 from pathlib import Path
@@ -94,7 +95,7 @@ def _ler_texto(caminho: Path) -> str:
     return caminho.read_text(encoding="utf-8")
 
 
-def _existente(caminho: Path) -> Path | None:
+def _existente(caminho: Path) :
     return caminho if caminho.exists() else None
 
 

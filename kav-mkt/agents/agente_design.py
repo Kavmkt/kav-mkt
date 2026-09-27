@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Agente de Design: escreve o brief de Key Visual (KV) do post e gera a imagem final com
 o modelo de imagem da OpenAI (GPT Image 2.5), uma única chamada por post.
 
@@ -291,16 +292,27 @@ def _margem_corte_vertical() -> int:
     """Quanto (%) do topo e do rodapé o recorte para o formato final remove, com +4 pontos
     de folga — para avisar a IA a deixar essa faixa sem nada importante.
 
-    Isso assume que a API devolve o tamanho pedido (IMAGE_SIZE) — nem sempre é verdade
-    (ver `openai_client._resultado_imagem`, que mede o tamanho real da imagem que volta).
-    A folga extra é por causa dessa incerteza; se `aviso` de "tamanho_real" continuar
-    aparecendo com frequência, considere um valor de folga ainda maior aqui."""
-    try:
-        largura, altura = (int(v) for v in openai_client.IMAGE_SIZE.lower().split("x"))
-    except (ValueError, AttributeError):
-        return 10  # tamanho não numérico (ex: "auto") — margem conservadora
+    BUG CORRIGIDO EM 2026-09-27: esta função calculava a margem só para o tamanho PEDIDO
+    (`openai_client.IMAGE_SIZE`, ex: "1072x1440" → corte de só ~0.4%), mas a API às vezes
+    rejeita esse tamanho customizado e cai no fallback oficial
+    (`openai_client.TAMANHO_IMAGEM_SEGURO`, "1024x1536" → corte real de ~11.1%, quase 3x
+    maior). Quando isso acontecia, a IA recebia a instrução de deixar só ~4% de margem,
+    mas o recorte de verdade comia ~9-10% — cortando logo e rodapé mesmo com a IA
+    seguindo a instrução à risca (era exatamente esse o corte visto pelo cliente: imagem
+    "feita" em 1024x1536 e cortada em 1080x1440). Agora calcula a margem para os DOIS
+    tamanhos possíveis (pedido e fallback) e usa sempre o PIOR caso, para a margem
+    avisada nunca ficar menor que o corte real, seja qual tamanho a API decidir devolver.
+    """
     razao_final = image_overlay.LARGURA_PADRAO / image_overlay.ALTURA_PADRAO
-    if largura / altura >= razao_final:
-        return 0  # nesse caso o recorte é nas laterais, não no topo/rodapé
-    corte_total = 1 - (largura / razao_final) / altura
-    return round(corte_total / 2 * 100) + 4
+
+    def _margem_para(tamanho: str) -> int:
+        try:
+            largura, altura = (int(v) for v in tamanho.lower().split("x"))
+        except (ValueError, AttributeError):
+            return 10  # tamanho não numérico (ex: "auto") — margem conservadora
+        if largura / altura >= razao_final:
+            return 0  # nesse caso o recorte é nas laterais, não no topo/rodapé
+        corte_total = 1 - (largura / razao_final) / altura
+        return round(corte_total / 2 * 100) + 4
+
+    return max(_margem_para(openai_client.IMAGE_SIZE), _margem_para(openai_client.TAMANHO_IMAGEM_SEGURO))

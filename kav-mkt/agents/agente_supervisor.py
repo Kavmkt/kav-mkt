@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Agente Supervisor: inteligência observadora e consultiva da Kav (@kav.mkt).
 
 Cruza o histórico de publicações criadas (utils/historico.py) com os dados reais de

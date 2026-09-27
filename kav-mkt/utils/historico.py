@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Histórico de posts criados por cliente — usado para não repetir produtos dentro de um
 período (padrão 30 dias, configurável por cliente em config.json).
 

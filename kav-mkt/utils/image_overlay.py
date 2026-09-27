@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Pós-processamento da imagem gerada pela IA: recorte para o formato final exato, e
 montagem do "guia de logo" enviado à IA como referência.
 

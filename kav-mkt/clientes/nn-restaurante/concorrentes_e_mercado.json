@@ -1,0 +1,22 @@
+{
+  "_atencao": "MODELO/PLACEHOLDER — ninguém pesquisou a concorrência real ainda. Preencha com dados reais (nomes genéricos por categoria, não precisa citar concorrente pelo nome) antes de confiar nos ângulos de campanha gerados a partir daqui. Enquanto _atencao existir, o agente de estratégia ignora este arquivo e usa só o skill.md.",
+  "regiao": "Santana de Parnaíba e Cajamar, SP",
+  "raio_atendimento_km": 3,
+  "resumo_mercado": "",
+  "categorias_concorrentes": [
+    {
+      "categoria": "Buffet por peso / self-service no almoço executivo",
+      "preco_medio_observado": "",
+      "diferencial_deles": "",
+      "fraqueza_deles": ""
+    },
+    {
+      "categoria": "Delivery de comida caseira via apps (Rappi/iFood) na região",
+      "preco_medio_observado": "",
+      "diferencial_deles": "",
+      "fraqueza_deles": ""
+    }
+  ],
+  "oportunidades": [],
+  "angulos_sugeridos": []
+}

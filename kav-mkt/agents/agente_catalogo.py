@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Agente de Catálogo: escolhe sozinho o produto do post a partir do catálogo da loja do
 cliente (clientes/<slug>/catalogo.json), priorizando os mais vendidos e sem repetir
 produtos usados nos últimos N dias (padrão 30, em config.json).

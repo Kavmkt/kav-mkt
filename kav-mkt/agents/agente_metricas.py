@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Agente de Métricas: coleta e consolida dados quantitativos de canais de marketing
 (Meta Ads, Instagram Orgânico e Google Ads) para o cliente.
 

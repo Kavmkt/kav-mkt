@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Orquestrador da Kav (@kav.mkt): cria um post completo para um cliente, sem intervenção.
 
 Catálogo (escolhe o produto) → Legenda (chamada, selo e legenda no padrão do cliente) →
@@ -17,7 +18,9 @@ from agents.agente_carrossel import gerar_imagens_carrossel, gerar_roteiro
 from agents.agente_catalogo import escolher_produto
 from agents.agente_design import escolher_referencia, gerar_brief, gerar_imagem
 from agents.agente_design_fotos import gerar_brief_foto, gerar_imagem_foto
+from agents.agente_estrategia_campanha import definir_estrategia_campanha
 from agents.agente_foto import escolher_foto
+from agents.agente_layout_campanha import gerar_brief_campanha, gerar_imagem_campanha
 from agents.agente_legenda import gerar_legenda
 from agents.agente_legenda_fotos import gerar_legenda_foto
 from agents.agente_pauta import escolher_pauta
@@ -199,3 +202,58 @@ if __name__ == "__main__":
     for aviso in resultado["avisos"]:
         print(f"⚠️  {aviso}")
     print(f"\nPronto: {pasta}")
+
+
+def gerar_campanha(slug: str, com_imagem: bool = True, etapa=None) -> dict:
+    """Cria UMA peça de campanha de alta performance (tráfego pago / Meta Ads) para um
+    cliente "de fotos": mesma foto real do acervo, mas com o Estrategista de Performance
+    (agente_estrategia_campanha) escolhendo o ângulo de conversão e escrevendo a copy de
+    anúncio, e o Diretor de Arte de Campanha (agente_layout_campanha) diagramando a peça
+    1080x1440 com faixa de CTA (localização + WhatsApp), em vez do fluxo orgânico simples
+    de `gerar_post_fotos`.
+    """
+    avisar = etapa or (lambda _texto: None)
+    cliente = carregar_cliente(slug)
+
+    avisar("1/4: Sorteando foto real do acervo do cliente...")
+    foto = escolher_foto(cliente)
+    avisos = list(foto.pop("avisos", []))
+
+    avisar("2/4: Analisando concorrência e definindo o ângulo de conversão...")
+    estrategia = definir_estrategia_campanha(cliente, foto)
+
+    post = {
+        "tipo_post": "campanha",
+        "cliente": cliente["nome"],
+        "foto": foto,
+        "estrategia": estrategia,
+        "referencia": None,
+        "brief": None,
+        "imagem": None,
+        "avisos": avisos,
+    }
+
+    if not com_imagem:
+        avisos.append("Modo teste (sem imagem): esta foto não entrou no histórico.")
+        return post
+
+    post["referencia"] = escolher_referencia(cliente)
+    avisar(f"3/4: Escrevendo o brief da peça com o ângulo '{estrategia.get('angulo_conversao')}'...")
+    post["brief"] = gerar_brief_campanha(estrategia, foto, cliente, post["referencia"])
+    avisar("4/4: Diagramando a arte de campanha 1080x1440 com foto real, logo e CTA...")
+    post["imagem"] = gerar_imagem_campanha(post["brief"], foto, cliente, post["referencia"])
+    if post["imagem"].get("aviso"):
+        avisos.append(post["imagem"]["aviso"])
+
+    try:
+        historico.registrar(slug, {
+            "produto_id": foto["id"],
+            "produto_nome": foto.get("nome") or foto["arquivo"].name,
+            "headline": estrategia.get("headline_impacto"),
+            "legenda": estrategia.get("copy_anuncio"),
+            "referencia_layout": post["imagem"].get("referencia_layout"),
+        })
+    except Exception as exc:
+        avisos.append(f"Não consegui salvar no histórico ({exc}); esta foto pode se repetir nos próximos posts.")
+
+    return post

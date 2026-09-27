@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Agente de Repositório de Fotos: escolhe sozinho uma foto real do repositório do
 cliente (clientes/<slug>/fotos/), sem repetir fotos usadas nos últimos N dias (config:
 dias_sem_repetir_foto, padrão 45).

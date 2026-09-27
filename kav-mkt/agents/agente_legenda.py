@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Agente de Legenda: a partir do produto escolhido pelo Agente de Catálogo, escreve a
 chamada da imagem, o selo do produto e a legenda completa do post, seguindo à risca o
 padrão de legenda do cliente (clientes/<slug>/legenda.md) e as diretrizes da skill.

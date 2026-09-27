@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Histórico de snapshots de métricas de marketing por cliente (Meta Ads, Instagram orgânico
 e Google Ads) — usado pelo Supervisor para comparar períodos, identificar tendências e
 emitir alertas estratégicos ao longo do tempo.

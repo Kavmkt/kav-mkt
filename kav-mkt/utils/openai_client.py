@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Cliente compartilhado para chamadas à API da OpenAI: texto (gpt-4o-mini) e imagem
 (GPT Image 2.5).
 

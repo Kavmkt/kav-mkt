@@ -23,23 +23,35 @@
     <div class="status-center">
       <div class="pill client-pill">
         <span class="dot live"></span>
-        <span>Cliente Piloto: <strong>NN Restaurante</strong></span>
+        <span>Cliente: <strong>NN Restaurante</strong></span>
       </div>
       <div class="pill team-pill">
-        <span>Equipe: <strong>5 Agentes Ativos</strong></span>
+        <span>Equipe: <strong>5 Agentes Online</strong></span>
       </div>
       <div class="pill time-pill" id="live-clock">--:--:--</div>
     </div>
 
     <div class="actions">
-      <button id="btn-posts" class="btn btn-primary" title="Abrir gaveta com todos os posts, artes e legendas criadas pelos agentes">
+      <select id="select-cliente" class="select-cliente" title="Selecione o cliente para produção">
+        <option value="nn-restaurante">🍽️ NN Restaurante</option>
+        <option value="ponto-car">🚗 Ponto Car</option>
+        <option value="kav">🧠 Kav (@kav.mkt)</option>
+      </select>
+      <select id="select-modo" class="select-cliente" title="Selecione o tipo de peça a produzir">
+        <option value="campanha">🎯 Campanha Meta Ads (Alta Performance)</option>
+        <option value="organico">📱 Feed Orgânico Tradicional</option>
+      </select>
+      <button id="btn-play" class="btn btn-play" title="Disparar a esteira real de agentes de IA para criar o post">
+        ▶️ Dar o Play
+      </button>
+      <button id="btn-ver-posts" class="btn btn-secondary" title="Ver posts e legendas concluídos">
         📦 Posts & Legendas
       </button>
       <button id="btn-refresh" class="btn btn-secondary" title="Recarregar estado atual dos agentes">
-        🔄 Atualizar
+        🔄
       </button>
-      <button id="btn-demo" class="btn btn-accent" title="Demonstrar o fluxo completo dos agentes trabalhando em cadeia">
-        ⚡ Simular Ciclo
+      <button id="btn-demo" class="btn btn-secondary" title="Simular animação rápida">
+        ⚡ Simular
       </button>
     </div>
   </header>
@@ -82,7 +94,7 @@
               <div class="dashboard-holo"></div>
             </div>
             <div class="avatar-entity" id="avatar-supervisor">
-              <div class="avatar-sprite avatar-augusto"></div>
+              <div class="avatar-sprite avatar-sofia"></div>
               <div class="name-badge">
                 <span class="badge-dot status-online"></span>
                 <span>Augusto · Supervisor</span>
@@ -106,7 +118,7 @@
               <div class="server-rack-small"></div>
             </div>
             <div class="avatar-entity" id="avatar-metricas">
-              <div class="avatar-sprite avatar-vicente"></div>
+              <div class="avatar-sprite avatar-marcos"></div>
               <div class="name-badge">
                 <span class="badge-dot status-online"></span>
                 <span>Vicente · Métricas</span>
@@ -128,7 +140,7 @@
               <div class="coffee-mug navy"></div>
             </div>
             <div class="avatar-entity" id="avatar-copywriter">
-              <div class="avatar-sprite avatar-clarice"></div>
+              <div class="avatar-sprite avatar-beatriz"></div>
               <div class="name-badge">
                 <span class="badge-dot status-online"></span>
                 <span>Clarice · Copywriter</span>
@@ -150,7 +162,7 @@
               <div class="post-preview-holo"></div>
             </div>
             <div class="avatar-entity" id="avatar-designer">
-              <div class="avatar-sprite avatar-joaquim"></div>
+              <div class="avatar-sprite avatar-lucas"></div>
               <div class="name-badge">
                 <span class="badge-dot status-online"></span>
                 <span>Joaquim · Designer</span>
@@ -171,7 +183,7 @@
               <div class="catalog-box"></div>
             </div>
             <div class="avatar-entity" id="avatar-pesquisador">
-              <div class="avatar-sprite avatar-benedito"></div>
+              <div class="avatar-sprite avatar-enzo"></div>
               <div class="name-badge">
                 <span class="badge-dot status-online"></span>
                 <span>Benedito · Curador</span>
@@ -239,33 +251,59 @@
     </div>
   </div>
 
-  <!-- Sliding Drawer: Posts, Artes & Legendas Criados -->
-  <div class="drawer-overlay" id="posts-drawer-overlay">
-    <div class="drawer-panel" id="posts-drawer">
-      <div class="drawer-header">
-        <div class="drawer-title-area">
-          <h2>📦 Entregas dos Agentes</h2>
-          <span class="drawer-sub">Layouts das artes (4:5) e legendas prontas para publicação</span>
-        </div>
-        <button class="btn-close-drawer" id="btn-close-drawer">&times;</button>
-      </div>
-
-      <div class="drawer-content" id="posts-list-container">
-        <!-- Preenchido dinamicamente pelo app.js -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal de Zoom da Arte & Mockup Instagram Feed -->
-  <div class="modal-overlay" id="art-zoom-modal">
-    <div class="modal-card art-modal-card">
-      <button class="btn-close" id="art-modal-close">&times;</button>
-      <div id="instagram-post-preview-container">
-        <!-- Preenchido dinamicamente pelo app.js -->
-      </div>
-    </div>
-  </div>
-
   <script src="app.js"></script>
+
+  <!-- Modal de Entrega do Post Gerado -->
+  <div class="modal-overlay" id="post-delivery-modal">
+    <div class="modal-card modal-post-card">
+      <button class="btn-close" id="post-modal-close">&times;</button>
+      <div class="modal-header">
+        <div>
+          <span class="badge-campanha" id="post-modal-badge-campanha" style="display:none; background:#EEB730; color:#2A2A2E; font-weight:700; font-size:11px; letter-spacing:0.03em; padding:4px 10px; border-radius:20px; display:inline-block; margin-bottom:8px;">🎯 Peça de Campanha (Meta Ads)</span>
+          <h2 id="post-modal-title">🎉 Post Concluído com Sucesso!</h2>
+          <span class="modal-role" id="post-modal-subtitle">Esteira de Agentes Autônomos Kav</span>
+        </div>
+      </div>
+      <div class="modal-body post-modal-grid">
+        <div class="post-preview-col">
+          <div class="post-image-container" id="post-image-box">
+            <img id="post-modal-img" src="" alt="Arte do Post" style="display:none;">
+            <div id="post-modal-img-placeholder" style="color:#8A9BB8; font-size:12px; text-align:center; padding:20px;">
+              Imagem em processamento ou modo teste
+            </div>
+          </div>
+          <a id="post-modal-download-link" href="#" download="post-kav.png" class="btn btn-primary btn-block" style="text-decoration:none; text-align:center;">
+            ⬇️ Baixar Imagem (.png)
+          </a>
+        </div>
+        <div class="post-text-col">
+          <div class="modal-section" id="post-modal-angulo-section" style="display:none;">
+            <h4>ÂNGULO DE CONVERSÃO</h4>
+            <p class="task-desc" id="post-modal-angulo">-</p>
+          </div>
+          <div class="modal-section">
+            <h4 id="post-modal-headline-label">CHAMADA (HEADLINE)</h4>
+            <p class="post-headline-text" id="post-modal-headline">-</p>
+          </div>
+          <div class="modal-section">
+            <h4>SELO</h4>
+            <span class="badge-selo" id="post-modal-selo">-</span>
+          </div>
+          <div class="modal-section">
+            <div class="section-header-flex">
+              <h4 id="post-modal-copy-label">LEGENDA DO POST</h4>
+              <button id="post-modal-copy-btn" class="btn btn-secondary btn-sm">📋 Copiar Legenda</button>
+            </div>
+            <pre class="post-copy-box" id="post-modal-copy"></pre>
+          </div>
+          <div class="modal-section">
+            <h4>CRIAÇÃO</h4>
+            <p class="post-creators-text" id="post-modal-creators">Curadoria: Benedito · Texto: Clarice · Arte: Joaquim</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
