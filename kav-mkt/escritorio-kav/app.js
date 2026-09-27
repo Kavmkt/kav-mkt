@@ -1,5 +1,5 @@
 // Kav — Escritório Virtual de Agentes de IA
-// Controla o estado em tempo real e a interatividade dos avatares
+// Controla o estado em tempo real, interatividade dos avatares e gaveta de posts
 
 const AGENTES_INICIAIS = {
   supervisor: {
@@ -74,7 +74,31 @@ const AGENTES_INICIAIS = {
   }
 };
 
+const POSTS_PADRAO = [
+  {
+    id: "post-01",
+    data: "Hoje · Almoço",
+    prato: "Feijoada Completa Tradicional",
+    categoria: "Almoço Executivo",
+    headline: "Sabor de Casa",
+    selo: "Feijoada Completa",
+    legenda: "Sexta-feira combina com feijoada no capricho! 🍲\n\nAqui no N&N Restaurante a nossa feijoada é preparada com carnes selecionadas, tempero caseiro de verdade e todos os acompanhamentos tradicionais: arroz soltinho, couve refogada, farofa crocante e torresmo sequinho.\n\nAlmoce com a gente ou peça no delivery (entregamos num raio de 3km com rapidez e tudo quentinho)!\n\n📍 Alameda das Garças, 45 - Santana de Parnaíba\n📲 Peça pelo WhatsApp no link da bio.\n\n#comidacaseira #feijoada #almocoexecutivo #santanadeparnaiba #deliverycomida",
+    criadores: "Curadoria: Benedito · Texto: Clarice · Arte: Joaquim"
+  },
+  {
+    id: "post-02",
+    data: "Ontem · Buffet",
+    prato: "Buffet Executivo de Saladas & Carnes",
+    categoria: "Self-Service",
+    headline: "Variedade e Fartura",
+    selo: "Buffet Executivo",
+    legenda: "Quem disse que comer bem fora de casa precisa ser difícil? 🥗🥩\n\nNosso buffet completo tem saladas frescas do dia, pratos quentes e carnes grelhadas preparadas na hora. Comida feita como na sua casa, com higiene impecável e fartura garantida.\n\nVenha fazer sua pausa de almoço com a gente!\n\n📍 N&N Restaurante - Santana de Parnaíba\n⏰ Aberto de segunda a sábado das 11h às 15h.\n\n#buffetexecutivo #almocosaudavel #restaurantecaseiro #comidadeverdade",
+    criadores: "Curadoria: Benedito · Texto: Clarice · Arte: Joaquim"
+  }
+];
+
 let estadoAgentes = { ...AGENTES_INICIAIS };
+let producaoPosts = [ ...POSTS_PADRAO ];
 
 // Inicialização
 document.addEventListener("DOMContentLoaded", () => {
@@ -113,11 +137,15 @@ async function carregarEstado() {
           }
         });
       }
+      if (dados.producao_recente && dados.producao_recente.length > 0) {
+        producaoPosts = dados.producao_recente;
+      }
     }
   } catch (e) {
     console.log("Usando dados integrados de demonstração.");
   }
   renderizarEscritorio();
+  renderizarPosts();
 }
 
 // Renderiza balões e status nas estações
@@ -151,7 +179,52 @@ function atualizarFeedTicker() {
   ticker.textContent = frases.join("  ✦  ");
 }
 
-// Configura cliques e modal
+// Renderiza a lista de posts na gaveta lateral
+function renderizarPosts() {
+  const container = document.getElementById("posts-list-container");
+  if (!container) return;
+
+  container.innerHTML = "";
+  producaoPosts.forEach((p, idx) => {
+    const card = document.createElement("div");
+    card.className = "post-delivery-card";
+    card.innerHTML = `
+      <div class="post-card-meta">
+        <span class="post-badge">Post Instagram · 1080x1440</span>
+        <span>${p.data}</span>
+      </div>
+      <div class="post-card-headline">
+        <strong>${p.headline}</strong> · <span style="color: #EEB730;">${p.selo}</span>
+      </div>
+      <div class="post-caption-box" id="caption-box-${idx}">${p.legenda}</div>
+      <div class="post-card-footer">
+        <span class="post-creators">${p.criadores || "Criado pela equipe Kav"}</span>
+        <button class="btn-copy" onclick="copiarLegenda(${idx}, this)">
+          📋 Copiar Legenda
+        </button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// Copiar legenda com feedback visual
+window.copiarLegenda = function(index, btnElement) {
+  const post = producaoPosts[index];
+  if (!post) return;
+
+  navigator.clipboard.writeText(post.legenda).then(() => {
+    const originalText = btnElement.innerHTML;
+    btnElement.className = "btn-copy copied";
+    btnElement.innerHTML = "✅ Copiado!";
+    setTimeout(() => {
+      btnElement.className = "btn-copy";
+      btnElement.innerHTML = originalText;
+    }, 2000);
+  });
+};
+
+// Configura cliques, drawer e modal
 function configurarEventos() {
   document.querySelectorAll(".workstation").forEach(station => {
     station.addEventListener("click", () => {
@@ -165,11 +238,33 @@ function configurarEventos() {
     if (e.target.id === "agent-modal") fecharModal();
   });
 
+  // Gaveta de Posts & Legendas
+  const btnPosts = document.getElementById("btn-posts");
+  const drawerOverlay = document.getElementById("posts-drawer-overlay");
+  const btnCloseDrawer = document.getElementById("btn-close-drawer");
+
+  btnPosts.addEventListener("click", () => {
+    renderizarPosts();
+    drawerOverlay.classList.add("open");
+  });
+
+  btnCloseDrawer.addEventListener("click", () => {
+    drawerOverlay.classList.remove("open");
+  });
+
+  drawerOverlay.addEventListener("click", (e) => {
+    if (e.target.id === "posts-drawer-overlay") {
+      drawerOverlay.classList.remove("open");
+    }
+  });
+
+  // Botão de Refresh
   document.getElementById("btn-refresh").addEventListener("click", () => {
     carregarEstado();
     animarPulo();
   });
 
+  // Botão de Simulação / Demonstração ao vivo
   document.getElementById("btn-demo").addEventListener("click", rodarDemonstracao);
 }
 
@@ -284,7 +379,7 @@ function rodarDemonstracao() {
     } else {
       document.querySelectorAll(".workstation").forEach(w => w.style.filter = "none");
       btn.disabled = false;
-      btn.textContent = "⚡ Simular Ciclo de Trabalho";
+      btn.textContent = "⚡ Simular Ciclo";
     }
   }
 

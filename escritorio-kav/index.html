@@ -32,11 +32,14 @@
     </div>
 
     <div class="actions">
+      <button id="btn-posts" class="btn btn-primary" title="Abrir gaveta com todos os posts, artes e legendas criadas pelos agentes">
+        📦 Posts & Legendas
+      </button>
       <button id="btn-refresh" class="btn btn-secondary" title="Recarregar estado atual dos agentes">
         🔄 Atualizar
       </button>
-      <button id="btn-demo" class="btn btn-primary" title="Demonstrar o fluxo completo dos agentes trabalhando em cadeia">
-        ⚡ Simular Ciclo de Trabalho
+      <button id="btn-demo" class="btn btn-accent" title="Demonstrar o fluxo completo dos agentes trabalhando em cadeia">
+        ⚡ Simular Ciclo
       </button>
     </div>
   </header>
@@ -232,6 +235,23 @@
             <li>Nenhuma atividade registrada ainda.</li>
           </ul>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sliding Drawer: Posts & Legendas Criados -->
+  <div class="drawer-overlay" id="posts-drawer-overlay">
+    <div class="drawer-panel" id="posts-drawer">
+      <div class="drawer-header">
+        <div class="drawer-title-area">
+          <h2>📦 Entregas dos Agentes</h2>
+          <span class="drawer-sub">Posts, chamadas e legendas prontas para publicação</span>
+        </div>
+        <button class="btn-close-drawer" id="btn-close-drawer">&times;</button>
+      </div>
+
+      <div class="drawer-content" id="posts-list-container">
+        <!-- Preenchido dinamicamente pelo app.js -->
       </div>
     </div>
   </div>
