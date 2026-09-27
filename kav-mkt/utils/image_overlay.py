@@ -1,6 +1,6 @@
 from __future__ import annotations
-"""Pós-processamento da imagem gerada pela IA: recorte para o formato final exato, e
-montagem do "guia de logo" enviado à IA como referência.
+"""Pós-processamento da imagem gerada pela IA: ajuste pro formato final exato, e
+montagem dos "guias" (logo, zona de CTA) enviados à IA como referência.
 
 O logo do cliente NÃO é colado aqui por código — ele é enviado como imagem de
 referência para o gerador de imagem (ver agents/agente_design.py), que o desenha na cena
@@ -11,12 +11,21 @@ sobre qual proporção de saída ele deve gerar. Por isso o logo é colado, por 
 canvas transparente do TAMANHO FINAL antes de virar referência — assim toda referência
 de "formato" que a IA recebe já está na proporção certa.
 
-Isso, sozinho, não bastou (corte de logo/texto ainda visto em 2026-09-23 mesmo depois
-dessa mudança) — a outra metade do problema era `openai_client.IMAGE_SIZE` pedir a
-geração numa proporção diferente da final, obrigando um recorte real de ~5.6% no
-topo/rodapé (ver `agents/agente_design.py` e o ajuste de IMAGE_SIZE em
-`openai_client.py`). LOGO_MARGEM aqui embaixo foi alinhada com a margem de segurança do
-brief (8%) por consistência — mesma régua nos dois lugares.
+BUG CORRIGIDO EM 2026-09-27 (definitivamente, depois de 3 tentativas anteriores só de
+ajustar margem/guia — ver histórico de commits): `recortar_formato_final` fazia um corte
+"cover" (igual `object-fit: cover` do CSS) sempre que a API devolvia um tamanho diferente
+do pedido (o mais comum: pedido "1072x1440", devolvido "1024x1536" — API não respeita o
+tamanho customizado com frequência). Não importa quanta margem de segurança se avise a
+IA generativa por texto ou por guia visual, ela nunca vai ser 100% precisa — então
+QUALQUER corte de verdade sempre tinha chance de cortar logo, headline ou a faixa de CTA
+que estivessem perto da borda. A solução definitiva (a mesma já usada num projeto
+anterior da Kav — ponto-car original) é simplesmente NÃO CORTAR: em vez de recortar o
+excesso, `recortar_formato_final` agora estica/redimensiona a imagem inteira direto pro
+tamanho final (1080x1440), sem cortar nada. Isso garante que absolutamente nada do que a
+IA desenhou é perdido — o preço é uma distorção leve de proporção quando o tamanho
+devolvido é bem diferente do pedido (ex: 1024x1536 → 1080x1440 estica a imagem ~5% na
+largura e encolhe ~6% na altura; para fotos de comida isso é imperceptível na prática, e
+é sempre preferível a cortar o logo ou o texto de propósito).
 """
 from io import BytesIO
 from pathlib import Path
@@ -32,18 +41,11 @@ LOGO_MARGEM = 0.08  # fração da largura do canvas, a partir de cada borda (igu
 
 
 def recortar_formato_final(imagem_bytes: bytes, largura: int = LARGURA_PADRAO, altura: int = ALTURA_PADRAO) -> bytes:
-    """Corta e redimensiona para preencher exatamente largura x altura, sem distorcer
-    (como `object-fit: cover` no CSS)."""
+    """Redimensiona pro formato final exato SEM cortar nada (ver docstring do módulo pro
+    porquê) — estica a imagem inteira pra largura x altura, mesmo que o tamanho de origem
+    tenha uma proporção um pouco diferente. Mantém o nome antigo (era um recorte) porque
+    é usado em vários agentes; a assinatura (bytes -> bytes) não mudou, só o miolo."""
     imagem = Image.open(BytesIO(imagem_bytes)).convert("RGB")
-    origem_w, origem_h = imagem.size
-    destino_ratio = largura / altura
-    if origem_w / origem_h > destino_ratio:
-        novo_w, novo_h = int(origem_h * destino_ratio), origem_h
-    else:
-        novo_w, novo_h = origem_w, int(origem_w / destino_ratio)
-    esquerda = (origem_w - novo_w) // 2
-    topo = (origem_h - novo_h) // 2
-    imagem = imagem.crop((esquerda, topo, esquerda + novo_w, topo + novo_h))
     imagem = imagem.resize((largura, altura), Image.LANCZOS)
     return _png(imagem)
 

@@ -14,21 +14,22 @@ disponíveis:
   (1080x1440) com o logo já colado na posição certa — dá posição/escala exatas, não só
   uma descrição em texto.
 
-CAUSA RAIZ do corte de logo/texto (dois problemas encontrados, não só um — visto em
-2026-09-23, corrigido nas duas pontas):
+HISTÓRICO do corte de logo/texto (visto em 2026-09-23 e de novo em 2026-09-27, em vários
+clientes — produto, fotos e carrossel — porque todos passam pela mesma
+`image_overlay.recortar_formato_final`):
 1. Mandar o logo bruto (proporção bem diferente do layout retrato) como referência
    parecia confundir o modelo sobre a proporção de saída esperada — resolvido com o
    guia acima (mesma proporção da imagem final em toda referência de "formato").
-2. MAIS IMPORTANTE, e o que sobrava mesmo depois do guia: `openai_client.IMAGE_SIZE`
-   (o tamanho pedido à API) tinha uma proporção BEM diferente da final (1024x1536 =
-   0.667 contra 1080x1440 = 0.75), então `image_overlay.recortar_formato_final` sempre
-   cortava ~5.6% do topo E do rodapé pra chegar na proporção certa — uma faixa quase do
-   mesmo tamanho da margem de segurança pedida no brief (6-8%). Ou seja: mesmo que a IA
-   seguisse a instrução de margem à risca, sobrava uma folga de só alguns pixels —
-   qualquer imprecisão normal de geração cortava o logo/texto de verdade. Corrigido
-   trocando IMAGE_SIZE para "1072x1440" (proporção quase igual à final — corte cai pra
-   ~0.4%), com fallback automático pro tamanho oficial da API se esse customizado for
-   rejeitado (ver `openai_client._chamar_com_fallback_tamanho`).
+2. `openai_client.IMAGE_SIZE` (o tamanho pedido à API) tinha uma proporção BEM diferente
+   da final quando a API caía no tamanho de fallback (1024x1536 = 0.667 contra
+   1080x1440 = 0.75) — mitigado ajustando IMAGE_SIZE e a margem de segurança abaixo, mas
+   nunca 100% eliminado: por mais margem que se avisasse à IA, ela não é perfeitamente
+   precisa, e o corte de verdade continuava arriscado.
+3. CORRIGIDO DEFINITIVAMENTE em 2026-09-27: `image_overlay.recortar_formato_final` não
+   corta mais nada — ela redimensiona (estica) a imagem inteira pro tamanho final, então
+   não existe mais "faixa cortada" para o logo/texto cair dentro. A margem de segurança
+   calculada abaixo (`_margem_corte_vertical`) continua existindo só por boa prática de
+   composição (respiro visual), não porque algo seria cortado se ela faltasse.
 
 Sem nenhuma referência disponível (ou se a chamada com referências falhar), gera do zero
 a partir do brief (gpt-image-2.5-flare) e avisa — nesse caso a imagem sai sem logo.
@@ -81,9 +82,9 @@ em quadrado nem em outro formato.
 
 MARGENS DE SEGURANÇA — valem para TEXTO (headline e selo) e para o LOGO, nenhum dos
 dois pode invadir essas faixas:
-- Topo e rodapé: depois de gerada, a imagem perde cerca de __MARGEM__% do topo e
-  __MARGEM__% do rodapé (ajuste de proporção para o formato final do post). Trate essa
-  faixa como fora dos limites — nada importante pode ficar nela.
+- Topo e rodapé: deixe pelo menos __MARGEM__% de respiro livre de qualquer elemento
+  importante (texto, logo) nessas duas faixas — evita que nada fique colado na borda,
+  o que sempre parece amador, mesmo sem nenhum corte acontecer depois.
 - TODAS as bordas (topo, rodapé e as duas laterais): mantenha texto e logo a pelo menos
   __MARGEM_LATERAL__% de distância de qualquer borda da imagem. Nunca cole texto ou o
   logo rente à borda, mesmo nas laterais.
@@ -229,8 +230,8 @@ def gerar_imagem(brief: str, produto: dict, cliente: dict, referencia: Optional[
     if bruta.get("tamanho_pedido") and bruta.get("tamanho_real") and bruta["tamanho_pedido"] != bruta["tamanho_real"]:
         avisos.append(
             f"A API pediu {bruta['tamanho_pedido']} mas devolveu {bruta['tamanho_real']} — "
-            "o recorte final ainda sai certo (1080x1440), mas a margem interna pode não "
-            "bater exatamente com o que foi pedido no brief."
+            "o tamanho final ainda sai certo (1080x1440, sem cortar nada), mas pode ter "
+            "uma distorção leve de proporção nesse post."
         )
 
     return {
@@ -293,10 +294,13 @@ def _logo(cliente: dict, referencia: Optional[dict]) -> tuple:
 
 
 def _margem_corte_vertical() -> int:
-    """Quanto (%) do topo e do rodapé o recorte para o formato final remove, com +4 pontos
-    de folga — para avisar a IA a deixar essa faixa sem nada importante.
+    """Quanto (%) de respiro pedir no topo/rodapé do brief — hoje é só recomendação de
+    composição (ver módulo utils.image_overlay: desde 2026-09-27 o ajuste final
+    redimensiona em vez de cortar, então não existe mais "faixa cortada" de verdade).
+    Mantida com o nome e o cálculo antigos (histórico abaixo) porque ainda é uma boa
+    régua de quanto respiro pedir, mesmo sem a urgência de antes.
 
-    BUG CORRIGIDO EM 2026-09-27: esta função calculava a margem só para o tamanho PEDIDO
+    HISTÓRICO (bug real, já corrigido): esta função calculava a margem só para o tamanho PEDIDO
     (`openai_client.IMAGE_SIZE`, ex: "1072x1440" → corte de só ~0.4%), mas a API às vezes
     rejeita esse tamanho customizado e cai no fallback oficial
     (`openai_client.TAMANHO_IMAGEM_SEGURO`, "1024x1536" → corte real de ~11.1%, quase 3x

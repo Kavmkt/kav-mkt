@@ -22,14 +22,13 @@ MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 IMAGE_MODEL = os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-2.5-flare")
 IMAGE_EDIT_MODEL = os.environ.get("OPENAI_IMAGE_EDIT_MODEL", "gpt-image-2.5-sunburst")
 # Tamanho pedido à API. Escolhido o mais próximo possível da proporção final (1080x1440 =
-# 0.75) porque o recorte final (utils.image_overlay.recortar_formato_final) sempre corta
-# uma faixa do topo/rodapé (ou dos lados) pra chegar nessa proporção — quanto mais
-# parecida a proporção pedida for da final, MENOR essa faixa cortada, e menos qualquer
-# margem de segurança (por menor imprecisão da IA) acaba sendo engolida pelo corte.
-# "1024x1536" (0.667) tinha ~5.6% de corte no topo E no rodapé — quase do tamanho da
-# própria margem de segurança pedida (6-8%), então bastava a IA errar por pouco pra
-# cortar o logo/texto (bug visto em 2026-09-23). "1072x1440" (0.744, múltiplo de 16 nos
-# dois lados) deixa esse corte em ~0.4% — folga bem maior.
+# 0.75) pra minimizar a distorção de esticar/encolher no ajuste final (ver
+# utils.image_overlay.recortar_formato_final — desde 2026-09-27 ela NÃO corta mais, só
+# redimensiona pro tamanho final, então quanto mais próxima a proporção pedida for da
+# final, menos distorção visível). "1024x1536" (0.667) é o tamanho de fallback oficial,
+# bem mais diferente da proporção final; "1072x1440" (0.744, múltiplo de 16 nos dois
+# lados) é bem mais parecido — mas mesmo se a API cair no fallback, não tem mais risco de
+# cortar nada, só uma distorção leve.
 IMAGE_SIZE = os.environ.get("OPENAI_IMAGE_SIZE", "1072x1440")
 # Tamanho "oficial" da API (documentado, sempre aceito) — usado como fallback automático
 # se o tamanho customizado acima for rejeitado por algum motivo.

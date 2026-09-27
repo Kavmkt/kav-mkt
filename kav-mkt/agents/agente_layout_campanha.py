@@ -49,9 +49,9 @@ conteúdo novo fora do que já está na foto).
 MARGENS DE SEGURANÇA — valem para TEXTO (headline, selo e faixa de CTA) e para o LOGO,
 nenhum deles pode invadir essas faixas, e nenhum pode ser colocado sobre uma parte
 importante da foto real (ex: em cima do prato):
-- Topo e rodapé: depois de gerada, a imagem perde cerca de __MARGEM__% do topo e
-  __MARGEM__% do rodapé (ajuste de proporção para o formato final do post). Trate essa
-  faixa como fora dos limites — nada importante pode ficar nela.
+- Topo e rodapé: deixe pelo menos __MARGEM__% de respiro livre de qualquer elemento
+  importante (texto, logo, faixa de CTA) nessas duas faixas — evita que nada fique
+  colado na borda, o que sempre parece amador, mesmo sem nenhum corte acontecer depois.
 - TODAS as bordas (topo, rodapé e as duas laterais): mantenha texto, selo, faixa de CTA
   e logo a pelo menos __MARGEM_LATERAL__% de distância de qualquer borda da imagem. Nunca
   cole nenhum deles rente à borda, mesmo nas laterais.
@@ -59,10 +59,10 @@ importante da foto real (ex: em cima do prato):
   tamanho e escala do guia), nunca cobrindo partes nobres do prato. Não mova o logo para
   outra área da imagem além dessa.
 - A faixa de CTA (localização + chamada para WhatsApp) ocupa exatamente a área marcada em
-  magenta no guia de zona de CTA — nunca ultrapasse esse retângulo (principalmente por
-  baixo dele, é a parte mais perto da borda que será cortada). Dentro dele, desenhe um
-  bloco de cor sólida (uma das cores da marca, nunca magenta) com contraste forte, curta e
-  legível a distância — no estilo de selo/rótulo de anúncio, não como texto corrido.
+  magenta no guia de zona de CTA — nunca ultrapasse esse retângulo, principalmente por
+  baixo dele (é a parte mais perto da borda). Dentro dele, desenhe um bloco de cor sólida
+  (uma das cores da marca, nunca magenta) com contraste forte, curta e legível a
+  distância — no estilo de selo/rótulo de anúncio, não como texto corrido.
 
 CORES: use somente as cores da marca listadas nas diretrizes acima para os elementos
 gráficos (bloco da headline, selo do prato, faixa de CTA, fundo atrás do logo) — não
@@ -214,8 +214,8 @@ def gerar_imagem_campanha(brief: str, foto: dict, cliente: dict, referencia: Opt
     if bruta.get("tamanho_pedido") and bruta.get("tamanho_real") and bruta["tamanho_pedido"] != bruta["tamanho_real"]:
         avisos.append(
             f"A API pediu {bruta['tamanho_pedido']} mas devolveu {bruta['tamanho_real']} — "
-            "o recorte final ainda sai certo (1080x1440), mas a margem interna pode não "
-            "bater exatamente com o que foi pedido no brief."
+            "o tamanho final ainda sai certo (1080x1440, sem cortar nada), mas pode ter "
+            "uma distorção leve de proporção nesse post."
         )
 
     return {

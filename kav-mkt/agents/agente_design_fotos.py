@@ -54,9 +54,9 @@ conteúdo novo fora do que já está na foto).
 MARGENS DE SEGURANÇA — valem para TEXTO (headline e selo) e para o LOGO, nenhum dos
 dois pode invadir essas faixas, e nenhum dos dois pode ser colocado sobre uma parte
 importante da foto real (ex: em cima do prato):
-- Topo e rodapé: depois de gerada, a imagem perde cerca de __MARGEM__% do topo e
-  __MARGEM__% do rodapé (ajuste de proporção para o formato final do post). Trate essa
-  faixa como fora dos limites — nada importante pode ficar nela.
+- Topo e rodapé: deixe pelo menos __MARGEM__% de respiro livre de qualquer elemento
+  importante (texto, logo) nessas duas faixas — evita que nada fique colado na borda,
+  o que sempre parece amador, mesmo sem nenhum corte acontecer depois.
 - TODAS as bordas (topo, rodapé e as duas laterais): mantenha texto e logo a pelo menos
   __MARGEM_LATERAL__% de distância de qualquer borda da imagem. Nunca cole texto ou o
   logo rente à borda, mesmo nas laterais.
@@ -192,8 +192,8 @@ def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optiona
     if bruta.get("tamanho_pedido") and bruta.get("tamanho_real") and bruta["tamanho_pedido"] != bruta["tamanho_real"]:
         avisos.append(
             f"A API pediu {bruta['tamanho_pedido']} mas devolveu {bruta['tamanho_real']} — "
-            "o recorte final ainda sai certo (1080x1440), mas a margem interna pode não "
-            "bater exatamente com o que foi pedido no brief."
+            "o tamanho final ainda sai certo (1080x1440, sem cortar nada), mas pode ter "
+            "uma distorção leve de proporção nesse post."
         )
 
     return {
