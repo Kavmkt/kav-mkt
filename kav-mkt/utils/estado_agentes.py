@@ -4,12 +4,8 @@ Registra em tempo real a atividade, status e mensagens de cada agente (avatar/fu
 para que o front-end visual (escritório estilo Habbo/isométrico) leia e exiba dinamicamente
 o time trabalhando.
 
-Nomes clássicos dos funcionários:
-- Augusto (Supervisor de Inteligência & Estratégia)
-- Vicente (Analista de Performance & Tráfego)
-- Clarice (Redatora de Conteúdo & Copywriter)
-- Joaquim (Diretor de Arte & Designer)
-- Benedito (Curador de Acervo & Catálogo)
+Desacoplado por dados: os agentes apenas chamam `atualizar_agente()`, e o front-end lê
+o arquivo de estado (localmente ou via branch 'dados' do GitHub).
 """
 import base64
 import json
@@ -39,7 +35,7 @@ FUNCIONARIOS_PADRAO = {
             {
                 "timestamp": "2026-09-26T21:30:00",
                 "atividade": "Alerta emitido: Meta Ads ativo com R$ 260,79 gastos e zero posts no feed há 6 meses.",
-                "fala": "Feed parado precisa de atenção imediata."
+                "fala": "Feed parado precisa de atenção imediata.",
             }
         ],
     },
@@ -56,7 +52,7 @@ FUNCIONARIOS_PADRAO = {
             {
                 "timestamp": "2026-09-26T21:25:00",
                 "atividade": "Coleta Meta Marketing API: R$ 260,79 gastos em 30 dias.",
-                "fala": "Campanhas de WhatsApp Ads ativas."
+                "fala": "Campanhas de WhatsApp Ads ativas.",
             }
         ],
     },
@@ -73,7 +69,7 @@ FUNCIONARIOS_PADRAO = {
             {
                 "timestamp": "2026-09-26T21:10:00",
                 "atividade": "Copy gerada: Headline Feijoada Completa com gancho de almoço.",
-                "fala": "Copy pronta para revisão."
+                "fala": "Copy pronta para revisão.",
             }
         ],
     },
@@ -90,7 +86,7 @@ FUNCIONARIOS_PADRAO = {
             {
                 "timestamp": "2026-09-26T21:05:00",
                 "atividade": "Tratamento gráfico aplicado sobre foto real do buffet executivo.",
-                "fala": "Arte finalizada em 1080x1440."
+                "fala": "Arte finalizada em 1080x1440.",
             }
         ],
     },
@@ -107,7 +103,7 @@ FUNCIONARIOS_PADRAO = {
             {
                 "timestamp": "2026-09-26T21:00:00",
                 "atividade": "Foto selecionada: buffet_saladas_02.jpg (não usada há 50 dias).",
-                "fala": "Curadoria do prato concluída."
+                "fala": "Curadoria do prato concluída.",
             }
         ],
     },
@@ -180,12 +176,106 @@ def atualizar_agente(
     _escrever(json.dumps(estado, ensure_ascii=False, indent=2), sha)
 
 
+def registrar_post_produzido(post: dict, cliente_slug: str) -> None:
+    """Registra uma peça recém-produzida no estado do escritório virtual (estado_agentes.json)
+    para que apareça imediatamente na gaveta 'Posts & Legendas' do Escritório Virtual e
+    atualiza o status e falas dos agentes."""
+    try:
+        estado, sha = _ler()
+        if not estado or "funcionarios" not in estado:
+            estado = _inicializar_estado()
+
+        cliente_nome = post.get("cliente") or cliente_slug.replace("-", " ").title()
+        estado["cliente_ativo"] = cliente_nome
+
+        data_str = "Hoje · " + agora().strftime("%H:%M")
+        prato_nome = "Peça Criativa"
+        categoria = "Feed Instagram"
+        headline = "NOVO POST"
+        selo = "Post Pronto"
+        legenda = ""
+        imagem_b64 = None
+
+        if "foto" in post:
+            foto = post["foto"]
+            copy = post.get("copy", {})
+            prato_nome = foto.get("nome") or getattr(foto.get("arquivo"), "name", "Prato da Casa")
+            categoria = foto.get("categoria") or "Almoço Executivo"
+            headline = copy.get("headline_imagem") or prato_nome
+            selo = copy.get("selo_produto") or "Prato do Dia"
+            legenda = copy.get("legenda", "")
+            if post.get("imagem") and post["imagem"].get("imagem_b64"):
+                imagem_b64 = post["imagem"]["imagem_b64"]
+        elif "produto" in post:
+            prod = post["produto"]
+            copy = post.get("copy", {})
+            prato_nome = prod.get("nome") or "Destaque"
+            categoria = prod.get("categoria") or "Oferta"
+            headline = copy.get("headline_imagem") or prato_nome
+            selo = copy.get("selo_produto") or "Destaque"
+            legenda = copy.get("legenda", "")
+            if post.get("imagem") and post["imagem"].get("imagem_b64"):
+                imagem_b64 = post["imagem"]["imagem_b64"]
+        elif "slides" in post:
+            pauta = post.get("pauta", {})
+            roteiro = post.get("roteiro", {})
+            slides = post.get("slides", [])
+            prato_nome = pauta.get("tema") or "Carrossel de Conteúdo"
+            categoria = "Carrossel Educativo"
+            headline = pauta.get("tema") or "Carrossel"
+            selo = f"{len(slides)} Páginas"
+            legenda = roteiro.get("legenda", "")
+            if slides and slides[0].get("imagem_b64"):
+                imagem_b64 = slides[0]["imagem_b64"]
+
+        novo_item = {
+            "id": f"post-{int(datetime.now().timestamp())}",
+            "data": data_str,
+            "prato": prato_nome,
+            "categoria": categoria,
+            "headline": headline,
+            "selo": selo,
+            "legenda": legenda,
+            "imagem_b64": imagem_b64,
+            "criadores": "Curadoria: Benedito · Texto: Clarice · Arte: Joaquim",
+        }
+
+        producao = estado.get("producao_recente", [])
+        producao.insert(0, novo_item)
+        estado["producao_recente"] = producao[:10]
+
+        if "funcionarios" in estado:
+            f = estado["funcionarios"]
+            if "pesquisador" in f:
+                f["pesquisador"]["status"] = "online"
+                f["pesquisador"]["fala_atual"] = f"Curadoria concluída: '{prato_nome}' selecionado com sucesso!"
+                f["pesquisador"]["atividade_atual"] = f"Acervo de {cliente_nome} atualizado."
+            if "copywriter" in f:
+                f["copywriter"]["status"] = "online"
+                f["copywriter"]["fala_atual"] = f"Legenda e headline '{headline}' prontas para publicação!"
+                f["copywriter"]["atividade_atual"] = "Copy aprovada no padrão da marca."
+            if "designer" in f:
+                f["designer"]["status"] = "online"
+                f["designer"]["fala_atual"] = "Arte diagramada em 1080x1440 e disponível na gaveta!"
+                f["designer"]["atividade_atual"] = "Layout visual 4:5 finalizado."
+            if "supervisor" in f:
+                f["supervisor"]["status"] = "online"
+                f["supervisor"]["fala_atual"] = f"Entrega de {cliente_nome} pronta! Pode copiar a legenda ou baixar a arte."
+                f["supervisor"]["atividade_atual"] = "Supervisão de entrega concluída."
+
+        estado["ultima_atualizacao"] = agora().isoformat(timespec="seconds")
+        _escrever(json.dumps(estado, ensure_ascii=False, indent=2), sha)
+    except Exception as exc:
+        print(f"Aviso: não foi possível registrar post no escritório: {exc}")
+
+
 def _inicializar_estado() -> dict:
     return {
         "agencia": "Kav (@kav.mkt)",
         "versao": "1.0",
         "ultima_atualizacao": agora().isoformat(timespec="seconds"),
         "funcionarios": FUNCIONARIOS_PADRAO.copy(),
+        "producao_recente": [],
     }
 
 
@@ -205,13 +295,24 @@ def _ler() -> tuple:
 
 
 def _escrever(conteudo: str, sha: Optional[str]) -> None:
-    arquivo = _arquivo_local()
-    arquivo.parent.mkdir(parents=True, exist_ok=True)
-    arquivo.write_text(conteudo, encoding="utf-8")
+    try:
+        arquivo = _arquivo_local()
+        arquivo.parent.mkdir(parents=True, exist_ok=True)
+        arquivo.write_text(conteudo, encoding="utf-8")
+    except Exception:
+        pass
 
-    pasta_escritorio = BASE_DIR.parent / "escritorio-kav"
-    if pasta_escritorio.exists():
-        (pasta_escritorio / "estado_agentes.json").write_text(conteudo, encoding="utf-8")
+    pastas_destino = [
+        BASE_DIR / "escritorio-kav",
+        BASE_DIR.parent / "escritorio-kav",
+        BASE_DIR / "data",
+    ]
+    for p in pastas_destino:
+        if p.exists():
+            try:
+                (p / "estado_agentes.json").write_text(conteudo, encoding="utf-8")
+            except Exception:
+                pass
 
     if usa_github():
         try:

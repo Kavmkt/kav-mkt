@@ -12,7 +12,7 @@ DIFERENÇA CENTRAL para o fluxo de produto/carrossel: aqui a cena NÃO é gerada
 pela IA. A foto real do prato/ambiente (escolhida por agents/agente_foto.py em
 clientes/<slug>/fotos/) é enviada como referência OBRIGATÓRIA e deve permanecer
 praticamente inalterada — a IA só aplica um tratamento gráfico diagramado por cima dela
-(headline, selo do prato e o logo pequeno do cliente), no estilo do KV do cliente e da
+(headline, selo do prato e o logo do cliente), no estilo do KV do cliente e da
 referência de layout sorteada (quando houver), exatamente como pedido pelo cliente: a
 referência de layout e a foto real vão juntas, na mesma chamada, para o gerador de
 imagem.
@@ -42,11 +42,7 @@ Contexto de produção (o gerador de imagem recebe junto com o seu brief):
   tratamento gráfico (texto, faixas, selo, logo) por cima dela, como uma arte de post
   montada sobre uma foto real;
 __CONTEXTO_LAYOUT__
-- um guia de logo: um template do MESMO formato/proporção da imagem final, transparente
-  exceto onde o logo do cliente está posicionado — reproduza o logo pixel a pixel dali
-  (mesmas cores, proporções, tipografia e detalhes, nunca redesenhado ou distorcido) na
-  MESMA ESCALA e na mesma faixa vertical (topo ou rodapé) mostradas no guia; a posição
-  horizontal dentro dessa faixa é livre — veja a regra de margens abaixo.
+- a referência oficial do LOGOTIPO DA MARCA N&N: uma imagem contendo o logo oficial do cliente — reproduza esse logotipo com MÁXIMA FIDELIDADE na arte (mesmas formas, tipografia, cores e proporções), perfeitamente diagramado e integrado ao layout do post (no topo ou no cabeçalho em área de destaque), com contraste evidente e margens de respiro confortáveis (~5% das bordas), sem distorcer nem reinventar a marca;
 
 IMPORTANTE: as referências de layout e de logo estão no formato final exato do post
 (retrato, mais alto que largo). O resultado final também deve sair nessa MESMA proporção
@@ -63,12 +59,8 @@ importante da foto real (ex: em cima do prato):
 - TODAS as bordas (topo, rodapé e as duas laterais): mantenha texto e logo a pelo menos
   __MARGEM_LATERAL__% de distância de qualquer borda da imagem. Nunca cole texto ou o
   logo rente à borda, mesmo nas laterais.
-- O logo vai na faixa indicada no guia (__AREA_LOGO__) e do MESMO tamanho mostrado nele,
-  mas a posição horizontal dentro dessa faixa NÃO é fixa: use a área mais vazia da foto
-  real. Se o centro dessa faixa estiver livre (sem prato, sem pessoa, sem elemento
-  importante), centralize o logo ali — não empurre ele pra um lado por padrão. Só
-  mantenha na lateral indicada no guia se o centro estiver ocupado. Sempre com espaço
-  vazio ao redor do logo (nada de texto ou elemento gráfico encostando nele).
+- O logo vai na faixa do cabeçalho/topo (__AREA_LOGO__) com escala equilibrada e respiro
+  ao redor, nunca cobrindo partes nobres do prato.
 
 CORES: use somente as cores da marca listadas nas diretrizes acima para os elementos
 gráficos (bloco da headline, selo do prato, faixas, fundo atrás do logo) — não invente
@@ -81,8 +73,8 @@ O brief (em inglês) deve definir, em um único parágrafo denso:
 - a headline e o selo do prato, com o tratamento gráfico previsto no KV do cliente
   (fonte serifada de destaque na headline, fonte geométrica no selo), usando só as
   cores da marca;
-- a reprodução exata do logo a partir do guia (mesma escala), na área vertical mostrada
-  nele, com a posição horizontal ajustada ao espaço mais livre da foto.
+- a aplicação fiel do logo a partir da referência de logotipo, perfeitamente integrado no
+  topo/cabeçalho da peça com excelente contraste.
 
 Regras de texto na imagem:
 - Renderize a headline e o selo EXATAMENTE como informados, palavra por palavra, em
@@ -126,14 +118,17 @@ def gerar_brief_foto(copy: dict, foto: dict, cliente: dict, referencia: Optional
     partes.append(f'Headline (renderizar exatamente): "{copy.get("headline_imagem")}"')
     if copy.get("selo_produto"):
         partes.append(f'Selo do prato (renderizar exatamente): "{copy["selo_produto"]}"')
-    return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=600, temperature=0.8)
+    partes.append(
+        'Aplicação da marca (seguir rigorosamente a referência de logo): '
+        'Reproduzir fielmente o logotipo oficial da N&N Restaurante no cabeçalho/topo do post, '
+        'garantindo contraste evidente e margens de respiro de cerca de 5% das bordas.'
+    )
+    return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=650, temperature=0.8)
 
 
 def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optional[dict]) -> dict:
     """Gera a imagem do post a partir da foto REAL escolhida (referência obrigatória) +,
-    quando houver, a referência de layout do cliente + o guia de logo — tudo na mesma
-    chamada de edição, seguindo exatamente o que o cliente pediu: enviar ao gerador de
-    imagem a referência de layout selecionada junto com a foto a ser usada."""
+    quando houver, a referência de layout do cliente + a referência de logo do cliente."""
     avisos = []
     referencias_imagem = [(
         foto["arquivo"].read_bytes(),
@@ -152,21 +147,21 @@ def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optiona
             "final piece keeps the real dish/venue photo above as the background scene.",
         ))
 
-    logo_arquivo, posicao_logo = _logo(cliente, referencia)
-    if logo_arquivo:
-        guia_logo = image_overlay.guia_posicao_logo(logo_arquivo, posicao_logo)
+    logo_referencia = None
+    if cliente.get("logo_referencias"):
+        logo_referencia = cliente["logo_referencias"][0]
+    else:
+        logo_arquivo, _ = _logo(cliente, referencia)
+        logo_referencia = logo_arquivo
+
+    if logo_referencia:
         referencias_imagem.append((
-            guia_logo,
-            "a template the exact same pixel dimensions as the final image, transparent "
-            "everywhere except where the client's logo sits — reproduce that logo "
-            "pixel-for-pixel, at that exact SCALE, keeping its exact colors, proportions "
-            "and details (do not redraw, recolor or distort it). Its vertical position "
-            "(top/bottom band) and default side are shown here, but its horizontal "
-            "position within that band is only a suggestion: place it wherever that band "
-            "is emptiest over the real photo — centered if the middle of the band is "
-            "free, kept to this side only if the middle is occupied by the dish or "
-            "another important part of the photo. Everywhere else in this template is "
-            "transparent guidance only, not part of the visible scene.",
+            logo_referencia.read_bytes(),
+            "the official BRAND LOGO of N&N Restaurante. You must follow and reproduce "
+            "this logo EXACTLY (same typography, symbols, colors, and proportions) into the "
+            "piece's graphic layout. Position it cleanly in the header/top area (or designated "
+            "branding zone), ensuring strong contrast, breathing margins (~5% from edges), "
+            "and perfect integration into the overall piece.",
         ))
 
     bruta = None
