@@ -14,11 +14,11 @@ Cada especialista no pipeline da Kav possui um posto de trabalho e uma identidad
 
 | Avatar | Funcionário | Cargo | Função no Pipeline |
 |---|---|---|---|
-| 👑 | **Sofia** | Head de Inteligência & Estratégia | Supervisor: cruza métricas com conteúdo e emite alertas |
-| 📊 | **Marcos** | Analista de Tráfego & Performance | Métricas: coleta dados do Meta Ads (gasto, cliques, WhatsApp) |
-| ✍️ | **Beatriz** | Redatora & Copywriter | Legenda: escreve headlines, selos e copies no padrão da marca |
-| 🎨 | **Lucas** | Diretor de Arte & Designer | Design: diagrama layouts 1080x1440 mantendo fotos reais |
-| 🗂️ | **Enzo** | Curador de Acervo & Catálogo | Catálogo/Fotos: sorteia fotos/produtos sem repetições |
+| 👑 | **Augusto** | Head de Inteligência & Estratégia | Supervisor: cruza métricas com conteúdo e emite alertas |
+| 📊 | **Vicente** | Analista de Tráfego & Performance | Métricas: coleta dados do Meta Ads (gasto, cliques, WhatsApp) |
+| ✍️ | **Clarice** | Redatora & Copywriter | Legenda: escreve headlines, selos e copies no padrão da marca |
+| 🎨 | **Joaquim** | Diretor de Arte & Designer | Design: diagrama layouts 1080x1440 mantendo fotos reais |
+| 🗂️ | **Benedito** | Curador de Acervo & Catálogo | Catálogo/Fotos: sorteia fotos/produtos sem repetições |
 
 ---
 
