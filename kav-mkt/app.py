@@ -1,8 +1,12 @@
 """Kav — Automação de Marketing Multi-Agente (interface web).
 
-Um clique cria um post completo para o cliente: produto escolhido do catálogo, legenda
-no padrão do cliente e imagem no layout de referência. Nenhuma postagem é feita em
-redes sociais — o resultado é para revisão e publicação manual.
+Um clique cria um post completo para o cliente:
+- Cliente de produto (ex: Ponto Car): produto escolhido do catálogo, legenda no padrão e imagem.
+- Cliente de carrossel (ex: Kav): pauta escolhida, roteiro de 1 a 7 páginas e imagens consistentes.
+- Cliente de fotos (ex: NN Restaurante): foto real do repositório, legenda no padrão e diagramação sobre a foto.
+- Supervisor e Métricas: diagnóstico consultivo cruzando posts e métricas do Meta Ads / Instagram.
+
+Nenhuma postagem é feita em redes sociais — o resultado é para revisão e publicação manual.
 """
 from __future__ import annotations
 
@@ -24,6 +28,7 @@ try:
 except Exception:
     pass  # sem secrets.toml (rodando local só com .env)
 
+from agents import agente_supervisor  # noqa: E402
 from agents.agente_design import ajustar_imagem  # noqa: E402
 from orchestrator import gerar_carrossel, gerar_post, gerar_post_fotos  # noqa: E402
 from utils import historico  # noqa: E402
@@ -40,6 +45,15 @@ def _eh_carrossel(cliente: dict) -> bool:
 
 def _eh_fotos(cliente: dict) -> bool:
     return cliente["config"].get("tipo") == "fotos"
+
+
+def _meta_conectado(cliente: dict) -> bool:
+    slug = cliente.get("slug", "")
+    slug_var = slug.upper().replace("-", "_")
+    tem_token = bool(os.environ.get(f"META_ACCESS_TOKEN__{slug_var}"))
+    meta_cfg = cliente.get("config", {}).get("meta", {})
+    tem_conta = bool(meta_cfg.get("ad_account_id") or meta_cfg.get("instagram_account_id"))
+    return tem_token and tem_conta
 
 
 @st.cache_data(ttl=300, show_spinner=False)
@@ -69,12 +83,14 @@ def _status_cliente(cliente: dict) -> list:
             historico.usa_github(),
             "Histórico salvo no GitHub" if historico.usa_github() else "Histórico só local (some ao reiniciar)",
         ),
+        (_meta_conectado(cliente), "Métricas Meta Ads conectadas" if _meta_conectado(cliente) else "Métricas Meta Ads (opcional)"),
     ]
 
 
 def _status_cliente_fotos(cliente: dict) -> list:
     fotos = cliente.get("fotos") or []
     legenda_provisoria = "PROVISÓRIO" in cliente["legenda_padrao"]
+    meta_ok = _meta_conectado(cliente)
     return [
         (_api_key_configurada(), "Chave da OpenAI"),
         (bool(fotos), f"Repositório de fotos: {len(fotos)} imagens"),
@@ -89,6 +105,7 @@ def _status_cliente_fotos(cliente: dict) -> list:
             historico.usa_github(),
             "Histórico salvo no GitHub" if historico.usa_github() else "Histórico só local (some ao reiniciar)",
         ),
+        (meta_ok, "Métricas Meta Ads conectadas" if meta_ok else "Métricas Meta Ads (aguardando token)"),
     ]
 
 
@@ -109,6 +126,7 @@ def _status_cliente_carrossel(cliente: dict) -> list:
             historico.usa_github(),
             "Histórico salvo no GitHub" if historico.usa_github() else "Histórico só local (some ao reiniciar)",
         ),
+        (_meta_conectado(cliente), "Métricas Meta Ads conectadas" if _meta_conectado(cliente) else "Métricas Meta Ads (opcional)"),
     ]
 
 
@@ -200,11 +218,11 @@ Nada é postado automaticamente. Suba novas fotos em `clientes/<cliente>/fotos/`
    30 dias.
 2. **Legenda** — escreve chamada, selo do produto e legenda no padrão do cliente.
 3. **Design** — sorteia 1 das referências de layout do cliente e gera a imagem com a
-   foto real do produto e o logo oficial, tudo desenhado na mesma chamada.
+   foto real do produto; o logo é aplicado por cima, idêntico ao original.
 
 Nada é postado automaticamente. O catálogo é atualizado pedindo ao Claude (via Claude
 in Chrome) — ver `clientes/README.md`.
-        """
+            """
         )
 
 # ---------------------------------------------------------------------------
@@ -379,7 +397,7 @@ else:
             detalhes = [
                 f"Layout: {imagem['referencia_layout']}" if imagem.get("referencia_layout") else "Sem referência de layout",
                 "com foto real do produto" if imagem.get("com_foto_produto") else None,
-                f"{imagem.get('modelo')} · gerado em {imagem.get('tamanho_gerado') or '?'} · cortado para {imagem.get('tamanho')}",
+                f"{imagem.get('modelo')} · {imagem.get('tamanho')}",
             ]
             st.caption(" · ".join(d for d in detalhes if d))
 
@@ -393,7 +411,7 @@ else:
             if aplicar and instrucao.strip():
                 try:
                     with st.spinner("Aplicando o ajuste..."):
-                        novo = ajustar_imagem(base64.b64decode(imagem["imagem_b64"]), instrucao)
+                        novo = ajustar_imagem(base64.b64decode(imagem["imagem_sem_logo_b64"]), instrucao, cliente)
                     post["imagem"] = {**imagem, **novo}
                     st.rerun()
                 except Exception as exc:
@@ -454,3 +472,81 @@ for registro in reversed(registros[-15:]):
     with st.expander(f"{quando} — {registro.get('produto_nome')}"):
         st.markdown(f"**Chamada:** {registro.get('headline')}")
         st.code(registro.get("legenda") or "", language=None, wrap_lines=True)
+
+# ---------------------------------------------------------------------------
+# Métricas & Supervisor
+# ---------------------------------------------------------------------------
+
+st.divider()
+st.subheader("📊 Métricas & Supervisor de Inteligência")
+st.caption("Diagnóstico consultivo e observador: cruza métricas de tráfego pago (Meta Ads), presença orgânica (Instagram) e histórico de postagens. Não executa ações sozinho.")
+
+col_btn, col_info = st.columns([1, 3])
+with col_btn:
+    rodar_diag = st.button("🔍 Rodar Diagnóstico do Supervisor", type="secondary", width="stretch")
+
+if rodar_diag:
+    try:
+        with st.spinner("Consultando dados de métricas e gerando diagnóstico com o Supervisor..."):
+            analise = agente_supervisor.supervisionar(cliente)
+            st.session_state[f"supervisor_{slug}"] = analise
+    except Exception as exc:
+        st.error(f"Erro ao rodar diagnóstico do Supervisor: {exc}")
+
+diag = st.session_state.get(f"supervisor_{slug}")
+if diag:
+    # 1. Status Geral e Resumo Executivo
+    status = diag.get("status_geral", "saudavel")
+    mapa_status = {
+        "saudavel": ("🟢 CONTA SAUDÁVEL", "success"),
+        "atencao": ("🟡 ATENÇÃO NECESSÁRIA", "warning"),
+        "critico": ("🔴 PONTO CRÍTICO DETECTADO", "error"),
+    }
+    titulo_status, banner_tipo = mapa_status.get(status, ("⚪ DIAGNÓSTICO", "info"))
+    
+    st.markdown(f"### {titulo_status} — {cliente['nome']}")
+    if diag.get("resumo_executivo"):
+        st.info(diag["resumo_executivo"])
+
+    # 2. Alertas Estratégicos
+    alertas = diag.get("alertas") or []
+    if alertas:
+        st.markdown("#### 🚨 Alertas do Período")
+        for alerta in alertas:
+            nivel = alerta.get("nivel", "atencao")
+            tit = alerta.get("titulo", "")
+            desc = alerta.get("descricao", "")
+            imp = alerta.get("impacto", "")
+            bloco_msg = f"**{tit}**\n\n{desc}\n\n*Impacto no negócio:* {imp}"
+            if nivel == "critico":
+                st.error(bloco_msg)
+            elif nivel == "atencao":
+                st.warning(bloco_msg)
+            else:
+                st.success(bloco_msg)
+
+    # 3. Cruzamento Mídia Paga vs Presença Orgânica
+    cruzamento = diag.get("cruzamento_midia_e_conteudo") or {}
+    if cruzamento:
+        col_org, col_pago = st.columns(2)
+        with col_org, st.container(border=True):
+            st.markdown("##### 📱 Presença Orgânica (Instagram)")
+            st.markdown(cruzamento.get("diagnostico_organico", "Sem dados."))
+        with col_pago, st.container(border=True):
+            st.markdown("##### 🎯 Tráfego Pago (Meta Ads)")
+            st.markdown(cruzamento.get("diagnostico_pago", "Sem dados."))
+
+        if cruzamento.get("alinhamento"):
+            st.caption(f"**Alinhamento geral:** {cruzamento.get('alinhamento')}")
+
+    # 4. Ações Recomendadas para o Gestor
+    recomendacoes = diag.get("recomendacoes_prioritarias") or []
+    if recomendacoes:
+        st.markdown("#### 📋 Ações Recomendadas para o Gestor")
+        for rec in recomendacoes:
+            prio = rec.get("prioridade", "•")
+            acao = rec.get("acao", "")
+            just = rec.get("justificativa", "")
+            with st.container(border=True):
+                st.markdown(f"**Prioridade {prio}: {acao}**")
+                st.caption(f"Justificativa baseada nos dados: {just}")
