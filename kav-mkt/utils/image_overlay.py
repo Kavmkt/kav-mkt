@@ -21,7 +21,7 @@ brief (8%) por consistência — mesma régua nos dois lugares.
 from io import BytesIO
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 LARGURA_PADRAO = 1080
 ALTURA_PADRAO = 1440
@@ -48,11 +48,27 @@ def recortar_formato_final(imagem_bytes: bytes, largura: int = LARGURA_PADRAO, a
     return _png(imagem)
 
 
-def guia_posicao_logo(caminho_logo: Path, posicao: str, largura: int = LARGURA_PADRAO, altura: int = ALTURA_PADRAO) -> bytes:
+def guia_posicao_logo(
+    caminho_logo: Path,
+    posicao: str,
+    largura: int = LARGURA_PADRAO,
+    altura: int = ALTURA_PADRAO,
+    margem_extra_vertical: float = 0.0,
+) -> bytes:
     """Canvas transparente do MESMO tamanho do post final (1080x1440), com o logo já
     posicionado onde deve aparecer. Enviado como referência para a IA copiar posição e
     escala exatas do logo — e, de quebra, dar a ela mais um sinal visual (junto com a
-    referência de layout) da proporção de saída esperada."""
+    referência de layout) da proporção de saída esperada.
+
+    `margem_extra_vertical` (fração 0-1, só quando `posicao` é superior/inferior): soma à
+    margem de respiro vertical do logo a mesma folga usada para avisar a IA sobre o corte
+    de topo/rodapé (ver `agents.agente_design._margem_corte_vertical`). Corrigido em
+    2026-09-27: antes só o texto do brief avisava essa folga extra, e o guia visual (que
+    pesa mais que o texto pra IA generativa) mostrava o logo só com a margem "normal" —
+    então mesmo a IA seguindo o guia à risca, o logo ficava perto o bastante da borda pra
+    ser cortado quando a API gerava num tamanho mais alto que o pedido. Passar essa folga
+    aqui, embutida na própria posição do guia, é mais confiável do que só pedir por
+    texto."""
     canvas = Image.new("RGBA", (largura, altura), (0, 0, 0, 0))
     logo = Image.open(caminho_logo).convert("RGBA")
     largura_logo = int(largura * LOGO_LARGURA)
@@ -64,8 +80,48 @@ def guia_posicao_logo(caminho_logo: Path, posicao: str, largura: int = LARGURA_P
         x = (largura - logo.width) // 2
     else:
         x = largura - logo.width - margem
-    y = margem if posicao.startswith("superior") else altura - logo.height - margem
+    margem_vertical = margem + int(altura * margem_extra_vertical)
+    y = margem_vertical if posicao.startswith("superior") else altura - logo.height - margem_vertical
     canvas.paste(logo, (x, y), logo)
+    return _png(canvas)
+
+
+COR_MARCADOR_GUIA = (255, 0, 255, 255)  # magenta pura: nunca aparece numa foto de comida
+# ou na paleta de marca de nenhum cliente — inequívoco como "isto é só guia, não desenhe
+# essa cor de verdade" para a IA generativa.
+
+
+def guia_zona_cta(
+    largura: int = LARGURA_PADRAO,
+    altura: int = ALTURA_PADRAO,
+    margem_extra_vertical: float = 0.0,
+    altura_fracao: float = 0.10,
+) -> bytes:
+    """Canvas transparente do MESMO tamanho do post final, com um retângulo sólido
+    marcando a área exata onde a faixa de CTA (localização + WhatsApp) de uma peça de
+    campanha deve ficar — mesma ideia de `guia_posicao_logo`, adaptada pra um elemento
+    novo (não existe arquivo de referência pra desenhar por cima, então o retângulo
+    inteiro É o guia).
+
+    Criada em 2026-09-27 depois de ver, em teste real, a faixa de CTA sendo cortada
+    (a mesma folga de segurança, quando pedida só por texto no brief, não bastou — a IA
+    generativa insiste em colar esse tipo de elemento bem na borda inferior, ignorando a
+    instrução em palavras). Um guia visual pesa mais que texto, igual já valia para o
+    logo.
+    """
+    canvas = Image.new("RGBA", (largura, altura), (0, 0, 0, 0))
+    margem_lateral = int(largura * LOGO_MARGEM)
+    margem_vertical = int(largura * LOGO_MARGEM) + int(altura * margem_extra_vertical)
+    altura_zona = int(altura * altura_fracao)
+    caixa = (
+        margem_lateral,
+        altura - margem_vertical - altura_zona,
+        largura - margem_lateral,
+        altura - margem_vertical,
+    )
+    desenho = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    ImageDraw.Draw(desenho).rounded_rectangle(caixa, radius=altura_zona // 3, fill=COR_MARCADOR_GUIA)
+    canvas.alpha_composite(desenho)
     return _png(canvas)
 
 

@@ -55,11 +55,14 @@ importante da foto real (ex: em cima do prato):
 - TODAS as bordas (topo, rodapé e as duas laterais): mantenha texto, selo, faixa de CTA
   e logo a pelo menos __MARGEM_LATERAL__% de distância de qualquer borda da imagem. Nunca
   cole nenhum deles rente à borda, mesmo nas laterais.
-- O logo vai na faixa do cabeçalho/topo (__AREA_LOGO__) com escala equilibrada e respiro
-  ao redor, nunca cobrindo partes nobres do prato.
-- A faixa de CTA (localização + chamada para WhatsApp) vai na parte inferior, em um bloco
-  de cor sólida (uma das cores da marca) com contraste forte, curta e legível a
-  distância — no estilo de selo/rótulo de anúncio, não como texto corrido.
+- O logo vai exatamente na posição mostrada no guia de logo (__AREA_LOGO__, no mesmo
+  tamanho e escala do guia), nunca cobrindo partes nobres do prato. Não mova o logo para
+  outra área da imagem além dessa.
+- A faixa de CTA (localização + chamada para WhatsApp) ocupa exatamente a área marcada em
+  magenta no guia de zona de CTA — nunca ultrapasse esse retângulo (principalmente por
+  baixo dele, é a parte mais perto da borda que será cortada). Dentro dele, desenhe um
+  bloco de cor sólida (uma das cores da marca, nunca magenta) com contraste forte, curta e
+  legível a distância — no estilo de selo/rótulo de anúncio, não como texto corrido.
 
 CORES: use somente as cores da marca listadas nas diretrizes acima para os elementos
 gráficos (bloco da headline, selo do prato, faixa de CTA, fundo atrás do logo) — não
@@ -124,9 +127,10 @@ def gerar_brief_campanha(estrategia: dict, foto: dict, cliente: dict, referencia
     if estrategia.get("cta"):
         partes.append(f'Texto da faixa de CTA (renderizar exatamente): "{estrategia["cta"]}"')
     partes.append(
-        'Aplicação da marca (seguir rigorosamente a referência de logo): '
-        'Reproduzir fielmente o logotipo oficial da N&N Restaurante no cabeçalho/topo do post, '
-        'garantindo contraste evidente e margens de respiro de cerca de 5% das bordas.'
+        'Aplicação da marca (seguir rigorosamente o guia de logo, não mova para outra área): '
+        'Reproduzir fielmente o logotipo oficial da N&N Restaurante exatamente na posição e '
+        'escala mostradas no guia de logo, garantindo contraste evidente e margens de respiro '
+        'de cerca de 5% das bordas.'
     )
     return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=700, temperature=0.8)
 
@@ -154,22 +158,44 @@ def gerar_imagem_campanha(brief: str, foto: dict, cliente: dict, referencia: Opt
             "final piece keeps the real dish/venue photo above as the background scene.",
         ))
 
-    logo_referencia = None
-    if cliente.get("logo_referencias"):
-        logo_referencia = cliente["logo_referencias"][0]
-    else:
-        logo_arquivo, _ = _logo(cliente, referencia)
-        logo_referencia = logo_arquivo
-
-    if logo_referencia:
+    logo_arquivo, posicao_logo = _logo(cliente, referencia)
+    if logo_arquivo:
+        # Canvas do tamanho final, não o arquivo bruto do logo — mesma correção aplicada
+        # em agente_design_fotos.py em 2026-09-27 (ver comentário lá para o porquê:
+        # mandar o logo "torto", com proporção bem diferente da final, junto com outras
+        # referências confunde o modelo sobre a proporção de saída esperada).
+        guia_logo = image_overlay.guia_posicao_logo(
+            logo_arquivo, posicao_logo, margem_extra_vertical=_margem_corte_vertical() / 100
+        )
         referencias_imagem.append((
-            logo_referencia.read_bytes(),
-            "the official BRAND LOGO of N&N Restaurante. You must follow and reproduce "
-            "this logo EXACTLY (same typography, symbols, colors, and proportions) into the "
-            "piece's graphic layout. Position it cleanly in the header/top area (or designated "
-            "branding zone), ensuring strong contrast, breathing margins (~5% from edges), "
-            "and perfect integration into the overall piece.",
+            guia_logo,
+            "a template the exact same pixel dimensions as the final image, transparent "
+            "everywhere except where the client's logo sits — reproduce that logo "
+            "pixel-for-pixel, at that exact SCALE, keeping its exact colors, proportions "
+            "and details (do not redraw, recolor or distort it). Its position (top/bottom "
+            "band) is shown here exactly as it must appear in the final piece. Everywhere "
+            "else in this template is transparent guidance only, not part of the visible "
+            "scene.",
         ))
+
+    # Guia da zona de CTA: criado em 2026-09-27 depois de ver, em teste real, a faixa de
+    # CTA sendo cortada mesmo com a margem de segurança pedida só por texto — um guia
+    # visual (igual ao do logo) pesa mais pra IA generativa do que uma instrução em
+    # palavras.
+    guia_cta = image_overlay.guia_zona_cta(margem_extra_vertical=_margem_corte_vertical() / 100)
+    referencias_imagem.append((
+        guia_cta,
+        "a template the exact same pixel dimensions as the final image, transparent "
+        "everywhere except a solid MAGENTA rounded rectangle — that magenta rectangle is "
+        "a placeholder marking the exact area, size and position for the CTA strip (the "
+        "WhatsApp/location call-to-action). Draw the actual CTA strip (a rounded solid "
+        "block in one of the brand colors, never magenta, containing a WhatsApp icon and "
+        "the CTA text) filling that exact rectangle — nothing belonging to the CTA strip "
+        "(background, icon or text) may extend beyond it, especially not below its "
+        "bottom edge. The magenta color itself must never appear in the final piece; "
+        "everywhere else in this template is transparent guidance only, not part of the "
+        "visible scene.",
+    ))
 
     bruta = None
     layout_usado = referencia["arquivo"].name if referencia else None

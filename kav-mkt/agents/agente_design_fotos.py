@@ -60,8 +60,9 @@ importante da foto real (ex: em cima do prato):
 - TODAS as bordas (topo, rodapé e as duas laterais): mantenha texto e logo a pelo menos
   __MARGEM_LATERAL__% de distância de qualquer borda da imagem. Nunca cole texto ou o
   logo rente à borda, mesmo nas laterais.
-- O logo vai na faixa do cabeçalho/topo (__AREA_LOGO__) com escala equilibrada e respiro
-  ao redor, nunca cobrindo partes nobres do prato.
+- O logo vai exatamente na posição mostrada no guia de logo (__AREA_LOGO__, no mesmo
+  tamanho e escala do guia), nunca cobrindo partes nobres do prato. Não mova o logo para
+  outra área da imagem além dessa.
 
 CORES: use somente as cores da marca listadas nas diretrizes acima para os elementos
 gráficos (bloco da headline, selo do prato, faixas, fundo atrás do logo) — não invente
@@ -120,9 +121,10 @@ def gerar_brief_foto(copy: dict, foto: dict, cliente: dict, referencia: Optional
     if copy.get("selo_produto"):
         partes.append(f'Selo do prato (renderizar exatamente): "{copy["selo_produto"]}"')
     partes.append(
-        'Aplicação da marca (seguir rigorosamente a referência de logo): '
-        'Reproduzir fielmente o logotipo oficial da N&N Restaurante no cabeçalho/topo do post, '
-        'garantindo contraste evidente e margens de respiro de cerca de 5% das bordas.'
+        'Aplicação da marca (seguir rigorosamente o guia de logo, não mova para outra área): '
+        'Reproduzir fielmente o logotipo oficial da N&N Restaurante exatamente na posição e '
+        'escala mostradas no guia de logo, garantindo contraste evidente e margens de respiro '
+        'de cerca de 5% das bordas.'
     )
     return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=650, temperature=0.8)
 
@@ -148,21 +150,29 @@ def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optiona
             "final piece keeps the real dish/venue photo above as the background scene.",
         ))
 
-    logo_referencia = None
-    if cliente.get("logo_referencias"):
-        logo_referencia = cliente["logo_referencias"][0]
-    else:
-        logo_arquivo, _ = _logo(cliente, referencia)
-        logo_referencia = logo_arquivo
-
-    if logo_referencia:
+    logo_arquivo, posicao_logo = _logo(cliente, referencia)
+    if logo_arquivo:
+        # Canvas do tamanho final (não o arquivo do logo sozinho, que tem proporção bem
+        # diferente — ex: uma faixa larga e baixa — e confunde o modelo sobre a
+        # proporção de saída esperada; ver docstring de utils/image_overlay). Corrigido
+        # em 2026-09-27: antes esta função enviava o arquivo bruto do logo (direto de
+        # cliente["logo_referencias"], quando existia) como referência — igual ao
+        # agente_design.py fazia antes de adotar esse canvas-guia. É essa a causa mais
+        # provável do corte de logo/rodapé visto pelo cliente: com múltiplas referências
+        # de proporções bem diferentes (foto real + layout + logo "torto"), o modelo
+        # tende a gerar num tamanho mais alto que o pedido, que depois é recortado.
+        guia_logo = image_overlay.guia_posicao_logo(
+            logo_arquivo, posicao_logo, margem_extra_vertical=_margem_corte_vertical() / 100
+        )
         referencias_imagem.append((
-            logo_referencia.read_bytes(),
-            "the official BRAND LOGO of N&N Restaurante. You must follow and reproduce "
-            "this logo EXACTLY (same typography, symbols, colors, and proportions) into the "
-            "piece's graphic layout. Position it cleanly in the header/top area (or designated "
-            "branding zone), ensuring strong contrast, breathing margins (~5% from edges), "
-            "and perfect integration into the overall piece.",
+            guia_logo,
+            "a template the exact same pixel dimensions as the final image, transparent "
+            "everywhere except where the client's logo sits — reproduce that logo "
+            "pixel-for-pixel, at that exact SCALE, keeping its exact colors, proportions "
+            "and details (do not redraw, recolor or distort it). Its position (top/bottom "
+            "band) is shown here exactly as it must appear in the final piece. Everywhere "
+            "else in this template is transparent guidance only, not part of the visible "
+            "scene.",
         ))
 
     bruta = None

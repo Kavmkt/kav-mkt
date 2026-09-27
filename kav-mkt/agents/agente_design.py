@@ -189,8 +189,12 @@ def gerar_imagem(brief: str, produto: dict, cliente: dict, referencia: Optional[
     logo_arquivo, posicao_logo = _logo(cliente, referencia)
     if logo_arquivo:
         # Canvas do tamanho final (não o arquivo do logo sozinho, que tem proporção bem
-        # diferente) — ver docstring do módulo para o porquê.
-        guia_logo = image_overlay.guia_posicao_logo(logo_arquivo, posicao_logo)
+        # diferente) — ver docstring do módulo para o porquê. margem_extra_vertical:
+        # embute no próprio guia a folga contra o corte de topo/rodapé (ver
+        # _margem_corte_vertical) — mais confiável do que só pedir por texto.
+        guia_logo = image_overlay.guia_posicao_logo(
+            logo_arquivo, posicao_logo, margem_extra_vertical=_margem_corte_vertical() / 100
+        )
         referencias_imagem.append((
             guia_logo,
             "a template the exact same pixel dimensions as the final image, transparent "
@@ -313,6 +317,10 @@ def _margem_corte_vertical() -> int:
         if largura / altura >= razao_final:
             return 0  # nesse caso o recorte é nas laterais, não no topo/rodapé
         corte_total = 1 - (largura / razao_final) / altura
-        return round(corte_total / 2 * 100) + 4
+        # +7 (não mais +4): mesmo com o guia visual do logo/CTA embutindo essa folga na
+        # própria posição (ver image_overlay.guia_posicao_logo/guia_zona_cta), teste real
+        # em 2026-09-27 ainda viu um corte leve no topo — a IA generativa não é
+        # perfeitamente precisa nem seguindo um guia visual. Folga maior aqui.
+        return round(corte_total / 2 * 100) + 7
 
     return max(_margem_para(openai_client.IMAGE_SIZE), _margem_para(openai_client.TAMANHO_IMAGEM_SEGURO))

@@ -212,7 +212,10 @@ def gerar_imagens_carrossel(
     logo_arquivo, posicao_logo = _logo(cliente, referencia)
     posicao_logo_final = _posicao_logo_centralizada(posicao_logo)
     guia_logo_final = (
-        image_overlay.guia_posicao_logo(logo_arquivo, posicao_logo_final) if logo_arquivo else None
+        image_overlay.guia_posicao_logo(
+            logo_arquivo, posicao_logo_final, margem_extra_vertical=_margem_corte_vertical() / 100
+        )
+        if logo_arquivo else None
     )
 
     slides = []
