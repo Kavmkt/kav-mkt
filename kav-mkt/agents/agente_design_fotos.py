@@ -1,4 +1,3 @@
-from __future__ import annotations
 """Agente de Design (Fotos): escreve o brief e gera a imagem final para clientes "de
 fotos" (config.json com "tipo": "fotos") — hoje só o NN Restaurante.
 
@@ -9,14 +8,13 @@ dali `escolher_referencia`, `AREAS_LOGO`, `MARGEM_SEGURANCA_BORDA` e
 lidas), reaproveitadas pra não duplicar geometria/constantes que não têm nada de
 específico de cliente.
 
-DIFERENÇA CENTRAL para o fluxo de produto/carrossel: aqui a cena NÃO é gerada do zero
-pela IA. A foto real do prato/ambiente (escolhida por agents/agente_foto.py em
-clientes/<slug>/fotos/) é enviada como referência OBRIGATÓRIA e deve permanecer
-praticamente inalterada — a IA só aplica um tratamento gráfico diagramado por cima dela
-(headline, selo do prato e o logo do cliente), no estilo do KV do cliente e da
-referência de layout sorteada (quando houver), exatamente como pedido pelo cliente: a
-referência de layout e a foto real vão juntas, na mesma chamada, para o gerador de
-imagem.
+DIRETRIZ CENTRAL DE ARTE:
+A comida mostrada na foto real (escolhida por agents/agente_foto.py em clientes/<slug>/fotos/)
+é a comida autêntica do restaurante — mantenha a fidelidade aos ingredientes reais do prato,
+mas ELEVE a apresentação visual: ambientação gastronômica profissional (mesa de madeira rústica,
+iluminação quente de restaurante, fundo desfocado aconchegante), eliminando elementos amadores
+da foto crua de celular (como mãos segurando potes plásticos ou fundos domésticos improvisados).
+Sobre essa fotografia profissional, aplica-se diagramação limpa, sofisticada e sem clichês.
 """
 import base64
 from typing import Optional
@@ -27,78 +25,65 @@ from utils.openai_client import chamar_ia
 
 # Placeholders substituídos com .replace() (e não .format()): a skill do cliente pode ter
 # chaves {} que quebrariam o .format().
-SYSTEM_PROMPT = """Você é o Diretor de Arte da Kav (@kav.mkt). Sua função é escrever o
-brief de UMA peça do NN Restaurante, pronto para ser enviado direto a um gerador de
-imagem por IA — sem chance de retrabalho, então precisa ser completo e específico logo
-na primeira vez.
+SYSTEM_PROMPT = """Você é o Diretor de Arte sênior da Kav (@kav.mkt). Sua função é escrever o
+brief de UMA peça do Instagram para o NN Restaurante, pronto para ser enviado direto a um gerador de
+imagem por IA de alta qualidade.
 
 DIRETRIZES DE MARCA E KV DO CLIENTE:
 __SKILL__
 
-Contexto de produção (o gerador de imagem recebe junto com o seu brief):
-- a FOTO REAL do prato/buffet/ambiente a ser usada — ela é a base da peça e chega já
-  pronta (fotografada de verdade). Ela deve permanecer PRATICAMENTE INALTERADA: mesmo
-  enquadramento, mesma comida/ambiente, mesma iluminação original. Você não está
-  pedindo uma cena nova nem uma "reimaginação" do prato — está pedindo a aplicação de um
-  tratamento gráfico (texto, faixas, selo, logo) por cima dela, como uma arte de post
-  montada sobre uma foto real;
+DIREÇÃO DE ARTE E FOTOGRAFIA CULINÁRIA:
+- BASE DA CENA: a comida da foto real de referência é o herói da imagem. Os ingredientes, carnes,
+  acompanhamentos e porção real devem ser preservados com fidelidade.
+- AMBIENTAÇÃO E ELEVAÇÃO DO CENÁRIO: eleve a foto amadora de celular para um padrão editorial
+  de fotografia de comida. O prato deve estar ambientado com elegância sobre uma mesa de madeira
+  rústica de restaurante, com iluminação quente, natural e apetitosa. Se a foto original tiver
+  uma mão segurando uma embalagem plástica ou fundo doméstico/parede com planta, ELIMINE a mão
+  e a embalagem plástica e apresente a refeição servida de forma impecável sobre a mesa.
 __CONTEXTO_LAYOUT__
-- a referência oficial do LOGOTIPO DA MARCA N&N: uma imagem contendo o logo oficial do cliente — reproduza esse logotipo com MÁXIMA FIDELIDADE na arte (mesmas formas, tipografia, cores e proporções), perfeitamente diagramado e integrado ao layout do post (no topo ou no cabeçalho em área de destaque), com contraste evidente e margens de respiro confortáveis (~5% das bordas), sem distorcer nem reinventar a marca;
+- GUIA DE LOGO: um template do MESMO formato/proporção da imagem final, transparente
+  exceto onde o logo oficial do cliente está posicionado — reproduza o logo pixel a pixel dali
+  (mesmas cores, proporções e detalhes, sem redesenhar ou distorcer) na MESMA ESCALA e na mesma
+  faixa vertical mostrada no guia.
 
-IMPORTANTE: as referências de layout e de logo estão no formato final exato do post
-(retrato, mais alto que largo). O resultado final também deve sair nessa MESMA proporção
-— não em quadrado nem em outro formato, mesmo que a foto real tenha outra proporção
-original (ajuste o enquadramento dela pra caber no formato retrato final, sem inventar
-conteúdo novo fora do que já está na foto).
+REGRAS RÍGIDAS DE DIAGRAMAÇÃO E TIPOGRAFIA (ANTI-AMADORISMO):
+1. PROIBIDO CONTORNO BRANCO / GLOW: NUNCA crie letras com sombra branca difusa, contorno branco
+   grosso (stroke) ou glow esfumado atrás do texto. Isso parece arte amadora dos anos 2000.
+   A tipografia (Playfair Display para headline) deve ser sólida, nítida e sofisticada.
+   Para garantir contraste limpo sobre a foto:
+   - Posicione o texto em uma área limpa e com respiro da foto, OU
+   - Aplique um degradê sutil e natural escurecendo o fundo na região do texto (vignette suave), OU
+   - Utilize uma tarja/bloco retangular sólido e elegante em uma das cores oficiais da marca
+     (#2A2A2E cinza escuro ou #A31D1D vermelho) com tipografia em off-white quente (#F5EFE6).
+2. PROIBIDO SELO EM ELIPSE / CARIMBO REDONDO COM TALHERES: NUNCA desenhe selos circulares, elipses
+   com contorno ou carimbos de garfo e faca nos cantos da imagem. Se houver selo do prato,
+   desenhe-o como uma etiqueta retangular minimalista, uma fita sutil ou integre o texto de forma
+   limpa. Se não houver selo, NÃO adicione nenhum elemento gráfico circular.
+3. MARGENS DE SEGURANÇA:
+   - Deixe pelo menos __MARGEM__% de respiro livre no topo e no rodapé.
+   - Mantenha texto e logo a pelo menos __MARGEM_LATERAL__% de distância de qualquer borda lateral.
+   - O logo vai na faixa indicada no guia (__AREA_LOGO__) com área de respiro ao redor.
 
-MARGENS DE SEGURANÇA — valem para TEXTO (headline e selo) e para o LOGO, nenhum dos
-dois pode invadir essas faixas, e nenhum dos dois pode ser colocado sobre uma parte
-importante da foto real (ex: em cima do prato):
-- Topo e rodapé: deixe pelo menos __MARGEM__% de respiro livre de qualquer elemento
-  importante (texto, logo) nessas duas faixas — evita que nada fique colado na borda,
-  o que sempre parece amador, mesmo sem nenhum corte acontecer depois.
-- TODAS as bordas (topo, rodapé e as duas laterais): mantenha texto e logo a pelo menos
-  __MARGEM_LATERAL__% de distância de qualquer borda da imagem. Nunca cole texto ou o
-  logo rente à borda, mesmo nas laterais.
-- O logo vai exatamente na posição mostrada no guia de logo (__AREA_LOGO__, no mesmo
-  tamanho e escala do guia), nunca cobrindo partes nobres do prato. Não mova o logo para
-  outra área da imagem além dessa.
-
-CORES: use somente as cores da marca listadas nas diretrizes acima para os elementos
-gráficos (bloco da headline, selo do prato, faixas, fundo atrás do logo) — não invente
-cores fora dessa paleta. Garanta contraste forte entre cada texto e a foto por trás.
-
-O brief (em inglês) deve definir, em um único parágrafo denso:
-- que a foto de referência é a foto REAL a ser usada como base, sem alterar o
-  prato/ambiente nela — só aplicando o tratamento gráfico por cima, encaixado no
-  formato retrato final;
-- a headline e o selo do prato, com o tratamento gráfico previsto no KV do cliente
-  (fonte serifada de destaque na headline, fonte geométrica no selo), usando só as
-  cores da marca;
-- a aplicação fiel do logo a partir da referência de logotipo, perfeitamente integrado no
-  topo/cabeçalho da peça com excelente contraste.
-
-Regras de texto na imagem:
-- Renderize a headline e o selo EXATAMENTE como informados, palavra por palavra, em
-  português — sem traduzir, resumir ou acrescentar palavras.
-- Nenhum outro texto além deles (sem preço inventado, sem slogan não informado).
-- Letras grandes e legíveis, sempre dentro das margens de segurança descritas acima, e
-  nunca sobrepostas a uma parte importante do prato/ambiente da foto real.
+O brief (em inglês) deve definir, em um parágrafo denso e direto:
+- Que a comida da foto real deve ser reproduzida fielmente em seus ingredientes, mas ambientada
+  em fotografia gastronômica profissional sobre mesa de madeira rústica, sem mãos ou fundos improvisados;
+- A headline exata, com tipografia serifada de alto impacto (Playfair Display), nítida e sem contornos
+  brancos esfumados;
+- A ausência total de elipses/selos circulares amadores;
+- A reprodução precisa do logo a partir do guia oficial na escala e posição indicadas.
 
 Retorne APENAS o brief em texto corrido, em inglês — exceto a headline e o selo, citados
 entre aspas exatamente em português. Sem explicações, sem markdown, sem listas.
 """
 
 CONTEXTO_COM_REFERENCIA = (
-    "- uma imagem de referência de layout do cliente, que define só a ESTRUTURA GRÁFICA\n"
-    "  a reproduzir (posição e forma da headline, do selo, das faixas de cor) — a CENA em\n"
-    "  si vem da foto real, não desta referência: ignore qualquer prato, ambiente, texto\n"
-    "  ou logo mostrado nela, copie só o tratamento gráfico;"
+    "- REFERÊNCIA DE LAYOUT DA MARCA: uma imagem de layout do cliente que define a ESTRUTURA\n"
+    "  GRÁFICA a reproduzir (proporção da headline, equilíbrio visual, sobriedade e estilo). Emule\n"
+    "  esse alinhamento editorial sofisticado por cima da foto gastronômica ambientada;"
 )
 CONTEXTO_SEM_REFERENCIA = (
-    "- nenhuma referência de layout: descreva também o tratamento gráfico (posição e\n"
-    "  forma da headline, do selo e das faixas) seguindo o KV do cliente, sempre por\n"
-    "  cima da foto real, sem cobrir as partes importantes dela;"
+    "- SEM TEMPLATE ESPECÍFICO: siga o KV oficial do cliente com diagramação moderna, clean e\n"
+    "  equilibrada, sem poluição visual ou elementos decorativos desnecessários;"
 )
 
 
@@ -119,60 +104,54 @@ def gerar_brief_foto(copy: dict, foto: dict, cliente: dict, referencia: Optional
         partes.append(f"Descrição: {foto['descricao']}")
     partes.append(f'Headline (renderizar exatamente): "{copy.get("headline_imagem")}"')
     if copy.get("selo_produto"):
-        partes.append(f'Selo do prato (renderizar exatamente): "{copy["selo_produto"]}"')
-    partes.append(
-        'Aplicação da marca (seguir rigorosamente o guia de logo, não mova para outra área): '
-        'Reproduzir fielmente o logotipo oficial da N&N Restaurante exatamente na posição e '
-        'escala mostradas no guia de logo, garantindo contraste evidente e margens de respiro '
-        'de cerca de 5% das bordas.'
-    )
-    return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=650, temperature=0.8)
+        partes.append(
+            f'Selo/tag do prato (se renderizar, use formato retangular minimalista, NUNCA elipse/círculo): "{copy["selo_produto"]}"'
+        )
+    else:
+        partes.append("Selo do prato: NENHUM (não desenhe nenhum selo, carimbo ou elipse — foque na foto e na headline)")
+    return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=650, temperature=0.7)
 
 
 def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optional[dict]) -> dict:
     """Gera a imagem do post a partir da foto REAL escolhida (referência obrigatória) +,
-    quando houver, a referência de layout do cliente + a referência de logo do cliente."""
+    quando houver, a referência de layout do cliente + o guia de logo — tudo na mesma
+    chamada de edição, seguindo exatamente o que o cliente pediu: enviar ao gerador de
+    imagem a referência de layout selecionada junto com a foto a ser usada."""
     avisos = []
     referencias_imagem = [(
         foto["arquivo"].read_bytes(),
-        "the REAL photo to use as the base of this piece (a real dish, buffet or venue "
-        "photo). Keep it essentially unchanged — same framing, same food/venue, same "
-        "original lighting. Do not invent a new scene or redesign what's in it; you are "
-        "only adding a graphic text/logo treatment on top of it.",
+        "the reference photo showing the authentic dish/food served by the restaurant. "
+        "Preserve this exact meal, ingredients, and culinary richness faithfully, but ELEVATE the "
+        "presentation into professional food photography: stage the dish in an appetizing "
+        "restaurant dining setting (on a warm rustic wooden table, natural warm restaurant lighting, "
+        "soft background dining room bokeh). If the original photo has awkward hands holding a container "
+        "or a distracting domestic wall/plant background, remove the hands and domestic clutter, "
+        "and present the delicious food cleanly and appetisingly on the table.",
     )]
 
     if referencia:
         referencias_imagem.append((
             referencia["arquivo"].read_bytes(),
-            "this brand's layout template. Reproduce ONLY its graphic treatment — "
-            "placement and shape of the headline block, the dish tag/badge, color bands "
-            "and typography style — never its scene, product, photo, text or logo. The "
-            "final piece keeps the real dish/venue photo above as the background scene.",
+            "this brand's layout reference template. Emulate its professional graphic design hierarchy: "
+            "the refined typography styling, letter spacing, clean alignment, and balance. "
+            "Do NOT invent ugly circular stamp graphics or fuzzy white glowing outlines around the text.",
         ))
 
     logo_arquivo, posicao_logo = _logo(cliente, referencia)
     if logo_arquivo:
-        # Canvas do tamanho final (não o arquivo do logo sozinho, que tem proporção bem
-        # diferente — ex: uma faixa larga e baixa — e confunde o modelo sobre a
-        # proporção de saída esperada; ver docstring de utils/image_overlay). Corrigido
-        # em 2026-09-27: antes esta função enviava o arquivo bruto do logo (direto de
-        # cliente["logo_referencias"], quando existia) como referência — igual ao
-        # agente_design.py fazia antes de adotar esse canvas-guia. É essa a causa mais
-        # provável do corte de logo/rodapé visto pelo cliente: com múltiplas referências
-        # de proporções bem diferentes (foto real + layout + logo "torto"), o modelo
-        # tende a gerar num tamanho mais alto que o pedido, que depois é recortado.
-        guia_logo = image_overlay.guia_posicao_logo(
-            logo_arquivo, posicao_logo, margem_extra_vertical=_margem_corte_vertical() / 100
-        )
+        guia_logo = image_overlay.guia_posicao_logo(logo_arquivo, posicao_logo)
         referencias_imagem.append((
             guia_logo,
             "a template the exact same pixel dimensions as the final image, transparent "
             "everywhere except where the client's logo sits — reproduce that logo "
             "pixel-for-pixel, at that exact SCALE, keeping its exact colors, proportions "
-            "and details (do not redraw, recolor or distort it). Its position (top/bottom "
-            "band) is shown here exactly as it must appear in the final piece. Everywhere "
-            "else in this template is transparent guidance only, not part of the visible "
-            "scene.",
+            "and details (do not redraw, recolor or distort it). Its vertical position "
+            "(top/bottom band) and default side are shown here, but its horizontal "
+            "position within that band is only a suggestion: place it wherever that band "
+            "is emptiest over the real photo — centered if the middle of the band is "
+            "free, kept to this side only if the middle is occupied by the dish or "
+            "another important part of the photo. Everywhere else in this template is "
+            "transparent guidance only, not part of the visible scene.",
         ))
 
     bruta = None

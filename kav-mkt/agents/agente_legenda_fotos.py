@@ -1,4 +1,3 @@
-from __future__ import annotations
 """Agente de Legenda (Fotos): a partir da foto escolhida pelo Agente de Repositório de
 Fotos, escreve a chamada da imagem, o selo do prato e a legenda completa do post,
 seguindo à risca o padrão de legenda do cliente (clientes/<slug>/legenda.md).
@@ -9,45 +8,122 @@ por este arquivo, e vice-versa. Isso é intencional: evita que um ajuste feito a
 o NN Restaurante afete o fluxo de legenda dos outros clientes, e vice-versa.
 """
 import random
+from datetime import datetime
+from typing import Tuple
+from zoneinfo import ZoneInfo
 
 from utils.openai_client import chamar_ia, extrair_json
 
-# Sorteado a cada post só para variar o gancho — a estrutura da legenda vem do padrão.
-ANGULOS_GANCHO = [
-    "fome de fim de tarde / hora do almoço",
+FUSO_SP = ZoneInfo("America/Sao_Paulo")
+
+DIAS_SEMANA = {
+    0: "Segunda-feira",
+    1: "Terça-feira",
+    2: "Quarta-feira",
+    3: "Quinta-feira",
+    4: "Sexta-feira",
+    5: "Sábado",
+    6: "Domingo",
+}
+
+
+def obter_contexto_temporal() -> Tuple[str, str, int]:
+    """Retorna o nome do dia em português, a data formatada e o índice do dia (0=segunda)."""
+    agora = datetime.now(FUSO_SP)
+    dia_idx = agora.weekday()
+    nome_dia = DIAS_SEMANA[dia_idx]
+    data_formatada = agora.strftime("%d/%m/%Y")
+    return nome_dia, data_formatada, dia_idx
+
+
+GANCHOS_POR_DIA = {
+    0: [  # Segunda
+        "começar a semana com energia e um almoço farto de verdade",
+        "almoço caseiro e reconfortante pra começar a segunda-feira com o pé direito",
+        "comida saborosa e sem complicação pra encarar a volta da rotina",
+    ],
+    1: [  # Terça
+        "pausa revigorante no meio do dia de trabalho com tempero de casa",
+        "aquele prato farto e suculento pra recarregar as energias na terça-feira",
+        "sabor de comida feita na hora que alegra a rotina",
+    ],
+    2: [  # Quarta
+        "metade da semana pede um almoço caprichado e com fartura",
+        "aquele tempero caseiro inconfundível que dá água na boca na hora do almoço",
+        "almoço rápido, quentinho e com gostinho caseiro",
+    ],
+    3: [  # Quinta
+        "o almoço que você merece pra dar aquele fôlego na reta final da semana",
+        "prato cheio e sabor de casa pra quebrar a rotina do trabalho",
+        "comida farta e acolhedora no meio do dia",
+    ],
+    4: [  # Sexta
+        "fechar a semana de trabalho com chave de ouro e um almoço especial",
+        "sexta-feira com aquele prato caprichado que comemora o fim de semana",
+        "almoço de sexta farto, saboroso e com gostinho de recompensa",
+    ],
+    5: [  # Sábado
+        "sábado de folga pra comer bem sem ter trabalho na cozinha",
+        "almoço em família com fartura, variedade e muito sabor",
+        "reunir quem você gosta em volta de uma mesa caseira no sábado",
+    ],
+    6: [  # Domingo
+        "domingo de descanso e aconchego com comida caseira de verdade",
+        "almoço de domingo quentinho pra relaxar com a família",
+        "fartura e sabor de almoço de domingo sem sujar panela",
+    ],
+}
+
+GANCHOS_GERAIS = [
     "fartura e tempero caseiro, de dar água na boca",
-    "convite pra sextar ou pro fim de semana com comida boa",
-    "praticidade de pedir sem sair de casa (entrega própria na região)",
+    "prato fumegante feito no capricho com ingredientes frescos",
+    "praticidade de comer no salão aconchegante ou pedir em casa (raio de 3 km)",
     "cuidado e carinho no preparo, comida feita como em casa",
-    "pergunta direta pro público (ex: 'já sabe o que vai comer hoje?')",
-    "clima e ocasião do dia (dia de chuva, dia corrido, fim de semana em família)",
+    "aquele feijão temperado na hora e carne suculenta",
 ]
 
 # Placeholders substituídos com .replace() (e não .format()): o padrão de legenda do
 # cliente pode ter chaves {} de exemplo que quebrariam o .format().
-SYSTEM_PROMPT = """Você é o redator da Kav (@kav.mkt), uma operação de marketing digital.
-Sua função é escrever o texto de UM post do NN Restaurante, a partir da foto real
-escolhida do repositório do cliente (um prato, o buffet ou o ambiente da casa).
+SYSTEM_PROMPT = """Você é o redator sênior da Kav (@kav.mkt), responsável pelo conteúdo do Instagram do NN Restaurante.
+Sua missão é criar uma headline impactante para a arte e uma legenda extremamente apetitosa (appetite appeal), a partir da foto real do prato/ambiente escolhida.
+
+CONTEXTO TEMPORAL OBRIGATÓRIO:
+Hoje é __DIA_SEMANA__, dia __DATA__.
+REGRA TEMPORAL RÍGIDA:
+- NUNCA use "Sextou", "quase sexta" ou menções a fim de semana se hoje NÃO for sexta-feira, sábado ou domingo.
+- Adapte o gancho rigorosamente ao momento da semana (ex: em dias úteis foque na pausa do almoço de trabalho, praticidade, comida quente e reconfortante; em sextas e finais de semana foque na celebração e descanso).
 
 DIRETRIZES DE MARCA DO CLIENTE:
 __SKILL__
 
-PADRÃO DE LEGENDA DO CLIENTE (siga à risca a estrutura, a ordem, os textos fixos, emojis
-e hashtags definidos aqui — o que muda de um post para outro é só o conteúdo do
-prato/ambiente):
+PADRÃO DE LEGENDA DO CLIENTE:
 __PADRAO__
 
-Regras:
-- Use somente informações que estão nos dados da foto abaixo. Nunca invente ingrediente,
-  preço, promoção ou detalhe que não esteja informado.
-- Se não houver preço informado, não cite preço na legenda.
-- Tom de voz e regras de "pode / não pode" da skill valem para tudo.
+DIRETRIZES DE COPY E HEADLINE:
+1. HEADLINE DA IMAGEM (chamada principal sobre a foto):
+   - Deve ter de 2 a 6 palavras, em português, sem pontuação final exagerada e sem emojis.
+   - FUJA DE CLICHÊS GENÉRICOS: NÃO use frases vazias e repetitivas como "Sabor de casa", "Comida de verdade" ou trocadilhos previsíveis.
+   - Foque no APETITE REAL do prato fotografado: cite o prato ou a textura/sabor marcante dele.
+     Exemplos excelentes:
+     * Para bife acebolado: "Bife acebolado suculento no ponto" ou "Aquele bife acebolado de dar água na boca"
+     * Para feijoada: "Feijoada farta e quentinha" ou "A feijoada mais pedida da região"
+     * Para prato do dia/executivo: "Almoço farto feito na hora" ou "A pausa perfeita pro seu dia"
+     * Para frango/carne de panela: "Carne de panela macia e saborosa" ou "Frango douradinho no capricho"
 
-Responda APENAS com um objeto JSON, sem texto antes ou depois:
+2. SELO/TAG DO PRATO (opcional):
+   - NUNCA use slogans clichês repetitivos (PROIBIDO: "Comida de Verdade", "Sabor de Casa" ou selos genéricos de carimbo).
+   - Se o prato tiver um nome específico ou categoria útil, use-o (ex: "Prato Executivo", "Buffet Livre", "Feito na Hora"), OU retorne null se a headline já disser tudo com clareza.
+
+3. LEGENDA DO POST:
+   - Siga a estrutura de 3 parágrafos curtos + 4 hashtags.
+   - O primeiro parágrafo (gancho) deve abrir o apetite de imediato, em harmonia com o dia da semana atual (__DIA_SEMANA__).
+   - Mantenha tom caloroso, honesto e acolhedor.
+
+Responda APENAS com um objeto JSON, sem markdown ou texto antes/depois:
 {
-  "headline_imagem": "chamada principal da imagem: 2 a 6 palavras, em português, sem emoji, citando o prato ou o diferencial (ex: 'Sabor de casa', 'Feijoada completa')",
-  "selo_produto": "nome curto do prato para o selo da imagem, até ~40 caracteres (ex: 'Feijoada completa'), ou null se a foto for de ambiente/equipe sem prato específico",
-  "legenda": "legenda completa, pronta pra colar no Instagram, seguindo o padrão"
+  "headline_imagem": "Chamada apetitosa e específica (2 a 6 palavras)",
+  "selo_produto": "Nome curto/categoria funcional ou null se desnecessário",
+  "legenda": "Legenda completa formatada conforme o padrão"
 }
 """
 
@@ -58,14 +134,23 @@ PADRAO_AUSENTE = (
 
 
 def gerar_legenda_foto(foto: dict, cliente: dict) -> dict:
-    system = SYSTEM_PROMPT.replace("__SKILL__", cliente["skill"]).replace(
-        "__PADRAO__", cliente["legenda_padrao"] or PADRAO_AUSENTE
+    nome_dia, data_fmt, dia_idx = obter_contexto_temporal()
+    ganchos_candidatos = GANCHOS_POR_DIA.get(dia_idx, []) + GANCHOS_GERAIS
+    gancho_sugerido = random.choice(ganchos_candidatos)
+
+    system = (
+        SYSTEM_PROMPT.replace("__SKILL__", cliente["skill"])
+        .replace("__PADRAO__", cliente["legenda_padrao"] or PADRAO_AUSENTE)
+        .replace("__DIA_SEMANA__", nome_dia)
+        .replace("__DATA__", data_fmt)
     )
     prompt = (
-        f"Dados da foto:\n{_descrever(foto)}\n\n"
-        f"Ângulo sugerido para o gancho: {random.choice(ANGULOS_GANCHO)}"
+        f"Dia da semana atual: {nome_dia} ({data_fmt})\n"
+        f"Dados da foto selecionada:\n{_descrever(foto)}\n\n"
+        f"Sugestão de ângulo para o gancho: {gancho_sugerido}\n"
+        f"Lembre-se: foque no prato real e no apetite, sem clichês repetitivos de Sabor de Casa/Comida de Verdade."
     )
-    resposta = chamar_ia(system=system, prompt=prompt, max_tokens=900, temperature=0.9, json_mode=True)
+    resposta = chamar_ia(system=system, prompt=prompt, max_tokens=900, temperature=0.8, json_mode=True)
     return extrair_json(resposta)
 
 
