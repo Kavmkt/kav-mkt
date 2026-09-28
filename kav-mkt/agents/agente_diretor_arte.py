@@ -5,11 +5,15 @@ Analisa visualmente (usando visão computacional multimodal) a imagem gerada pel
 designer júnior (Joaquim) para posts de feed (orgânico) e peças de anúncio (campanha).
 
 Avalia com extremo rigor:
-1. COERÊNCIA GASTRONÔMICA: O prato na imagem DEVE ser estritamente o prato do dia esperado!
-   Se o post for sobre Frango ao Molho e a imagem mostrar Feijoada ou bife, REPROVA imediatamente!
-2. REGRA DA FEIJOADA: Feijoada é permitida exclusivamente às quartas-feiras e sábados.
-3. PROIBIÇÃO DO TERMO "EXECUTIVO": O restaurante do Nico não usa "almoço executivo" (preço de R$ 26 a R$ 35).
-   Se houver "executivo" escrito, REPROVA e manda trocar por "Almoço do Dia" ou "Comida Caseira".
+1. PRESERVAÇÃO DA COMIDA REAL (SEM CARA DE IA):
+   - A peça DEVE preservar a comida autêntica da foto real do cliente.
+   - REPROVE IMEDIATAMENTE se a comida parecer render 3D artificial, desenho ou pintura plástica de IA.
+2. COERÊNCIA GASTRONÔMICA:
+   - A chamada e a comida devem ser rigorosamente condizentes com "__PRATO_ESPERADO__".
+   - REGRA DA FEIJOADA: Feijoada é permitida exclusivamente às quartas-feiras e sábados.
+3. PROIBIÇÃO ABSOLUTA DA PALAVRA "EXECUTIVO":
+   - O restaurante do Nico não usa "almoço executivo" (preço de R$ 26 a R$ 35).
+   - Se houver "executivo" escrito, REPROVA e manda trocar por "Almoço do Dia" ou "Comida Caseira".
 4. Presença e integridade do logo oficial da marca (sem sumir ou deformar).
 5. Tipografia, legibilidade e ausência de amadorismos (sem contorno/sombra branca borrada).
 6. Ausência de elementos gráficos proibidos (sem elipses/carimbos repetitivos com talheres).
@@ -32,23 +36,25 @@ PRATO DO DIA ESPERADO NA PEÇA: "__PRATO_ESPERADO__"
 DIA DA SEMANA: __DIA_SEMANA__
 
 CHECKLIST CRÍTICO DE AVALIAÇÃO (REPROVAÇÃO AUTOMÁTICA):
-1. COERÊNCIA GASTRONÔMICA OBRIGATÓRIA (PRATO vs IMAGEM):
+1. PRESERVAÇÃO DA COMIDA REAL (SEM CARA DE IA):
+   - A peça DEVE preservar a comida autêntica da foto real do cliente (pode estar recortada sobre novo cenário de mesa).
+   - REPROVE IMEDIATAMENTE (pontuação <= 4, precisa_refino=true) se a comida parecer render 3D artificial, desenho ou pintura plástica de IA.
+2. COERÊNCIA GASTRONÔMICA OBRIGATÓRIA (PRATO vs IMAGEM):
    - A comida mostrada na imagem DEVE ser rigorosamente "__PRATO_ESPERADO__".
-   - REPROVE IMEDIATAMENTE (pontuação <= 4, precisa_refino=true) se a peça for sobre '__PRATO_ESPERADO__' (ex: Frango ao Molho) e a imagem estiver mostrando Feijoada, bife de carne vermelha ou qualquer outro prato diferente.
+   - REPROVE IMEDIATAMENTE se a peça for sobre '__PRATO_ESPERADO__' e a imagem estiver mostrando outro prato incompatível.
    - REGRA DA FEIJOADA: Feijoada é servida EXCLUSIVAMENTE às quartas-feiras e aos sábados. Hoje é __DIA_SEMANA__. Se hoje NÃO for quarta-feira ou sábado e a imagem estiver mostrando feijoada, REPROVE SUMARIAMENTE!
-2. PROIBIÇÃO ABSOLUTA DA PALAVRA "EXECUTIVO":
-   - REPROVE (pontuação <= 5, precisa_refino=true) se a imagem contiver a palavra "EXECUTIVO" ou "ALMOÇO EXECUTIVO" escrita na headline, no selo ou em qualquer lugar. Os pratos custam entre R$ 26 e R$ 35 e o termo executivo passa impressão de restaurante caro. Deve ser trocado por "ALMOÇO DO DIA" ou "COMIDA CASEIRA".
-3. LOGO OFICIAL DA MARCA:
+3. PROIBIÇÃO ABSOLUTA DA PALAVRA "EXECUTIVO":
+   - REPROVE (pontuação <= 5, precisa_refino=true) se a imagem contiver a palavra "EXECUTIVO" ou "ALMOÇO EXECUTIVO" escrita na headline, no selo ou em qualquer lugar. Os pratos custam entre R$ 26 e R$ 35 e o termo executivo passa impressão errada de restaurante caro. Deve ser trocado por "ALMOÇO DO DIA" ou "COMIDA CASEIRA".
+4. LOGO OFICIAL DA MARCA:
    - O logo oficial do cliente (N&N Restaurante) deve estar presente, nítido e legível no cabeçalho/topo.
    - REPROVE se o logo estiver ausente, distorcido ou trocado por ícone genérico.
-4. TIPOGRAFIA & CONTRASTE (ANTI-AMADORISMO):
+5. TIPOGRAFIA & CONTRASTE (ANTI-AMADORISMO):
    - A headline deve estar perfeitamente legível, elegante e com hierarquia clara.
    - REPROVE se o texto tiver contorno branco grosso (stroke), glow branco esfumado ou sombra difusa artificial (WordArt amador).
-5. PROIBIÇÃO DE ELIPSE / CARIMBO CLICHÊ:
+6. PROIBIÇÃO DE ELIPSE / CARIMBO CLICHÊ:
    - REPROVE se houver carimbos redondos, elipses com garfo/faca ou selos amadores colados nos cantos.
-6. AMBIENTAÇÃO & APRESENTAÇÃO CULINÁRIA:
-   - Comida farta e apetitosa de almoço comercial brasileiro (arroz soltinho, feijão, guarnições).
-   - Louça comercial branca tradicional ou marmitex, mesa de madeira clara com textura levemente esbranquiçada.
+7. AMBIENTAÇÃO & RECORTE DO PRATO:
+   - O prato real com a comida autêntica do cliente deve estar bem integrado sobre a mesa de madeira rústica, com visual apetitoso e limpo.
 
 Responda EXCLUSIVAMENTE com um objeto JSON, sem markdown ou texto antes/depois:
 {
@@ -56,7 +62,7 @@ Responda EXCLUSIVAMENTE com um objeto JSON, sem markdown ou texto antes/depois:
   "pontuacao": 8,
   "diagnostico": "Resumo crítico e direto da avaliação em 1 ou 2 frases em português",
   "precisa_refino": false,
-  "instrucoes_de_correcao": "Instruções cirúrgicas em inglês para a IA de edição caso precisa_refino seja true. Especifique com clareza: (1) O que PRESERVAR e (2) O que CORRIGIR (ex: substituir feijoada por frango ao molho com arroz e feijão, remover a palavra EXECUTIVO e substituir por ALMOÇO DO DIA, reinserir logo oficial, etc.). Se aprovado, deixe string vazia."
+  "instrucoes_de_correcao": "Instruções cirúrgicas em inglês para a IA de edição caso precisa_refino seja true. Especifique com clareza: (1) O que PRESERVAR e (2) O que CORRIGIR (ex: manter a comida real da foto sem aspecto de 3D, remover a palavra EXECUTIVO e substituir por ALMOÇO DO DIA, reinserir logo oficial, etc.). Se aprovado, deixe string vazia."
 }
 """
 
@@ -93,7 +99,7 @@ def revisar_e_aprovar_layout(
         f"Prato do dia esperado: \"{nome_prato}\"\n"
         f"Headline na copy: \"{copy.get('headline_imagem')}\"\n"
         f"Selo esperado: \"{copy.get('selo_produto') or 'nenhum'}\"\n\n"
-        f"Verifique especialmente se a comida na imagem corresponde a '{nome_prato}' (não pode ser feijoada se o prato for frango) "
+        f"Verifique especialmente se a comida real da foto foi preservada (não pode parecer pintura/CGI de IA) "
         f"e se a palavra 'EXECUTIVO' foi evitada. Devolva o JSON de avaliação."
     )
 
@@ -135,7 +141,7 @@ def revisar_e_aprovar_layout(
         referencias_refino = [
             (
                 imagem_bytes_atual,
-                "the current draft layout of the post. Keep the authentic restaurant dining staging.",
+                "the current draft layout of the post. Preserve the real food plate and authentic meal.",
             )
         ]
 
@@ -163,12 +169,12 @@ def revisar_e_aprovar_layout(
             "You are executing an art direction revision on this post design. Apply ONLY the following corrections:\n"
             f"{instrucoes}\n\n"
             "STRICT RULES:\n"
-            f"- Ensure the food depicted is strictly '{nome_prato}'. Never display feijoada or red meat if the dish is chicken.\n"
+            f"- Ensure the food depicted is strictly '{nome_prato}' using the authentic food from the client's photo. Do not make it look like artificial 3D CGI.\n"
             "- Never include the word 'EXECUTIVO' or 'ALMOÇO EXECUTIVO'; replace with 'ALMOÇO DO DIA' or 'COMIDA CASEIRA'.\n"
             "- Ensure the official client logo is clearly and cleanly reproduced from the authentic logo reference.\n"
             "- NEVER add white glow, blurry white outlines, or diffuse halos around text letters.\n"
             "- Do NOT add circular stamp badges, fork/knife ellipses, or amateur clutter.\n"
-            "- Deliver a polished, crisp, documentary-level realistic piece in 1080x1440 portrait format without 3D CGI gloss."
+            "- Deliver a polished, crisp piece in 1080x1440 portrait format."
         )
 
         imagens_input = [d for d, _ in referencias_refino]
@@ -183,12 +189,6 @@ def revisar_e_aprovar_layout(
             raise RuntimeError("API de imagem não retornou resultado no refino.")
 
         nova_imagem_bytes = image_overlay.recortar_formato_final(base64.b64decode(bruta["imagem_b64"]))
-        try:
-            from utils.pos_processamento import aplicar_pos_processamento_fotografico
-            nova_imagem_bytes = aplicar_pos_processamento_fotografico(nova_imagem_bytes)
-        except Exception:
-            pass
-
         avisar("✨ [Diretor de Arte]: Layout refinado e aprovado com sucesso!")
 
         return {

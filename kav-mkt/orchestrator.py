@@ -3,7 +3,7 @@
 Coordena a esteira multi-agente para os clientes da agência:
 - gerar_post: produtos de catálogo (ex: ponto-car)
 - gerar_carrossel: pautas de conteúdo educativo/carrossel (ex: kav)
-- gerar_post_fotos: fotos reais ou cardápio do dia OlaClick com tratamento diagramado (ex: nn-restaurante)
+- gerar_post_fotos: fotos reais conciliadas com cardápio OlaClick (ex: nn-restaurante)
 - gerar_campanha: campanhas de performance com análise de concorrência e layout de anúncios
 """
 import json
@@ -141,12 +141,12 @@ def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callabl
     avisar = etapa or (lambda _texto: None)
     cliente = carregar_cliente(slug)
 
-    avisar("Consultando cardápio do dia no OlaClick e acervo de fotos...")
+    avisar("1/4 [Curador]: Conciliando cardápio do OlaClick com fotos reais do acervo...")
     foto = escolher_foto(cliente)
     avisos = list(foto.pop("avisos", []))
 
-    nome_prato = foto.get("nome") or (foto["arquivo"].stem if foto.get("arquivo") else "Prato do Dia")
-    avisar(f"Escrevendo chamada, selo e legenda para: {nome_prato}")
+    nome_prato = foto.get("nome") or foto["arquivo"].stem
+    avisar(f"2/4 [Redatora]: Escrevendo chamada, selo e legenda para: {nome_prato}")
     copy = gerar_copy_foto(foto, cliente)
     post = {
         "cliente": cliente["nome"],
@@ -159,17 +159,18 @@ def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callabl
     }
 
     if not com_imagem:
-        avisos.append("Modo teste (sem imagem): este prato não entrou no histórico.")
+        avisos.append("Modo teste (sem imagem): esta foto real não entrou no histórico.")
         return post
 
     post["referencia"] = escolher_referencia(cliente)
-    avisar(f"Montando o brief do layout para '{nome_prato}'...")
+    avisar(f"3/4 [Designer]: Diagramando layout sobre a foto real de '{nome_prato}'...")
     post["brief"] = gerar_brief_foto(copy, foto, cliente, post["referencia"])
-    avisar("Gerando a imagem da peça (pode levar até 1 minuto)...")
+    avisar("Gerando a imagem da peça sobre a foto real (pode levar até 1 minuto)...")
     post["imagem"] = gerar_imagem_foto(post["brief"], foto, cliente, post["referencia"])
     if post["imagem"].get("aviso"):
         avisos.append(post["imagem"]["aviso"])
 
+    # 4. Supervisão e aprovação do Diretor de Arte (Otávio)
     if com_imagem and post.get("imagem"):
         try:
             from agents.agente_diretor_arte import revisar_e_aprovar_layout
@@ -187,7 +188,7 @@ def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callabl
 
     try:
         historico.registrar(slug, {
-            "produto_id": foto.get("id") or (foto["arquivo"].stem if foto.get("arquivo") else "prato"),
+            "produto_id": foto["arquivo"].name,
             "produto_nome": nome_prato,
             "headline": copy.get("headline_imagem"),
             "legenda": copy.get("legenda"),
@@ -215,14 +216,14 @@ def gerar_campanha(
     cliente = carregar_cliente(slug)
     avisos = []
 
-    # 1. Escolha do prato/foto (com suporte a OlaClick)
-    avisar("1/4 [Curador]: Selecionando prato do dia no OlaClick ou acervo...")
+    # 1. Escolha do prato/foto real
+    avisar("1/4 [Curador]: Selecionando foto real do cliente para a campanha...")
     foto = escolher_foto(cliente)
     avisos.extend(foto.pop("avisos", []))
 
     # 2. Estrategista de Performance (Gestor de Tráfego)
     from agents.agente_estrategia_campanha import criar_estrategia_campanha
-    nome_prato = foto.get("nome") or (foto["arquivo"].stem if foto.get("arquivo") else "Prato")
+    nome_prato = foto.get("nome") or foto["arquivo"].stem
     avisar(f"2/4 [Estrategista]: Analisando concorrência e desenhando estratégia para '{nome_prato}'...")
     estrategia = criar_estrategia_campanha(cliente, foto_escolhida=foto)
 
@@ -232,10 +233,10 @@ def gerar_campanha(
     avisar(f"3/4 [Diretor de Arte]: Projetando layout com hierarquia visual e headline '{h_destaque}'...")
     brief = montar_brief_layout(estrategia, foto, cliente)
 
-    # 4. Geração de Arte
+    # 4. Geração de Arte sobre a foto real
     imagem = None
     if com_imagem:
-        avisar("4/4 [Designer]: Renderizando arte 1080x1440 com foto e logo oficial da N&N...")
+        avisar("4/4 [Designer]: Renderizando arte 1080x1440 com foto real e logo oficial da N&N...")
         imagem = gerar_arte_campanha(brief, foto, cliente, estrategia)
         try:
             from agents.agente_diretor_arte import revisar_e_aprovar_layout
