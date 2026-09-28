@@ -1,43 +1,40 @@
 """Cliente compartilhado para chamadas à API da OpenAI: texto (gpt-4o-mini) e imagem
 (GPT Image 2.5).
 
-A chave de API precisa estar na variável de ambiente OPENAI_API_KEY (ou nos secrets do
-Streamlit Cloud).
+Centralizado aqui para que os agentes (Legenda, Design) não dupliquem a leitura da chave
+de API nem a lógica de extração de JSON da resposta.
 """
 import base64
-from io import BytesIO
 import json
 import os
-from pathlib import Path
 import re
+from io import BytesIO
 from typing import Optional
 
+import requests
 from openai import OpenAI
 from PIL import Image
-import requests
-
-# Carrega variáveis de ambiente automaticamente a partir do arquivo .env
-try:
-    from dotenv import load_dotenv
-    _raiz_kav = Path(__file__).resolve().parent.parent
-    load_dotenv(_raiz_kav / ".env")
-    load_dotenv(_raiz_kav.parent / ".env")
-    load_dotenv()
-except Exception:
-    pass
 
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 # "flare" = geração rápida do zero. "sunburst" = mais precisa, usada quando há imagens de
 # referência (layout do cliente e/ou foto real do produto), onde fidelidade importa mais.
 IMAGE_MODEL = os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-2.5-flare")
 IMAGE_EDIT_MODEL = os.environ.get("OPENAI_IMAGE_EDIT_MODEL", "gpt-image-2.5-sunburst")
-# Tamanho pedido à API (o recorte exato pro formato final de 1080x1440 acontece depois,
-# em utils/image_overlay.py; a API aceita 1024x1024, 1024x1536 ou 1536x1024).
-IMAGE_SIZE = os.environ.get("OPENAI_IMAGE_SIZE", "1024x1536")
+# 0.75) pra minimizar a distorção de esticar/encolher no ajuste final (ver
+# utils.image_overlay.recortar_formato_final — desde 2026-09-27 ela NÃO corta mais, só
+# redimensiona pro tamanho final, então quanto mais próxima a proporção pedida for da
+# final, menos distorção visível). "1024x1536" (0.667) é o tamanho de fallback oficial,
+# bem mais diferente da proporção final; "1072x1440" (0.744, múltiplo de 16 nos dois
+# lados) é bem mais parecido — mas mesmo se a API cair no fallback, não tem mais risco de
+# cortar nada, só uma distorção leve.
+IMAGE_SIZE = os.environ.get("OPENAI_IMAGE_SIZE", "1072x1440")
+# Tamanho "oficial" da API (documentado, sempre aceito) — usado como fallback automático
+# se o tamanho customizado acima for rejeitado por algum motivo.
 TAMANHO_IMAGEM_SEGURO = "1024x1536"
-IMAGE_QUALITY = os.environ.get("OPENAI_IMAGE_QUALITY", "medium")
+# "high" é essencial para evitar aspecto emborrachado/waxy em texturas orgânicas e alimentos.
+IMAGE_QUALITY = os.environ.get("OPENAI_IMAGE_QUALITY", "high")
 
-_client: Optional[OpenAI] = None
+_client = None
 
 
 def get_client() -> OpenAI:
@@ -47,16 +44,6 @@ def get_client() -> OpenAI:
     if _client is not None:
         return _client
     key = os.environ.get("OPENAI_API_KEY")
-    if not key:
-        try:
-            from dotenv import load_dotenv
-            _raiz_kav = Path(__file__).resolve().parent.parent
-            load_dotenv(_raiz_kav / ".env")
-            load_dotenv(_raiz_kav.parent / ".env")
-            load_dotenv()
-            key = os.environ.get("OPENAI_API_KEY")
-        except Exception:
-            pass
     if not key:
         raise RuntimeError(
             "OPENAI_API_KEY não configurada.\n\n"
@@ -128,23 +115,30 @@ def chamar_ia_visao(
     return (resposta.choices[0].message.content or "").strip()
 
 
+def _chamar_com_fallback_tamanho(chamar, tamanho_pedido: str, usar_fallback: bool):
+    """Executa `chamar(tamanho)`; se falhar e `tamanho_pedido` for o tamanho customizado
+    (não o oficial), tenta de novo com `TAMANHO_IMAGEM_SEGURO` antes de desistir — a API
+    pode rejeitar um tamanho fora da lista documentada, e sem esse fallback a chamada
+    inteira falharia (perdendo as referências) por causa só do `size`."""
+    try:
+        return chamar(tamanho_pedido), tamanho_pedido
+    except Exception:
+        if not usar_fallback or tamanho_pedido == TAMANHO_IMAGEM_SEGURO:
+            raise
+        return chamar(TAMANHO_IMAGEM_SEGURO), TAMANHO_IMAGEM_SEGURO
+
+
 def gerar_imagem(prompt: str) -> dict:
-    """Gera uma imagem do zero a partir do brief em texto."""
+    """Gera a imagem do zero a partir de um brief de imagem já pronto e bem definido."""
     client = get_client()
-    resposta = client.images.generate(
-        model=IMAGE_MODEL,
-        prompt=prompt,
-        size=IMAGE_SIZE,
-        quality=IMAGE_QUALITY,
+    resposta, tamanho_usado = _chamar_com_fallback_tamanho(
+        lambda tam: client.images.generate(
+            model=IMAGE_MODEL, prompt=prompt, size=tam, quality=IMAGE_QUALITY, n=1
+        ),
+        IMAGE_SIZE,
+        usar_fallback=True,
     )
-    dado = resposta.data[0]
-    return {
-        "imagem_b64": getattr(dado, "b64_json", None),
-        "imagem_url": getattr(dado, "url", None),
-        "modelo": IMAGE_MODEL,
-        "tamanho": IMAGE_SIZE,
-        "qualidade": IMAGE_QUALITY,
-    }
+    return _resultado_imagem(resposta.data[0], IMAGE_MODEL, tamanho_usado)
 
 
 def baixar_imagem_referencia(url: str) -> bytes:
@@ -161,8 +155,7 @@ def baixar_imagem_referencia(url: str) -> bytes:
 
 def gerar_imagem_com_referencias(prompt: str, imagens_bytes: list, size: Optional[str] = None) -> dict:
     """Gera a imagem usando uma ou mais imagens como referência (layout do cliente, foto
-    real do produto, e/ou a própria imagem atual para um ajuste pontual), em vez de
-    descrever tudo só por texto."""
+    real do produto, e/ou a própria imagem atual para um ajuste pontual), com alta fidelidade."""
     client = get_client()
     pngs = [_como_png(dados) for dados in imagens_bytes]
 
@@ -172,16 +165,27 @@ def gerar_imagem_com_referencias(prompt: str, imagens_bytes: list, size: Optiona
             arquivo = BytesIO(dados)
             arquivo.name = f"referencia_{indice}.png"
             arquivos.append(arquivo)
-        return client.images.edit(
-            model=IMAGE_EDIT_MODEL,
-            image=arquivos,
-            prompt=prompt,
-            size=tam,
-            quality=IMAGE_QUALITY,
-        )
+        kwargs = {
+            "model": IMAGE_EDIT_MODEL,
+            "image": arquivos,
+            "prompt": prompt,
+            "size": tam,
+            "quality": IMAGE_QUALITY,
+        }
+        # Tenta com input_fidelity="high" para preservar detalhes fotográficos reais e logo oficial
+        try:
+            return client.images.edit(**kwargs, input_fidelity="high")
+        except TypeError:
+            return client.images.edit(**kwargs)
+        except Exception as exc:
+            if "input_fidelity" in str(exc):
+                return client.images.edit(**kwargs)
+            raise
 
-    tamanho_usado = size or IMAGE_SIZE
-    resposta = _chamar(tamanho_usado)
+    tamanho_pedido = size or IMAGE_SIZE
+    resposta, tamanho_usado = _chamar_com_fallback_tamanho(
+        _chamar, tamanho_pedido, usar_fallback=(size is None)
+    )
     return _resultado_imagem(resposta.data[0], IMAGE_EDIT_MODEL, tamanho_usado)
 
 
@@ -203,16 +207,17 @@ def _resultado_imagem(dado, modelo: str, tamanho_pedido: str) -> dict:
     tamanho_real = None
     if b64:
         try:
-            with Image.open(BytesIO(base64.b64decode(b64))) as img:
-                tamanho_real = f"{img.width}x{img.height}"
+            largura, altura = Image.open(BytesIO(base64.b64decode(b64))).size
+            tamanho_real = f"{largura}x{altura}"
         except Exception:
-            pass
+            tamanho_real = None
     return {
         "imagem_b64": b64,
         "imagem_url": getattr(dado, "url", None),
         "modelo": modelo,
         "tamanho_pedido": tamanho_pedido,
         "tamanho_real": tamanho_real,
+        "qualidade": IMAGE_QUALITY,
     }
 
 

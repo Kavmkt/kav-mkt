@@ -1,16 +1,17 @@
 """Agente de Design (Fotos): escreve o brief e gera a imagem final para clientes "de
 fotos" (config.json com "tipo": "fotos") — hoje só o NN Restaurante.
 
-DIRETRIZ DE ARTE: PRESERVAÇÃO DA COMIDA REAL DO CLIENTE (SEM CARA DE IA)
-1. A comida mostrada na foto real de referência (foto['arquivo']) é a comida autêntica do cliente.
-2. A IA NUNCA gera comida sintética com IA nem troca os ingredientes reais por render 3D.
-3. A IA PODE isolar/recortar o prato com a comida original de verdade do cliente e inseri-lo
-   em um novo cenário esteticamente mais coerente, bonito, organizado e diagramável (mesa de
-   madeira rústica, iluminação natural suave, fundo aconchegante de restaurante).
-4. Aplica a diagramação editorial limpa: headline de impacto em Playfair Display, selo minimalista
+DIRETRIZ CENTRAL DE ARTE — OPÇÃO B (RECORTE & AMBIENTAÇÃO DA FOTO REAL):
+1. A comida mostrada na foto real de referência (foto['arquivo']) é a comida física autêntica do restaurante.
+2. A IA NUNCA gera comida sintética com IA nem troca os ingredientes reais por render 3D ou texturas plásticas.
+3. A IA atua como recortadora e ambientadora: isola/recorta o prato com a comida original de verdade do cliente
+   e insere-o em um novo cenário esteticamente impecável (mesa de madeira nobre rústica com iluminação natural
+   quente de almoço e sombra suave de contato sob o prato, fundo desfocado de restaurante acolhedor).
+4. Aplica a diagramação editorial da marca: headline de impacto em Playfair Display, selo minimalista
    em Montserrat ('Almoço do Dia', 'Comida Caseira' - PROIBIDO 'executivo'), e o logotipo oficial da
-   N&N Restaurante no cabeçalho/topo com respiro e contraste.
-5. Imagem final nítida e limpa, sem pós-processamento artificial de ruído/grão.
+   N&N Restaurante no cabeçalho com alto contraste e respiro.
+5. Preservação de textura fotográfica: 100% das texturas reais da comida de câmera (fibras reais, temperos,
+   molho natural sem brilho de silicone) são mantidas, eliminando qualquer cara de IA.
 """
 from __future__ import annotations
 
@@ -21,24 +22,41 @@ from agents.agente_design import AREAS_LOGO, MARGEM_SEGURANCA_BORDA, _margem_cor
 from utils import image_overlay, openai_client
 from utils.openai_client import chamar_ia
 
+# Placeholders substituídos com .replace() (e não .format()): a skill do cliente pode ter
+# chaves {} que quebrariam o .format().
 SYSTEM_PROMPT = """Você é o Diretor de Arte sênior da Kav (@kav.mkt). Sua função é escrever o
-brief de UMA peça do Instagram para o NN Restaurante, pronto para ser enviado direto a um gerador de
-imagem por IA de alta qualidade.
+brief de UMA peça do Instagram para o NN Restaurante, pronto para ser enviado direto ao gerador de
+imagem da OpenAI (GPT Image 2.5 Sunburst).
 
 DIRETRIZES DE MARCA E KV DO CLIENTE:
 __SKILL__
 
-DIREÇÃO DE ARTE — PRESERVAÇÃO RIGOROSA DA COMIDA REAL DO CLIENTE:
-- BASE DA CENA OBRIGATÓRIA: A comida mostrada na Referência 1 é a FOTO REAL E AUTÊNTICA do prato do cliente. Os alimentos, porções, texturas reais e o prato com a refeição autêntica DEVEM ser preservados com máxima fidelidade.
-- PROIBIÇÃO TERMINANTE DE COMIDA ARTIFICIAL (SEM CARA DE IA): NUNCA substitua, redesenhe ou altere a comida da foto real por render 3D, CGI, ilustrações digitais ou texturas emborrachadas de IA.
-- ELEVAÇÃO DE CENÁRIO E RECORTE DO PRATO: Você pode isolar/recortar o prato com a comida original de verdade do cliente e posicioná-lo sobre um novo cenário de restaurante aconchegante e bonito: mesa de madeira rústica com textura agradável, iluminação quente e natural de almoço e fundo suavemente desfocado (sem mãos amadoras ou fundos improvisados).
+DIREÇÃO DE ARTE — OPÇÃO B (RECORTE & COMPOSIÇÃO DA FOTO REAL, ZERO CARA DE IA):
+- COMIDA 100% REAL E AUTÊNTICA: A comida mostrada na Referência 1 é a foto física real do restaurante.
+  NÃO gere comida sintética por IA. O prato/travessa com a refeição autêntica deve ser isolado/recortado
+  e ancorado sobre a nova mesa, preservando rigorosamente as cores, texturas orgânicas e imperfeições
+  naturais da fotografia real de câmera.
+- PROIBIÇÃO TERMINANTE DE TEXTURAS GROTESCAS / IA: É expressamente proibido qualquer acabamento plástico,
+  pele de frango encerada ou emborrachada, molho com brilho de silicone ou aspecto de render 3D/CGI.
+- PAPEL EXCLUSIVO DA GERAÇÃO POR IA:
+  1. AMBIENTAÇÃO DE FUNDO: Gerar a nova superfície de mesa de madeira rústica acolhedora sob o prato,
+     com iluminação natural suave de restaurante e sombra de contato fotográfica realista sob o prato.
+     No topo/fundo, um ambiente aconchegante de restaurante suavemente desfocado (bokeh).
+  2. DIAGRAMAÇÃO EDITORIAL: Posicionar a headline em tipografia refinada (Playfair Display), o selo
+     minimalista retangular e o logotipo oficial da marca no cabeçalho.
 __CONTEXTO_LAYOUT__
-- LOGOTIPO OFICIAL DA MARCA: uma das imagens de referência fornecidas é o logotipo oficial da empresa. Você DEVE reproduzir esse logotipo exatamente (mesma tipografia, símbolo/emblema, cores e proporções) integrado com nitidez no cabeçalho ou área de branding indicada (__AREA_LOGO__), com margens de respiro de cerca de 5% das bordas.
+- LOGOTIPO OFICIAL DA MARCA: uma das imagens de referência fornecidas é o logotipo oficial da empresa.
+  Você DEVE reproduzir esse logotipo exatamente (mesma tipografia, símbolo/emblema, cores e proporções)
+  integrado com nitidez no cabeçalho ou área de branding indicada (__AREA_LOGO__), com respiro de borda.
 
 REGRAS RÍGIDAS DE DIAGRAMAÇÃO E ANTI-AMADORISMO:
-1. PROIBIDO O TERMO "EXECUTIVO": NUNCA escreva ou renderize a palavra "EXECUTIVO" ou "ALMOÇO EXECUTIVO" na arte (nem na headline, nem no selo, nem em badges). O restaurante trabalha com preços populares de R$ 26 a R$ 35. Use "ALMOÇO DO DIA", "COMIDA CASEIRA", "PRATO FEITO" ou o próprio nome do prato.
-2. PROIBIDO CONTORNO BRANCO / GLOW: NUNCA crie letras com sombra branca difusa, contorno branco grosso (stroke) ou glow esfumado atrás do texto. Tipografia sólida, nítida e sofisticada.
-3. PROIBIDO SELO EM ELIPSE / CARIMBO REDONDO COM TALHERES: NUNCA desenhe selos circulares ou carimbos com garfo e faca. Use etiquetas retangulares limpas ou integre o texto de forma minimalista.
+1. PROIBIDO O TERMO "EXECUTIVO": NUNCA escreva ou renderize a palavra "EXECUTIVO" ou "ALMOÇO EXECUTIVO"
+   na arte (nem na headline, nem no selo, nem em badges). O restaurante trabalha com preços populares
+   de R$ 26 a R$ 35. Use "ALMOÇO DO DIA", "COMIDA CASEIRA", "PRATO FEITO" ou o próprio nome do prato.
+2. PROIBIDO CONTORNO BRANCO / GLOW: NUNCA crie letras com sombra branca difusa, contorno branco grosso
+   (stroke) ou glow esfumado atrás do texto. Tipografia sólida, nítida e sofisticada.
+3. PROIBIDO SELO EM ELIPSE / CARIMBO REDONDO COM TALHERES: NUNCA desenhe selos circulares ou carimbos
+   com garfo e faca. Use etiquetas retangulares limpas ou integre o texto de forma minimalista.
 4. MARGENS DE SEGURANÇA:
    - Deixe pelo menos __MARGEM__% de respiro livre no topo e no rodapé.
    - Mantenha texto e logo a pelo menos __MARGEM_LATERAL__% de distância das bordas.
@@ -61,7 +79,7 @@ def gerar_brief_foto(copy: dict, foto: dict, cliente: dict, referencia: Optional
     )
     partes = [
         f"Prato real do cliente na foto de referência: {nome_prato}",
-        f"Detalhes: {desc_prato}" if desc_prato else "",
+        f"Detalhes da receita: {desc_prato}" if desc_prato else "",
         f'Headline da arte: "{copy.get("headline_imagem")}"',
     ]
     if copy.get("selo_produto"):
@@ -69,10 +87,12 @@ def gerar_brief_foto(copy: dict, foto: dict, cliente: dict, referencia: Optional
         partes.append(f'Selo do prato: "{selo_limpo}"')
 
     partes.append(
-        f"DIRETRIZ DE COMPOSIÇÃO: Mantenha a comida original da foto de referência de '{nome_prato}' rigorosamente intacta. "
-        "Isole ou recorte o prato com a comida real do cliente e posicione-o sobre um novo cenário de mesa de madeira rústica, "
-        "com iluminação natural de restaurante acolhedor. Diagramar headline, selo e o logotipo oficial da N&N no cabeçalho com alto contraste. "
-        "NUNCA use a palavra executivo e NUNCA substitua a comida por render de IA."
+        f"DIRETRIZ DE EXECUÇÃO (OPÇÃO B - COMPOSIÇÃO FOTOGRÁFICA DO PRATO REAL): "
+        f"The authentic food plate of '{nome_prato}' from Reference 1 MUST NOT be resynthesized or repainted by AI. "
+        "Treat it as an authentic photographic cutout: preserve the exact real camera textures of the meat, sauce, and garnish without waxy/plastic AI smoothing. "
+        "Your task is to generate the surrounding professional environment: stage the cutout dish onto a beautiful rustic wooden dining table with soft realistic contact shadows and natural lunch light. "
+        "Behind and above, render a warm, softly blurred restaurant interior. In the header, display the official N&N logo and the headline in elegant Playfair Display with high contrast. "
+        "NEVER use the word executivo and NEVER generate synthetic CGI food."
     )
 
     return chamar_ia(system=system, prompt="\n".join(p for p in partes if p), max_tokens=750, temperature=0.7)
@@ -84,10 +104,12 @@ def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optiona
     referencias_imagem = [
         (
             foto["arquivo"].read_bytes(),
-            "the REAL photograph showing the authentic food/dish of N&N Restaurante. "
-            "You MUST preserve this authentic dish and its genuine ingredients with 100% fidelity. "
-            "You may isolate or crop the plate with the real food and stage it cleanly on a beautiful, warm rustic wooden dining table "
-            "with natural lunch lighting and soft background bokeh, without altering the food into 3D CGI.",
+            "the HERO AUTHENTIC CAMERA PHOTOGRAPH of N&N Restaurante. "
+            "CRITICAL OPTION B RULE: This is the real physical dish served by the client. "
+            "DO NOT repaint, redraw, or synthesize the food with AI. "
+            "Keep the authentic dish, real meat textures, natural seasonings, and real sauce 100% intact as a photographic element. "
+            "Isolate this authentic dish and stage it cleanly on a beautiful, warm rustic wooden dining table with soft contact drop-shadow, "
+            "under warm natural lunch daylight with soft restaurant background bokeh, without altering the food into 3D CGI.",
         )
     ]
 
@@ -145,21 +167,25 @@ def _finalizar(imagem_bytes: bytes) -> dict:
 
 
 def _prompt_com_referencias(brief: str, descricoes: list) -> str:
-    partes = [f"Reference image {i + 1} is {desc}" for i, desc in enumerate(descricoes)]
-    partes.append("Post to create:\n" + brief)
+    partes = [
+        "TASK: High-end culinary social media ad design (1080x1440 portrait) for N&N Restaurante.",
+        "MANDATORY EXECUTION DIRECTIVE (OPTION B - REAL FOOD PRESERVATION & SCENE COMPOSITION):\n"
+        "- Reference 1 is the AUTHENTIC CLIENT CAMERA PHOTO. DO NOT generate artificial or synthetic food. "
+        "Keep the dish and food from Reference 1 intact, preserving genuine culinary textures, authentic roasted chicken skin, "
+        "natural herbs, and matte homemade sauce without ANY waxy, plastic, or 3D CGI gloss.\n"
+        "- Cutout/isolate the authentic dish and stage it seamlessly onto a rustic wooden dining table with realistic soft contact shadows.\n"
+        "- In the upper portion, create a softly blurred, warm ambient restaurant dining background.\n"
+        "- Apply editorial graphic typography: prominent Playfair Display headline, minimal badge, and the authentic brand logo from Reference 3 in the header with clear breathing room.",
+    ]
+    for i, desc in enumerate(descricoes):
+        partes.append(f"Reference image {i + 1}: {desc}")
+    partes.append("Art Direction Brief:\n" + brief)
     return "\n\n".join(partes)
 
 
 def _logo(cliente: dict, referencia: Optional[dict]):
     referencia = referencia or {}
-    posicao = referencia.get("logo_posicao") or cliente["config"].get("logo_posicao", "superior-esquerdo")
+    posicao = referencia.get("logo_posicao") or cliente["config"].get("logo_posicao", "superior-centro")
     versao = referencia.get("logo_versao", "fundo-escuro")
-    logos = cliente.get("logos", {})
-    arquivo = (
-        cliente.get("logo")
-        or (cliente.get("logo_referencias")[0] if cliente.get("logo_referencias") else None)
-        or logos.get(versao)
-        or logos.get("fundo-escuro")
-        or logos.get("principal")
-    )
+    arquivo = cliente["logos"].get(versao) or cliente["logos"].get("fundo-escuro") or cliente["logos"].get("principal")
     return arquivo, posicao
