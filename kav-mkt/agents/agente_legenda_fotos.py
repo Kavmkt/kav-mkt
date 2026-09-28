@@ -4,8 +4,7 @@ seguindo à risca o padrão de legenda do cliente (clientes/<slug>/legenda.md).
 
 Cópia isolada de agents/agente_legenda.py, adaptada para dados de foto (prato/ambiente)
 em vez de dados de produto de loja — nenhum cliente de catálogo (ex: ponto-car) passa
-por este arquivo, e vice-versa. Isso é intencional: evita que um ajuste feito aqui para
-o NN Restaurante afete o fluxo de legenda dos outros clientes, e vice-versa.
+por este arquivo, e vice-versa.
 """
 import random
 from datetime import datetime
@@ -82,8 +81,6 @@ GANCHOS_GERAIS = [
     "aquele feijão temperado na hora e carne suculenta",
 ]
 
-# Placeholders substituídos com .replace() (e não .format()): o padrão de legenda do
-# cliente pode ter chaves {} de exemplo que quebrariam o .format().
 SYSTEM_PROMPT = """Você é o redator sênior da Kav (@kav.mkt), responsável pelo conteúdo do Instagram do NN Restaurante.
 Sua missão é criar uma headline impactante para a arte e uma legenda extremamente apetitosa (appetite appeal), a partir da foto real do prato/ambiente escolhida.
 
@@ -91,7 +88,8 @@ CONTEXTO TEMPORAL:
 Hoje é __DIA_SEMANA__, dia __DATA__.
 REGRA TEMPORAL RÍGIDA:
 - NUNCA use "Sextou", "quase sexta" ou menções a fim de semana se hoje NÃO for sexta-feira, sábado ou domingo.
-- Adapte o gancho rigorosamente ao momento da semana.
+- EVITE USAR A PALAVRA "HOJE" NA LEGENDA (ex: não use "hoje tem", "o prato de hoje", "o buffet de hoje"), pois alguns posts serão publicados fora do horário planejado (ex: à tarde ou no dia seguinte).
+- Pode falar de "prato do dia", "nosso prato do dia", do prato específico ou da tradição da casa tranquilamente.
 
 DIRETRIZES DE MARCA DO CLIENTE:
 __SKILL__
@@ -111,13 +109,18 @@ DIRETRIZES DE COPY E HEADLINE:
      * Para frango/carne de panela: "Carne de panela macia e saborosa" ou "Frango douradinho no capricho"
 
 2. SELO/TAG DO PRATO (opcional):
-   - Se for utilizar selo, use EXCLUSIVAMENTE "Qualidade Garantida", OU retorne null se a headline já disser tudo com clareza.
+   - Se for utilizar selo, use EXCLUSIVAMENTE a frase "Qualidade Garantida", OU retorne null se a headline já disser tudo com clareza.
    - NUNCA use "Almoço do dia", "Executivo", carimbos ou slogans clichês.
 
 3. LEGENDA DO POST:
-   - Siga a estrutura de 3 parágrafos curtos + 4 hashtags.
-   - O primeiro parágrafo (gancho) deve abrir o apetite de imediato.
-   - Mantenha tom caloroso, honesto e acolhedor.
+   - Siga a estrutura de 3 parágrafos curtos + 5 hashtags.
+   - O primeiro parágrafo (gancho) deve abrir o apetite de imediato (sem usar a palavra "hoje").
+   - O segundo parágrafo descreve o prato ou prato do dia com riqueza sensorial e carinho caseiro.
+   - O terceiro parágrafo (chamada final) DEVE ser exatamente:
+     "Vem provar! Clique no link da Bio."
+   - As hashtags DEVEM ser exatamente 5, nesta ordem, numa linha só:
+     #NNRestaurante #ComidaCaseira #[NomeDoPrato] #ComidaBrasileira #AlmoçoPerfeito
+     (substitua #[NomeDoPrato] pelo prato do post em formato de hashtag sem acentos, ex: #FrangoGrelhado, #BifeAcebolado, #FeijoadaCompleta).
 
 Responda APENAS com um objeto JSON, sem markdown ou texto antes/depois:
 {
@@ -148,7 +151,7 @@ def gerar_legenda_foto(foto: dict, cliente: dict) -> dict:
         f"Dia da semana atual: {nome_dia} ({data_fmt})\n"
         f"Dados da foto selecionada:\n{_descrever(foto)}\n\n"
         f"Sugestão de ângulo para o gancho: {gancho_sugerido}\n"
-        f"Lembre-se: foque no prato real e no apetite, sem clichês repetitivos de Sabor de Casa/Comida de Verdade e sem usar 'Almoço do dia' na imagem."
+        f"Lembre-se: foque no prato real e no apetite, sem clichês repetitivos, sem a palavra 'hoje', sem 'Almoço do dia' na headline da imagem, e com a chamada final 'Vem provar! Clique no link da Bio.' seguida das 5 hashtags incluindo #AlmoçoPerfeito."
     )
     resposta = chamar_ia(system=system, prompt=prompt, max_tokens=900, temperature=0.8, json_mode=True)
     return extrair_json(resposta)

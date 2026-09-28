@@ -4,50 +4,52 @@ Três parágrafos curtos + hashtags, nesta ordem. Linguagem calorosa, abrasileir
 quem está convidando pra comer. Nunca mencionar preço exato na legenda a não ser que
 esteja nos dados da foto usada (se estiver, pode citar).
 
-1. **Gancho** — 1 frase só, despertando vontade de comer (fartura, tempero caseiro,
-   cheirinho, pausa revigorante no dia). Termina com **um único emoji** de comida
-   (🍛 🍚 🍗 😋 🔥).
-   *ATENÇÃO CRÍTICA AO DIA DA SEMANA*: NUNCA use "Sextou" ou menção a fim de semana se
-   o post for para segunda a quinta-feira. Respeite sempre o dia da semana real.
+ATENÇÃO A TERMOS TEMPORAIS:
+- EVITE usar a palavra "hoje" na legenda (ex: não use "hoje tem", "o prato de hoje"), pois alguns posts serão publicados fora do horário.
+- PODE falar de "prato do dia", "nosso prato do dia", variedade ou tradição da casa tranquilamente.
+- NUNCA use "Sextou" ou menção a fim de semana se o post for para segunda a quinta-feira.
 
-2. **Prato/Ambiente** — 2 ou 3 frases: o que é (prato, buffet ou o ambiente da casa),
+1. **Gancho** — 1 frase só, despertando vontade de comer (fartura, tempero caseiro,
+   cheirinho, pausa reconfortante na rotina). Termina com **um único emoji** de comida
+   (🍛 🍚 🍗 😋 🔥).
+
+2. **Prato/Ambiente** — 2 ou 3 frases: o que é (prato do dia, buffet ou o ambiente da casa),
    o que tem de especial (tempero, fartura, ingredientes, cuidado no preparo) e, se
    fizer sentido, um lembrete do cuidado com qualidade (cozinha com equipe fardada,
    nutricionista, higiene) — sem exagerar ou soar institucional demais.
 
-3. **Chamada** — sempre este texto, adaptando só a primeira frase ao prato/ambiente:
-   "Vem almoçar com a gente! Atendemos no salão e também entregamos aqui na região
-   (até 3 km) com nossos próprios motoqueiros. Chama no link da bio."
+3. **Chamada** — finalize sempre com esta frase exata:
+   "Vem provar! Clique no link da Bio."
 
-4. **Hashtags** — exatamente 4, nesta ordem, numa linha só:
-   `#NNRestaurante #ComidaCaseira #[NomeDoPrato] #ComidaBrasileira`
-   (sem acento e sem espaço dentro da hashtag).
+4. **Hashtags** — exatamente 5, nesta ordem, numa linha só:
+   `#NNRestaurante #ComidaCaseira #[NomeDoPrato] #ComidaBrasileira #AlmoçoPerfeito`
+   (sem acento e sem espaço dentro de #[NomeDoPrato], ex: #FrangoGrelhado, #BifeAcebolado, #FeijoadaCompleta).
 
 ## Exemplos aprovados por ocasião
 
 ### Exemplo 1: Dias de semana (Segunda a Quinta)
-Aquele almoço caseiro caprichado que dá gosto e recarrega a energia no meio da rotina. 🍛
+Aquele prato caseiro caprichado que dá gosto e recarrega a energia no meio da rotina. 🍛
 
-Nosso buffet de hoje está recheado: arroz soltinho, feijão temperado na hora e aquele bife acebolado suculento que todo mundo adora. Tudo preparado com carinho na nossa cozinha, com equipe fardada e acompanhamento de nutricionista pra garantir sabor e padrão todo dia.
+Nosso prato do dia vem farto e no capricho: arroz soltinho, feijão temperado na hora e aquele bife acebolado suculento que todo mundo adora. Tudo preparado com carinho na nossa cozinha, com equipe fardada e acompanhamento de nutricionista pra garantir sabor e padrão todo dia.
 
-Vem almoçar com a gente! Atendemos no salão e também entregamos aqui na região (até 3 km) com nossos próprios motoqueiros. Chama no link da bio.
+Vem provar! Clique no link da Bio.
 
-#NNRestaurante #ComidaCaseira #BifeAcebolado #ComidaBrasileira
+#NNRestaurante #ComidaCaseira #BifeAcebolado #ComidaBrasileira #AlmoçoPerfeito
 
 ### Exemplo 2: Sexta-feira
-Sexta-feira pede aquele almoço especial pra fechar a semana com chave de ouro. 😋
+Sexta-feira pede aquele prato especial pra comemorar a chegada do fim de semana. 😋
 
-Hoje o buffet tá daquele jeito: feijoada completa, carnes caprichadas e acompanhamentos fresquinhos pra você comemorar a chegada do fim de semana como merece. Comida de verdade feita com o maior capricho.
+O buffet é farto e preparado daquele jeito: feijoada completa, carnes caprichadas e acompanhamentos fresquinhos pra quem valoriza boa comida brasileira feita com o maior capricho.
 
-Vem almoçar com a gente! Atendemos no salão e também entregamos aqui na região (até 3 km) com nossos próprios motoqueiros. Chama no link da bio.
+Vem provar! Clique no link da Bio.
 
-#NNRestaurante #ComidaCaseira #FeijoadaCompleta #ComidaBrasileira
+#NNRestaurante #ComidaCaseira #FeijoadaCompleta #ComidaBrasileira #AlmoçoPerfeito
 
 ### Exemplo 3: Fim de semana (Sábado e Domingo)
 Fim de semana é dia de reunir quem a gente gosta em volta de uma mesa farta e saborosa. 🍗
 
-Deixe o trabalho da cozinha de lado e venha aproveitar nossa comida caseira com a família. Buffet variado, ambiente climatizado e tudo preparado na hora com muito carinho.
+Deixe o trabalho da cozinha de lado e venha aproveitar nossa comida caseira com a família. Variedade, ambiente climatizado e tudo preparado na hora com muito carinho.
 
-Vem almoçar com a gente! Atendemos no salão e também entregamos aqui na região (até 3 km) com nossos próprios motoqueiros. Chama no link da bio.
+Vem provar! Clique no link da Bio.
 
-#NNRestaurante #ComidaCaseira #AlmocoEmFamilia #ComidaBrasileira
+#NNRestaurante #ComidaCaseira #AlmocoEmFamilia #ComidaBrasileira #AlmoçoPerfeito
