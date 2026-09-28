@@ -1,4 +1,3 @@
-from __future__ import annotations
 """Cliente compartilhado para chamadas à API da OpenAI: texto (gpt-4o-mini) e imagem
 (GPT Image 2.5).
 
@@ -21,7 +20,6 @@ MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 # referência (layout do cliente e/ou foto real do produto), onde fidelidade importa mais.
 IMAGE_MODEL = os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-2.5-flare")
 IMAGE_EDIT_MODEL = os.environ.get("OPENAI_IMAGE_EDIT_MODEL", "gpt-image-2.5-sunburst")
-# Tamanho pedido à API. Escolhido o mais próximo possível da proporção final (1080x1440 =
 # 0.75) pra minimizar a distorção de esticar/encolher no ajuste final (ver
 # utils.image_overlay.recortar_formato_final — desde 2026-09-27 ela NÃO corta mais, só
 # redimensiona pro tamanho final, então quanto mais próxima a proporção pedida for da
@@ -40,46 +38,80 @@ _client = None
 
 
 def get_client() -> OpenAI:
+    """Retorna a instância singleton do cliente OpenAI. Lança RuntimeError se a chave
+    de API não estiver configurada no ambiente nem nos secrets do Streamlit."""
     global _client
-    if _client is None:
-        api_key = os.environ.get("OPENAI_API_KEY")
-        if not api_key:
-            raise RuntimeError(
-                "OPENAI_API_KEY não definida. Configure a variável de ambiente "
-                "(veja .env.example) antes de rodar o orchestrator."
-            )
-        _client = OpenAI(api_key=api_key)
+    if _client is not None:
+        return _client
+    key = os.environ.get("OPENAI_API_KEY")
+    if not key:
+        raise RuntimeError(
+            "OPENAI_API_KEY não configurada.\n\n"
+            "Localmente: adicione OPENAI_API_KEY=sk-... no arquivo .env na raiz.\n"
+            "No Streamlit Cloud: adicione OPENAI_API_KEY = \"sk-...\" em Settings > Secrets."
+        )
+    _client = OpenAI(api_key=key)
     return _client
 
 
 def chamar_ia(
-    system: str,
-    prompt: str,
-    max_tokens: int = 1024,
-    temperature: float = 0.7,
-    json_mode: bool = False,
+    system: str, prompt: str, max_tokens: int = 1000, temperature: float = 0.7, json_mode: bool = False
 ) -> str:
-    """Faz uma chamada de texto simples ao modelo da OpenAI e retorna o texto da resposta.
-
-    Args:
-        json_mode: quando True, pede ao modelo para responder em JSON estruturado (usa o
-            recurso nativo `response_format` da OpenAI), reduzindo a chance de a resposta
-            vir com texto extra ao redor do JSON.
-    """
+    """Chama o modelo de texto com um system prompt e um user prompt.
+    Retorna o texto da resposta sem espaços nas pontas."""
     client = get_client()
-    kwargs = {}
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": prompt},
+    ]
+    kwargs = {
+        "model": MODEL,
+        "messages": messages,
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+    }
     if json_mode:
         kwargs["response_format"] = {"type": "json_object"}
-    resposta = client.chat.completions.create(
-        model=MODEL,
-        max_tokens=max_tokens,
-        temperature=temperature,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": prompt},
-        ],
-        **kwargs,
-    )
+    resposta = client.chat.completions.create(**kwargs)
+    return (resposta.choices[0].message.content or "").strip()
+
+
+def chamar_ia_visao(
+    system: str,
+    prompt: str,
+    imagem_b64: str,
+    max_tokens: int = 1000,
+    temperature: float = 0.4,
+    json_mode: bool = True,
+) -> str:
+    """Chama a API de chat da OpenAI com capacidade multimodal (visão computacional).
+    Envia a imagem em base64 junto com o prompt textual para inspeção visual."""
+    client = get_client()
+    messages = [
+        {"role": "system", "content": system},
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/png;base64,{imagem_b64}",
+                        "detail": "high",
+                    },
+                },
+            ],
+        },
+    ]
+    kwargs = {
+        "model": MODEL,
+        "messages": messages,
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+    }
+    if json_mode:
+        kwargs["response_format"] = {"type": "json_object"}
+    resposta = client.chat.completions.create(**kwargs)
     return (resposta.choices[0].message.content or "").strip()
 
 
@@ -122,8 +154,8 @@ def baixar_imagem_referencia(url: str) -> bytes:
     resposta = requests.get(url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
     resposta.raise_for_status()
     content_type = resposta.headers.get("Content-Type", "")
-    if "image" not in content_type and not url.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
-        raise ValueError(f"O link não parece ser uma imagem direta (Content-Type: {content_type!r}).")
+    if "image" not in content_type:
+        raise ValueError(f"URL não retornou imagem (Content-Type: {content_type})")
     return resposta.content
 
 
@@ -144,8 +176,6 @@ def gerar_imagem_com_referencias(prompt: str, imagens_bytes: list, size: Optiona
     pngs = [_como_png(dados) for dados in imagens_bytes]
 
     def _chamar(tam):
-        # Reconstrói os arquivos a cada tentativa — um BytesIO já lido (tentativa
-        # anterior) chegaria vazio na chamada de retry.
         arquivos = []
         for indice, dados in enumerate(pngs):
             arquivo = BytesIO(dados)
@@ -162,13 +192,20 @@ def gerar_imagem_com_referencias(prompt: str, imagens_bytes: list, size: Optiona
     return _resultado_imagem(resposta.data[0], IMAGE_EDIT_MODEL, tamanho_usado)
 
 
+def _como_png(dados: bytes, lado_max: int = 1536) -> bytes:
+    """Converte qualquer imagem (JPG/WEBP da Shopee, referências grandes) para PNG de no
+    máximo `lado_max` px — formato aceito pela API e envio mais leve."""
+    imagem = Image.open(BytesIO(dados))
+    imagem = imagem.convert("RGBA" if imagem.mode in ("RGBA", "LA", "P") else "RGB")
+    imagem.thumbnail((lado_max, lado_max))
+    saida = BytesIO()
+    imagem.save(saida, format="PNG")
+    return saida.getvalue()
+
+
 def _resultado_imagem(dado, modelo: str, tamanho_pedido: str) -> dict:
     """Monta o dicionário de retorno padrão — incluindo `tamanho_real`, medido na imagem
-    que veio de verdade, nunca assumido a partir do que foi pedido. A API às vezes não
-    devolve exatamente o `size` pedido (principalmente com múltiplas imagens de
-    referência de proporções diferentes), e um código que assume "pedido = real" gera
-    margens de segurança erradas para a IA — foi exatamente esse o bug que cortava texto
-    no topo das imagens (visto em 2026-09-23)."""
+    que veio de verdade, nunca assumido a partir do que foi pedido."""
     b64 = getattr(dado, "b64_json", None)
     tamanho_real = None
     if b64:
@@ -187,23 +224,14 @@ def _resultado_imagem(dado, modelo: str, tamanho_pedido: str) -> dict:
     }
 
 
-def _como_png(dados: bytes, lado_max: int = 1536) -> bytes:
-    """Converte qualquer imagem (JPG/WEBP da Shopee, referências grandes) para PNG de no
-    máximo `lado_max` px — formato aceito pela API e envio mais leve."""
-    imagem = Image.open(BytesIO(dados))
-    imagem = imagem.convert("RGBA" if imagem.mode in ("RGBA", "LA", "P") else "RGB")
-    imagem.thumbnail((lado_max, lado_max))
-    saida = BytesIO()
-    imagem.save(saida, format="PNG")
-    return saida.getvalue()
-
-
 def extrair_json(texto: str) -> dict:
     """Extrai um objeto JSON de uma resposta da IA, mesmo se vier com texto/markdown ao redor."""
     match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", texto, re.DOTALL)
-    bruto = match.group(1) if match else texto
-    inicio = bruto.find("{")
-    fim = bruto.rfind("}")
-    if inicio == -1 or fim == -1:
-        raise ValueError(f"Não foi possível localizar JSON na resposta da IA: {texto[:200]!r}")
-    return json.loads(bruto[inicio : fim + 1])
+    if match:
+        texto = match.group(1)
+    else:
+        abertura = texto.find("{")
+        fechamento = texto.rfind("}")
+        if abertura != -1 and fechamento != -1 and fechamento > abertura:
+            texto = texto[abertura : fechamento + 1]
+    return json.loads(texto)

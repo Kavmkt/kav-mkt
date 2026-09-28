@@ -1,16 +1,11 @@
-from __future__ import annotations
-"""Orquestrador da Kav (@kav.mkt): cria um post completo para um cliente, sem intervenção.
+"""Orquestrador da Kav (@kav.mkt).
 
-Catálogo (escolhe o produto) → Legenda (chamada, selo e legenda no padrão do cliente) →
-Design (brief + imagem com referência de layout, foto real do produto e logo).
-
-Nenhuma postagem é feita em redes sociais — o resultado é para revisão e publicação
-manual. Usado pelo app (app.py) e também pela linha de comando:
-
-    python orchestrator.py --cliente ponto-car
+Coordena a esteira multi-agente para os clientes da agência:
+- gerar_post: produtos de catálogo (ex: ponto-car)
+- gerar_carrossel: pautas de conteúdo educativo/carrossel (ex: kav)
+- gerar_post_fotos: fotos reais com tratamento diagramado (ex: nn-restaurante)
+- gerar_campanha: campanhas de performance com análise de concorrência e layout de anúncios
 """
-import argparse
-import base64
 import json
 from typing import Callable, Optional
 
@@ -18,26 +13,19 @@ from agents.agente_carrossel import gerar_imagens_carrossel, gerar_roteiro
 from agents.agente_catalogo import escolher_produto
 from agents.agente_design import escolher_referencia, gerar_brief, gerar_imagem
 from agents.agente_design_fotos import gerar_brief_foto, gerar_imagem_foto
-from agents.agente_estrategia_campanha import definir_estrategia_campanha
 from agents.agente_foto import escolher_foto
-from agents.agente_layout_campanha import gerar_brief_campanha, gerar_imagem_campanha
 from agents.agente_legenda import gerar_legenda
-from agents.agente_legenda_fotos import gerar_legenda_foto
+from agents.agente_legenda_fotos import gerar_copy_foto
 from agents.agente_pauta import escolher_pauta
 from utils import historico
 from utils.cliente import CLIENTES_DIR, carregar_cliente
 
 
 def gerar_post(slug: str, com_imagem: bool = True, etapa: Optional[Callable[[str], None]] = None) -> dict:
-    """Cria o post. `etapa` recebe o nome de cada passo (o app usa para mostrar progresso).
-
-    Só posts completos (com imagem) entram no histórico — assim, testes de texto não
-    "gastam" produtos da janela de 30 dias.
-    """
     avisar = etapa or (lambda _texto: None)
     cliente = carregar_cliente(slug)
 
-    avisar("Escolhendo o produto no catálogo...")
+    avisar("Escolhendo o produto campeão de vendas do catálogo...")
     produto = escolher_produto(cliente)
     avisos = list(produto.pop("avisos", []))
 
@@ -57,7 +45,6 @@ def gerar_post(slug: str, com_imagem: bool = True, etapa: Optional[Callable[[str
         avisos.append("Modo teste (sem imagem): este produto não entrou no histórico.")
         return post
 
-    # Sorteada antes do brief: a posição do logo depende do layout escolhido.
     post["referencia"] = escolher_referencia(cliente)
     avisar("Montando o brief visual...")
     post["brief"] = gerar_brief(copy, produto, cliente, post["referencia"])
@@ -65,6 +52,21 @@ def gerar_post(slug: str, com_imagem: bool = True, etapa: Optional[Callable[[str
     post["imagem"] = gerar_imagem(post["brief"], produto, cliente, post["referencia"])
     if post["imagem"].get("aviso"):
         avisos.append(post["imagem"]["aviso"])
+
+    if com_imagem and post.get("imagem"):
+        try:
+            from agents.agente_diretor_arte import revisar_e_aprovar_layout
+            post["imagem"] = revisar_e_aprovar_layout(
+                post["imagem"],
+                copy=copy,
+                foto=produto,
+                cliente=cliente,
+                referencia=post["referencia"],
+                modo="produto",
+                etapa=avisar,
+            )
+        except Exception as exc:
+            avisos.append(f"Direção de Arte automática ignorada ({exc}).")
 
     try:
         historico.registrar(slug, {
@@ -74,19 +76,21 @@ def gerar_post(slug: str, com_imagem: bool = True, etapa: Optional[Callable[[str
             "legenda": copy.get("legenda"),
             "referencia_layout": post["imagem"].get("referencia_layout"),
         })
-    except Exception as exc:  # o post já está pronto — só avisa
-        avisos.append(f"Não consegui salvar no histórico ({exc}); este produto pode se repetir nos próximos posts.")
+    except Exception as exc:
+        avisos.append(f"Não consegui salvar no histórico ({exc}); este produto pode se repetir.")
+
+    try:
+        from utils import estado_agentes
+        estado_agentes.registrar_post_produzido(post, slug)
+    except Exception:
+        pass
+
     return post
 
 
 def gerar_carrossel(
     slug: str, num_paginas: int = 5, com_imagem: bool = True, etapa: Optional[Callable[[str], None]] = None
 ) -> dict:
-    """Cria um carrossel (1 a 7 páginas) para um cliente de conteúdo (config.json com
-    "tipo": "carrossel") — mesmo espírito do `gerar_post`, mas com Pauta no lugar de
-    Catálogo e N imagens (uma por página) no lugar de uma só. Não é chamada pelo fluxo
-    de clientes de produto (ex: ponto-car), que continua em `gerar_post`.
-    """
     avisar = etapa or (lambda _texto: None)
     cliente = carregar_cliente(slug)
     num_paginas = max(1, min(7, num_paginas))
@@ -112,9 +116,7 @@ def gerar_carrossel(
         return post
 
     post["referencia"] = escolher_referencia(cliente)
-    post["slides"] = gerar_imagens_carrossel(
-        roteiro, cliente, pauta.get("tema", ""), post["referencia"], cta=pauta.get("cta"), etapa=avisar
-    )
+    post["slides"] = gerar_imagens_carrossel(roteiro, cliente, pauta.get("tema", ""), post["referencia"], etapa=avisar)
 
     try:
         historico.registrar(slug, {
@@ -123,27 +125,28 @@ def gerar_carrossel(
             "headline": roteiro["paginas"][0].get("titulo") if roteiro.get("paginas") else None,
             "legenda": roteiro.get("legenda"),
         })
-    except Exception as exc:  # o carrossel já está pronto — só avisa
-        avisos.append(f"Não consegui salvar no histórico ({exc}); esta pauta pode se repetir nos próximos carrosséis.")
+    except Exception as exc:
+        avisos.append(f"Não consegui salvar no histórico ({exc}); esta pauta pode se repetir.")
+
+    try:
+        from utils import estado_agentes
+        estado_agentes.registrar_post_produzido(post, slug)
+    except Exception:
+        pass
+
     return post
 
 
 def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callable[[str], None]] = None) -> dict:
-    """Cria o post para um cliente "de fotos" (config.json com "tipo": "fotos") — mesmo
-    espírito do `gerar_post`, mas com o Agente de Repositório de Fotos no lugar do
-    Agente de Catálogo: em vez de um produto de loja, sorteia uma foto real do cliente
-    (clientes/<slug>/fotos/) e monta a peça em cima dela, sem gerar uma cena do zero.
-    Isolado de `gerar_post`: nenhum cliente de catálogo passa por aqui, e vice-versa.
-    """
     avisar = etapa or (lambda _texto: None)
     cliente = carregar_cliente(slug)
 
-    avisar("Escolhendo uma foto do repositório...")
+    avisar("Sorteando uma foto real do repositório do cliente...")
     foto = escolher_foto(cliente)
     avisos = list(foto.pop("avisos", []))
 
-    avisar(f"Escrevendo chamada e legenda para: {foto.get('nome') or foto['arquivo'].name}")
-    copy = gerar_legenda_foto(foto, cliente)
+    avisar(f"Escrevendo chamada, selo e legenda para: {foto.get('nome') or foto['arquivo'].name}")
+    copy = gerar_copy_foto(foto, cliente)
     post = {
         "cliente": cliente["nome"],
         "foto": foto,
@@ -158,14 +161,28 @@ def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callabl
         avisos.append("Modo teste (sem imagem): esta foto não entrou no histórico.")
         return post
 
-    # Sorteada antes do brief: a posição do logo depende do layout escolhido.
     post["referencia"] = escolher_referencia(cliente)
-    avisar("Montando o brief visual...")
+    avisar("Montando o brief do tratamento sobre a foto real...")
     post["brief"] = gerar_brief_foto(copy, foto, cliente, post["referencia"])
     avisar("Gerando a imagem (pode levar até 1 minuto)...")
     post["imagem"] = gerar_imagem_foto(post["brief"], foto, cliente, post["referencia"])
     if post["imagem"].get("aviso"):
         avisos.append(post["imagem"]["aviso"])
+
+    if com_imagem and post.get("imagem"):
+        try:
+            from agents.agente_diretor_arte import revisar_e_aprovar_layout
+            post["imagem"] = revisar_e_aprovar_layout(
+                post["imagem"],
+                copy=copy,
+                foto=foto,
+                cliente=cliente,
+                referencia=post["referencia"],
+                modo="organico",
+                etapa=avisar,
+            )
+        except Exception as exc:
+            avisos.append(f"Direção de Arte automática ignorada ({exc}).")
 
     try:
         historico.registrar(slug, {
@@ -175,85 +192,102 @@ def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callabl
             "legenda": copy.get("legenda"),
             "referencia_layout": post["imagem"].get("referencia_layout"),
         })
-    except Exception as exc:  # o post já está pronto — só avisa
-        avisos.append(f"Não consegui salvar no histórico ({exc}); esta foto pode se repetir nos próximos posts.")
+    except Exception as exc:
+        avisos.append(f"Não consegui salvar no histórico ({exc}); esta foto pode se repetir.")
+
+    try:
+        from utils import estado_agentes
+        estado_agentes.registrar_post_produzido(post, slug)
+    except Exception:
+        pass
+
     return post
 
 
-if __name__ == "__main__":
-    from dotenv import load_dotenv
-
-    load_dotenv()
-    parser = argparse.ArgumentParser(description="Cria um post completo para um cliente da Kav.")
-    parser.add_argument("--cliente", required=True, help="Pasta do cliente em clientes/ (ex: ponto-car)")
-    parser.add_argument("--sem-imagem", action="store_true", help="Só gera o texto (não entra no histórico).")
-    args = parser.parse_args()
-
-    resultado = gerar_post(args.cliente, com_imagem=not args.sem_imagem, etapa=print)
-    pasta = CLIENTES_DIR.parent / "output" / args.cliente / historico.agora().strftime("%Y-%m-%d_%H%M%S")
-    pasta.mkdir(parents=True, exist_ok=True)
-    (pasta / "legenda.txt").write_text(resultado["copy"].get("legenda") or "", encoding="utf-8")
-    (pasta / "post.json").write_text(
-        json.dumps({k: v for k, v in resultado.items() if k != "imagem"}, ensure_ascii=False, indent=2, default=str),
-        encoding="utf-8",
-    )
-    if resultado["imagem"]:
-        (pasta / "imagem.png").write_bytes(base64.b64decode(resultado["imagem"]["imagem_b64"]))
-    for aviso in resultado["avisos"]:
-        print(f"⚠️  {aviso}")
-    print(f"\nPronto: {pasta}")
-
-
-def gerar_campanha(slug: str, com_imagem: bool = True, etapa=None) -> dict:
-    """Cria UMA peça de campanha de alta performance (tráfego pago / Meta Ads) para um
-    cliente "de fotos": mesma foto real do acervo, mas com o Estrategista de Performance
-    (agente_estrategia_campanha) escolhendo o ângulo de conversão e escrevendo a copy de
-    anúncio, e o Diretor de Arte de Campanha (agente_layout_campanha) diagramando a peça
-    1080x1440 com faixa de CTA (localização + WhatsApp), em vez do fluxo orgânico simples
-    de `gerar_post_fotos`.
-    """
+def gerar_campanha(
+    slug: str, com_imagem: bool = True, etapa: Optional[Callable[[str], None]] = None
+) -> dict:
+    """Cria uma peça completa de campanha de tráfego pago (Meta Ads) com pesquisa
+    aprofundada de concorrência, inteligência de performance e layout com forte
+    hierarquia tipográfica."""
     avisar = etapa or (lambda _texto: None)
     cliente = carregar_cliente(slug)
+    avisos = []
 
-    avisar("1/4: Sorteando foto real do acervo do cliente...")
+    # 1. Escolha da foto real
+    avisar("1/4 [Curador]: Selecionando foto real de prato do cliente...")
     foto = escolher_foto(cliente)
-    avisos = list(foto.pop("avisos", []))
+    avisos.extend(foto.pop("avisos", []))
 
-    avisar("2/4: Analisando concorrência e definindo o ângulo de conversão...")
-    estrategia = definir_estrategia_campanha(cliente, foto)
+    # 2. Estrategista de Performance (Gestor de Tráfego)
+    from agents.agente_estrategia_campanha import criar_estrategia_campanha
+    avisar(f"2/4 [Estrategista]: Analisando concorrência e desenhando estratégia para '{foto.get('nome')}'...")
+    estrategia = criar_estrategia_campanha(cliente, foto_escolhida=foto)
 
-    post = {
-        "tipo_post": "campanha",
+    # 3. Designer de Performance & Layout de Campanha
+    from agents.agente_layout_campanha import montar_brief_layout, gerar_arte_campanha
+    h_destaque = estrategia.get("hierarquia_visual", {}).get("headline_destaque", "ALMOÇO DE QUALIDADE")
+    avisar(f"3/4 [Diretor de Arte]: Projetando layout com hierarquia visual e headline '{h_destaque}'...")
+    brief = montar_brief_layout(estrategia, foto, cliente)
+
+    # 4. Geração de Arte
+    imagem = None
+    if com_imagem:
+        avisar("4/4 [Designer]: Renderizando arte 1080x1440 com foto real e logo da N&N...")
+        imagem = gerar_arte_campanha(brief, foto, cliente, estrategia)
+        try:
+            from agents.agente_diretor_arte import revisar_e_aprovar_layout
+            imagem = revisar_e_aprovar_layout(
+                imagem,
+                copy={
+                    "headline_imagem": estrategia["hierarquia_visual"]["headline_destaque"],
+                    "headline_apoio": estrategia["hierarquia_visual"]["headline_apoio"],
+                    "selo_produto": estrategia["hierarquia_visual"]["selo"],
+                    "cta_local": estrategia["hierarquia_visual"]["cta_visual"],
+                },
+                foto=foto,
+                cliente=cliente,
+                referencia=None,
+                modo="campanha",
+                etapa=avisar,
+            )
+        except Exception as exc:
+            avisos.append(f"Direção de Arte automática ignorada ({exc}).")
+    else:
+        avisos.append("Modo teste sem imagem ativado.")
+
+    copy_anuncio = estrategia.get("copy_anuncio", {})
+    legenda_formatada = (
+        f"{copy_anuncio.get('gancho_linha_1', '')}\n\n"
+        f"{copy_anuncio.get('corpo', '')}\n\n"
+        f"📍 Av. Ten. Marques, 4131 - Vila Poupança, Santana de Parnaíba / Cajamar - SP\n"
+        f"⏰ Almoço de Segunda a Sábado, das 11h às 15h\n"
+        f"🚗 Estacionamento fácil no entorno · Salão aconchegante\n\n"
+        f"{copy_anuncio.get('cta_final', '👉 Venha almoçar hoje ou toque no link para ver a localização exata!')}\n\n"
+        f"#SantanaDeParnaiba #AlmocoExecutivo #ComidaCaseira #BuffetDeAlmoco #NNRestaurante"
+    )
+
+    resultado = {
         "cliente": cliente["nome"],
+        "tipo_producao": "campanha_performance",
         "foto": foto,
         "estrategia": estrategia,
-        "referencia": None,
-        "brief": None,
-        "imagem": None,
+        "brief": brief,
+        "imagem": imagem,
+        "copy": {
+            "headline_imagem": estrategia["hierarquia_visual"]["headline_destaque"],
+            "headline_apoio": estrategia["hierarquia_visual"]["headline_apoio"],
+            "selo_produto": estrategia["hierarquia_visual"]["selo"],
+            "cta_local": estrategia["hierarquia_visual"]["cta_visual"],
+            "legenda": legenda_formatada,
+        },
         "avisos": avisos,
     }
 
-    if not com_imagem:
-        avisos.append("Modo teste (sem imagem): esta foto não entrou no histórico.")
-        return post
-
-    post["referencia"] = escolher_referencia(cliente)
-    avisar(f"3/4: Escrevendo o brief da peça com o ângulo '{estrategia.get('angulo_conversao')}'...")
-    post["brief"] = gerar_brief_campanha(estrategia, foto, cliente, post["referencia"])
-    avisar("4/4: Diagramando a arte de campanha 1080x1440 com foto real, logo e CTA...")
-    post["imagem"] = gerar_imagem_campanha(post["brief"], foto, cliente, post["referencia"])
-    if post["imagem"].get("aviso"):
-        avisos.append(post["imagem"]["aviso"])
-
     try:
-        historico.registrar(slug, {
-            "produto_id": foto["id"],
-            "produto_nome": foto.get("nome") or foto["arquivo"].name,
-            "headline": estrategia.get("headline_impacto"),
-            "legenda": estrategia.get("copy_anuncio"),
-            "referencia_layout": post["imagem"].get("referencia_layout"),
-        })
-    except Exception as exc:
-        avisos.append(f"Não consegui salvar no histórico ({exc}); esta foto pode se repetir nos próximos posts.")
+        from utils import estado_agentes
+        estado_agentes.registrar_post_produzido(resultado, slug)
+    except Exception:
+        pass
 
-    return post
+    return resultado
