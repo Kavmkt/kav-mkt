@@ -34,6 +34,7 @@ IMAGE_EDIT_MODEL = os.environ.get("OPENAI_IMAGE_EDIT_MODEL", "gpt-image-2.5-sunb
 # Tamanho pedido à API (o recorte exato pro formato final de 1080x1440 acontece depois,
 # em utils/image_overlay.py; a API aceita 1024x1024, 1024x1536 ou 1536x1024).
 IMAGE_SIZE = os.environ.get("OPENAI_IMAGE_SIZE", "1024x1536")
+TAMANHO_IMAGEM_SEGURO = "1024x1536"
 IMAGE_QUALITY = os.environ.get("OPENAI_IMAGE_QUALITY", "medium")
 
 _client: Optional[OpenAI] = None
