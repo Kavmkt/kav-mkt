@@ -168,7 +168,7 @@ def revisar_e_aprovar_layout(
             "- Ensure the official client logo is clearly and cleanly reproduced from the authentic logo reference.\n"
             "- NEVER add white glow, blurry white outlines, or diffuse halos around text letters.\n"
             "- Do NOT add circular stamp badges, fork/knife ellipses, or amateur clutter.\n"
-            "- Deliver a polished, crisp, editorial-quality piece in 1080x1440 portrait format."
+            "- Deliver a polished, crisp, documentary-level realistic piece in 1080x1440 portrait format without 3D CGI gloss."
         )
 
         imagens_input = [d for d, _ in referencias_refino]
@@ -183,6 +183,12 @@ def revisar_e_aprovar_layout(
             raise RuntimeError("API de imagem não retornou resultado no refino.")
 
         nova_imagem_bytes = image_overlay.recortar_formato_final(base64.b64decode(bruta["imagem_b64"]))
+        try:
+            from utils.pos_processamento import aplicar_pos_processamento_fotografico
+            nova_imagem_bytes = aplicar_pos_processamento_fotografico(nova_imagem_bytes)
+        except Exception:
+            pass
+
         avisar("✨ [Diretor de Arte]: Layout refinado e aprovado com sucesso!")
 
         return {

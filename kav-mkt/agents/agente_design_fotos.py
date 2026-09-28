@@ -1,11 +1,12 @@
 """Agente de Design (Fotos): escreve o brief e gera a imagem final para clientes "de
 fotos" (config.json com "tipo": "fotos") — hoje só o NN Restaurante.
 
-SINTONIA TOTAL ENTRE AGENTES (COERÊNCIA GASTRONÔMICA):
+SINTONIA TOTAL ENTRE AGENTES (COERÊNCIA GASTRONÔMICA & FOTORREALISMO ANTI-CGI):
 1. A comida mostrada DEVE ser estritamente o prato informado pelo Curador e pela Redatora.
    Se a legenda for sobre "Frango ao Molho", a imagem DEVE ilustrar frango ao molho,
    NUNCA feijoada, bife ou outro prato.
-2. Se houver foto real correspondente, aplica tratamento gráfico diagramado sobre a foto.
+2. DIRETRIZES ANTI-IA: eliminação de aspecto plástico, brilhos sintéticos de render 3D e
+   cores fluorescentes. Estética de foto documental DSLR 35mm f/2.8 com luz natural.
 3. Se for prato virtual (do OlaClick sem foto no acervo), gera a cena culinária brasileira
    do zero, aplicando os detalhes físicos reais do restaurante do Nico:
    - Louça: prato branco comercial tradicional (sem luxo) ou marmitex bem servida.
@@ -14,6 +15,7 @@ SINTONIA TOTAL ENTRE AGENTES (COERÊNCIA GASTRONÔMICA):
    - Fundo desfocado: cadeiras de carvalho envernizadas, piso de cerâmica branca e parede vermelha.
    - Logotipo oficial da N&N da pasta logo/ aplicado no cabeçalho/topo.
 4. PROIBIDO USAR A PALAVRA "EXECUTIVO": NUNCA renderize a palavra "executivo" na arte.
+5. Pós-processamento fotográfico local adicionando micro-granulação de sensor de câmera real.
 """
 from __future__ import annotations
 
@@ -31,9 +33,13 @@ imagem por IA de alta qualidade.
 DIRETRIZES DE MARCA E KV DO CLIENTE:
 __SKILL__
 
-DIREÇÃO DE ARTE E COERÊNCIA GASTRONÔMICA:
+DIREÇÃO DE ARTE, COERÊNCIA GASTRONÔMICA & FOTORREALISMO BRUTO (ANTI-CGI):
 - PRATO PRINCIPAL OBRIGATÓRIO: A comida ilustrada deve ser rigorosamente: "__PRATO_ESPECIFICO__".
   NUNCA mostre feijoada, carne vermelha ou outro prato se a refeição do dia for outra (como frango).
+- DIRETRIZ ANTI-CGI / SEM CARA DE IA:
+  * A imagem DEVE emular uma fotografia documental crua e autêntica de restaurante, tirada com câmera DSLR (lente 35mm f/2.8) sob luz natural suave de janela.
+  * PROIBIÇÃO ABSOLUTA DE CARA DE 3D RENDER: Proibido brilho plástico emborrachado em molhos, saturação fluorescente artificial e iluminação artificial de estúdio 3D.
+  * A comida deve exibir texturas orgânicas e imperfeições naturais apetitosas (grãos de arroz soltos, textura fibrosa do frango/carne, pedacinhos reais de cebola/ervas no molho caseiro, fumaça suave natural).
 __CONTEXTO_CENA__
 __CONTEXTO_LAYOUT__
 - LOGOTIPO OFICIAL DA MARCA: uma das imagens de referência fornecidas é o logotipo oficial da
@@ -54,7 +60,7 @@ REGRAS RÍGIDAS DE DIAGRAMAÇÃO E ANTI-AMADORISMO:
    - Mantenha texto e logo a pelo menos __MARGEM_LATERAL__% de distância das bordas.
 
 O brief (em inglês) deve definir, em um parágrafo denso e direto:
-- A cena gastronômica precisa exibindo exatamente __PRATO_ESPECIFICO__;
+- A cena gastronômica fotorrealista precisa exibindo exatamente __PRATO_ESPECIFICO__ sem aspecto 3D/CGI;
 - A headline exata, sem contornos brancos e sem a palavra 'executivo';
 - A ausência total de elipses/selos circulares;
 - A reprodução fiel do logotipo oficial fornecido como referência na área de branding indicada.
@@ -66,19 +72,19 @@ entre aspas exatamente em português. Sem explicações, sem markdown, sem lista
 CENA_FOTO_REAL = """
 - BASE DA CENA: a foto real de referência é o herói da imagem. Os ingredientes, carnes,
   acompanhamentos e porção real devem ser preservados com fidelidade sobre a mesa de madeira rústica,
-  sem mãos amadoras ou embalagens plásticas descartáveis.
+  com luz natural orgânica de restaurante, sem mãos amadoras ou embalagens plásticas descartáveis.
 """
 
 CENA_PRATO_VIRTUAL = """
-- FOTOGRAFIA GASTRONÔMICA BRASILEIRA DO RESTAURANTE DO NICO:
-  Crie uma fotografia editorial e apetitosa de comida caseira brasileira recém-servida:
+- FOTOGRAFIA GASTRONÔMICA BRASILEIRA REALISTA DO RESTAURANTE DO NICO:
+  Crie uma fotografia editorial e altamente apetitosa de comida caseira brasileira recém-servida:
   1. LOUÇA E APRESENTAÇÃO: Servido em prato branco simples de louça de restaurante comercial (louça
      tradicional sem luxo excessivo) OU em uma marmitex brasileira tradicional bem servida e farta.
   2. COMIDA BRASILEIRA REAL E ACOMPANHAMENTOS: A porção é farta, quente e apetitosa.
      O prato principal (__PRATO_ESPECIFICO__) deve vir acompanhado das guarnições clássicas de almoço
      comercial brasileiro: arroz branco soltinho, feijão temperado, batata cozida ou frita douradinha,
      um toque de macarrão ao molho e farofinha crocante. Comida fumegante com brilho natural de comida fresca.
-     NUNCA renderize feijoada se o prato do dia não for feijoada.
+     NUNCA renderize feijoada se o prato do dia não for feijoada. NUNCA aplique acabamento de pintura 3D.
   3. MESA E AMBIENTAÇÃO DO RESTAURANTE: Mesa de madeira rústica com leve textura clara/esbranquiçada
      (veios da madeira com leve pátina clara). Ao fundo, com profundidade de campo suave (bokeh):
      cadeiras de madeira em tom carvalho escuro envernizado, piso de cerâmica branca e toques sutis de
@@ -95,39 +101,43 @@ CONTEXTO_SEM_REFERENCIA = (
 
 
 def _gerar_descricao_culinaria_visual(nome_prato: str, descricao: str = "") -> str:
-    """Gera uma descrição visual culinária em inglês precisa para evitar alucinações (como feijoada em dia de frango)."""
+    """Gera uma descrição visual culinária em inglês precisa e com parâmetros ópticos anti-CGI."""
     nome = nome_prato.lower()
     if "frango" in nome and ("molho" in nome or "ensopado" in nome or "cozido" in nome):
         return (
-            "tender chicken thighs and drumsticks slow-cooked in a rich, savory homemade Brazilian tomato and onion sauce "
-            "(frango ao molho caseiro), garnished with fresh parsley. Served on a simple white commercial restaurant plate, "
-            "accompanied by fluffy white rice, Brazilian brown beans (feijão carioca), sautéed potatoes, a small portion of macaroni pasta with tomato sauce, and golden cassava flour (farofa). "
-            "STRICTLY FORBIDDEN: do NOT depict feijoada, black beans stew, beef steaks, or dark stew."
+            "authentic Brazilian homemade daily special: tender chicken pieces slow-cooked in a rich, rustic tomato and onion sauce "
+            "(frango ao molho caseiro), garnished with finely chopped fresh parsley. Served on an unpretentious white ceramic commercial restaurant plate, "
+            "accompanied by fluffy white rice (arroz soltinho), Brazilian brown beans (feijão carioca), sautéed potatoes, a small portion of macaroni pasta with tomato sauce, and golden toasted farofa. "
+            "OPTICAL & PHOTOGRAPHY RULES: authentic documentary DSLR photography shot on 35mm f/2.8 lens in natural diffused lunch daylight. Genuine food textures, natural moisture, gentle steam rising. "
+            "STRICTLY FORBIDDEN: no CGI look, no 3D render gloss, no plastic artificial sheen, no hyper-smooth digital painting textures, no feijoada, no black beans stew, no red meat."
         )
     elif "feijoada" in nome:
         return (
             "traditional Brazilian feijoada with rich black beans, smoked sausage, pork ribs, and jerked beef, "
-            "accompanied by white rice, sautéed collard greens (couve), crispy pork rinds (torresmo), and golden farofa."
+            "accompanied by white rice, sautéed collard greens (couve), crispy pork rinds (torresmo), and golden farofa. "
+            "Natural DSLR food photography with authentic steam and rustic dining room natural daylight."
         )
     elif "bife" in nome or "carne" in nome:
         return (
             "succulent Brazilian sautéed beef steak with golden caramelized onions (bife acebolado), "
-            "served on a white restaurant plate with fluffy white rice, savory brown beans, potatoes, macaroni pasta, and farofa."
+            "served on a white restaurant plate with fluffy white rice, savory brown beans, potatoes, macaroni pasta, and farofa. "
+            "Natural food texture, authentic daylight, no plastic sheen, no 3D CGI render."
         )
     elif "picadinho" in nome:
         return (
             "rich Brazilian beef stew in bite-sized cubes with tender carrots and potatoes in a thick rich gravy (picadinho com batata), "
-            "served on a white restaurant plate alongside white rice, brown beans, macaroni, and farofa."
+            "served on a white restaurant plate alongside white rice, brown beans, macaroni, and farofa. Authentic food photography, no CGI."
         )
     elif "parmegiana" in nome:
         return (
             "crispy golden breaded cutlet (parmegiana) topped with melted mozzarella cheese and fresh homemade tomato sauce, "
-            "served with white rice and golden crispy french fries."
+            "served with white rice and golden crispy french fries. Natural dining lighting, authentic textures."
         )
     else:
         return (
             f"authentic Brazilian homemade daily special '{nome_prato}' ({descricao}), "
-            "generously served on a simple white commercial restaurant plate with fluffy white rice, seasoned brown beans, potatoes, macaroni pasta, and toasted farofa. Fresh, hot, and steaming."
+            "generously served on a simple white commercial restaurant plate with fluffy white rice, seasoned brown beans, potatoes, macaroni pasta, and toasted farofa. Fresh, hot, and steaming. "
+            "Authentic DSLR food photography in soft natural daylight, no 3D render, no plastic look."
         )
 
 
@@ -155,7 +165,6 @@ def gerar_brief_foto(copy: dict, foto: dict, cliente: dict, referencia: Optional
         partes.append(f"Descrição dos ingredientes: {desc_prato}")
     partes.append(f'Headline da arte: "{copy.get("headline_imagem")}"')
     if copy.get("selo_produto"):
-        # Garante que não use 'executivo' no selo
         selo_limpo = copy["selo_produto"].replace("Executivo", "do Dia").replace("executivo", "do Dia")
         partes.append(f'Selo do prato: "{selo_limpo}"')
     else:
@@ -167,7 +176,7 @@ def gerar_brief_foto(copy: dict, foto: dict, cliente: dict, referencia: Optional
             f"DIRETRIZ VISUAL ESPECÍFICA DESTE PRATO:\n"
             f"- Comida: {culinaria_especifica}\n"
             f"- Cenário do Nico: Prato comercial branco simples sobre mesa de madeira rústica clara. Fundo desfocado com cadeiras de carvalho e parede vermelha.\n"
-            f"- Proibição: NUNCA desenhe feijoada ou prato diferente de '{nome_prato}'. NUNCA escreva a palavra 'EXECUTIVO'."
+            f"- Proibição: NUNCA desenhe feijoada ou prato diferente de '{nome_prato}'. NUNCA escreva a palavra 'EXECUTIVO'. NUNCA use efeito plástico ou CGI."
         )
     else:
         partes.append(
@@ -195,7 +204,6 @@ def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optiona
             "or a distracting domestic wall/plant background, remove the hands and domestic clutter, "
             "and present the delicious food cleanly and appetisingly on the table.",
         ))
-        # Template de layout só vai se tiver foto real (para não contaminar pratos virtuais com comida do template)
         if referencia:
             referencias_imagem.append((
                 referencia["arquivo"].read_bytes(),
@@ -248,6 +256,12 @@ def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optiona
 
 def _finalizar(imagem_bytes: bytes) -> dict:
     final = image_overlay.recortar_formato_final(imagem_bytes)
+    # Aplica pós-processamento fotográfico local (micro-granulação e calibração de saturação anti-CGI)
+    try:
+        from utils.pos_processamento import aplicar_pos_processamento_fotografico
+        final = aplicar_pos_processamento_fotografico(final)
+    except Exception as exc:
+        print(f"Aviso no pós-processamento fotográfico: {exc}")
     return {
         "imagem_b64": base64.b64encode(final).decode("ascii"),
         "tamanho": f"{image_overlay.LARGURA_PADRAO}x{image_overlay.ALTURA_PADRAO}",

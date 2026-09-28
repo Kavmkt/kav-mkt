@@ -9,6 +9,7 @@ de altíssimo nível em formato 4:5 (1080x1440), aplicando rigorosa hierarquia v
 - Logotipo oficial da N&N diagramado com respiro e fidelidade total
 - A comida real como grande protagonista apetitosa da cena.
 - PROIBIDO o termo "executivo" (preço popular acessível de R$ 26 a R$ 35).
+- Fotorrealismo culinário anti-CGI com pós-processamento de textura.
 """
 from __future__ import annotations
 
@@ -34,8 +35,9 @@ O cliente N&N exige contraste nítido e hierarquia visual bem demarcada:
 4. **LOCALIZAÇÃO**: Indicação limpa e legível de endereço: "__CTA_LOCAL__".
 5. **MARCA OFICIAL**: O logotipo oficial da empresa (fornecido na imagem de referência de logo) deve ser diagramado no topo/cabeçalho, integrado com harmonia e respirando confortavelmente (mínimo de 5% de distância de qualquer borda).
 
-REGRA DE TERMOS:
+REGRA DE TERMOS & REALISMO FOTOGRÁFICO:
 - PROIBIDO USAR A PALAVRA "EXECUTIVO": NUNCA use a palavra "executivo" ou "almoço executivo" na arte. O preço médio do restaurante é de R$ 26 a R$ 35. Use "ALMOÇO DO DIA", "COMIDA CASEIRA" ou "PRATO FEITO".
+- FOTORREALISMO ANTI-CGI: A comida deve parecer foto real de câmera DSLR sob luz natural de almoço. Proibido acabamento de render 3D ou aspecto emborrachado de IA.
 
 CENA E PRATO:
 - O prato real ou do dia enviado como referência é a BASE da peça: a comida deve permanecer farta, suculenta, apetitosa e autêntica.
@@ -74,6 +76,7 @@ def montar_brief_layout(estrategia: dict, foto: dict, cliente: dict) -> str:
         "Garantir hierarquia perfeita entre o texto principal grande e o apoio menor.",
         "Reproduzir fielmente o logotipo oficial fornecido na imagem de referência no topo/cabeçalho.",
         "PROIBIDO renderizar a palavra executivo.",
+        "Estética de fotografia gastronômica real e orgânica, sem aspecto 3D/CGI.",
     ]
 
     return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=700, temperature=0.7)
@@ -117,6 +120,11 @@ def gerar_arte_campanha(brief: str, foto: dict, cliente: dict, estrategia: dict)
         bruta = openai_client.gerar_imagem(brief)
 
     final_bytes = image_overlay.recortar_formato_final(base64.b64decode(bruta["imagem_b64"]))
+    try:
+        from utils.pos_processamento import aplicar_pos_processamento_fotografico
+        final_bytes = aplicar_pos_processamento_fotografico(final_bytes)
+    except Exception as exc:
+        print(f"Aviso no pós-processamento de campanha: {exc}")
 
     return {
         "imagem_b64": base64.b64encode(final_bytes).decode("ascii"),
