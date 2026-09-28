@@ -27,6 +27,15 @@ RAIZ_PROJETO = BASE_DIR.parent
 if str(RAIZ_PROJETO) not in sys.path:
     sys.path.insert(0, str(RAIZ_PROJETO))
 
+# Carrega variáveis de ambiente automaticamente (.env)
+try:
+    from dotenv import load_dotenv
+    load_dotenv(RAIZ_PROJETO / ".env")
+    load_dotenv(RAIZ_PROJETO.parent / ".env")
+    load_dotenv()
+except Exception:
+    pass
+
 PORTA = int(os.environ.get("PORT", 8080))
 
 
