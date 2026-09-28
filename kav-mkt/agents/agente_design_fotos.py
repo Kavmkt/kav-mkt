@@ -41,10 +41,10 @@ DIREÇÃO DE ARTE E FOTOGRAFIA CULINÁRIA:
   uma mão segurando uma embalagem plástica ou fundo doméstico/parede com planta, ELIMINE a mão
   e a embalagem plástica e apresente a refeição servida de forma impecável sobre a mesa.
 __CONTEXTO_LAYOUT__
-- GUIA DE LOGO: um template do MESMO formato/proporção da imagem final, transparente
-  exceto onde o logo oficial do cliente está posicionado — reproduza o logo pixel a pixel dali
-  (mesmas cores, proporções e detalhes, sem redesenhar ou distorcer) na MESMA ESCALA e na mesma
-  faixa vertical mostrada no guia.
+- LOGOTIPO OFICIAL DA MARCA: uma das imagens de referência fornecidas é o logotipo oficial da
+  empresa. Você DEVE reproduzir esse logotipo exatamente (mesma tipografia, símbolo/emblema, cores
+  e proporções) integrado com nitidez na arte, preferencialmente no topo/cabeçalho ou na área de
+  branding indicada (__AREA_LOGO__), com margens de respiro de cerca de 5% das bordas.
 
 REGRAS RÍGIDAS DE DIAGRAMAÇÃO E TIPOGRAFIA (ANTI-AMADORISMO):
 1. PROIBIDO CONTORNO BRANCO / GLOW: NUNCA crie letras com sombra branca difusa, contorno branco
@@ -62,7 +62,7 @@ REGRAS RÍGIDAS DE DIAGRAMAÇÃO E TIPOGRAFIA (ANTI-AMADORISMO):
 3. MARGENS DE SEGURANÇA:
    - Deixe pelo menos __MARGEM__% de respiro livre no topo e no rodapé.
    - Mantenha texto e logo a pelo menos __MARGEM_LATERAL__% de distância de qualquer borda lateral.
-   - O logo vai na faixa indicada no guia (__AREA_LOGO__) com área de respiro ao redor.
+   - O logo vai na faixa indicada (__AREA_LOGO__) com área de respiro ao redor.
 
 O brief (em inglês) deve definir, em um parágrafo denso e direto:
 - Que a comida da foto real deve ser reproduzida fielmente em seus ingredientes, mas ambientada
@@ -70,7 +70,7 @@ O brief (em inglês) deve definir, em um parágrafo denso e direto:
 - A headline exata, com tipografia serifada de alto impacto (Playfair Display), nítida e sem contornos
   brancos esfumados;
 - A ausência total de elipses/selos circulares amadores;
-- A reprodução precisa do logo a partir do guia oficial na escala e posição indicadas.
+- A reprodução precisa e fiel do logotipo oficial fornecido como referência na área de branding indicada.
 
 Retorne APENAS o brief em texto corrido, em inglês — exceto a headline e o selo, citados
 entre aspas exatamente em português. Sem explicações, sem markdown, sem listas.
@@ -95,7 +95,7 @@ def gerar_brief_foto(copy: dict, foto: dict, cliente: dict, referencia: Optional
         .replace("__CONTEXTO_LAYOUT__", contexto)
         .replace("__MARGEM__", str(_margem_corte_vertical()))
         .replace("__MARGEM_LATERAL__", str(MARGEM_SEGURANCA_BORDA))
-        .replace("__AREA_LOGO__", AREAS_LOGO.get(posicao_logo, "bottom-right corner"))
+        .replace("__AREA_LOGO__", AREAS_LOGO.get(posicao_logo, "top header / branding area"))
     )
     partes = [f"Foto/prato: {foto.get('nome') or foto['arquivo'].name}"]
     if foto.get("categoria"):
@@ -109,14 +109,16 @@ def gerar_brief_foto(copy: dict, foto: dict, cliente: dict, referencia: Optional
         )
     else:
         partes.append("Selo do prato: NENHUM (não desenhe nenhum selo, carimbo ou elipse — foque na foto e na headline)")
+    partes.append(
+        "Aplicação do logotipo oficial: entre as imagens de referência fornecidas, utilize a imagem "
+        "oficial do logotipo da empresa, reproduzindo-o fielmente no cabeçalho ou área de marca da peça."
+    )
     return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=650, temperature=0.7)
 
 
 def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optional[dict]) -> dict:
     """Gera a imagem do post a partir da foto REAL escolhida (referência obrigatória) +,
-    quando houver, a referência de layout do cliente + o guia de logo — tudo na mesma
-    chamada de edição, seguindo exatamente o que o cliente pediu: enviar ao gerador de
-    imagem a referência de layout selecionada junto com a foto a ser usada."""
+    quando houver, a referência de layout do cliente + o logotipo oficial do cliente como referência."""
     avisos = []
     referencias_imagem = [(
         foto["arquivo"].read_bytes(),
@@ -139,19 +141,11 @@ def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optiona
 
     logo_arquivo, posicao_logo = _logo(cliente, referencia)
     if logo_arquivo:
-        guia_logo = image_overlay.guia_posicao_logo(logo_arquivo, posicao_logo)
         referencias_imagem.append((
-            guia_logo,
-            "a template the exact same pixel dimensions as the final image, transparent "
-            "everywhere except where the client's logo sits — reproduce that logo "
-            "pixel-for-pixel, at that exact SCALE, keeping its exact colors, proportions "
-            "and details (do not redraw, recolor or distort it). Its vertical position "
-            "(top/bottom band) and default side are shown here, but its horizontal "
-            "position within that band is only a suggestion: place it wherever that band "
-            "is emptiest over the real photo — centered if the middle of the band is "
-            "free, kept to this side only if the middle is occupied by the dish or "
-            "another important part of the photo. Everywhere else in this template is "
-            "transparent guidance only, not part of the visible scene.",
+            logo_arquivo.read_bytes(),
+            "the official BRAND LOGO of the company. You must reproduce this exact logo "
+            "(typography, symbols, monogram, and colors) into the graphic layout of the post. "
+            "Position it cleanly in the header or designated branding zone with strong contrast and breathing room.",
         ))
 
     bruta = None
@@ -202,7 +196,14 @@ def _prompt_com_referencias(brief: str, descricoes: list) -> str:
 
 def _logo(cliente: dict, referencia: Optional[dict]):
     referencia = referencia or {}
-    posicao = referencia.get("logo_posicao") or cliente["config"].get("logo_posicao", "inferior-direito")
+    posicao = referencia.get("logo_posicao") or cliente["config"].get("logo_posicao", "superior-esquerdo")
     versao = referencia.get("logo_versao", "fundo-escuro")
-    arquivo = cliente["logos"].get(versao) or cliente["logos"].get("fundo-escuro")
+    logos = cliente.get("logos", {})
+    arquivo = (
+        cliente.get("logo")
+        or (cliente.get("logo_referencias")[0] if cliente.get("logo_referencias") else None)
+        or logos.get(versao)
+        or logos.get("fundo-escuro")
+        or logos.get("principal")
+    )
     return arquivo, posicao

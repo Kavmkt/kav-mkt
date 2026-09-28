@@ -11,7 +11,7 @@ Avalia rigorosamente:
 4. Apresentação gastronômica/composição da cena (comida apetitosa em mesa de restaurante).
 
 Se o layout tiver nota baixa ou falhas críticas, o Diretor de Arte aciona UMA rodada de
-refino com gpt-image-2.5-sunburst enviando o rascunho atual + guia oficial de logo, instruindo
+refino com gpt-image-2.5-sunburst enviando o rascunho atual + logo oficial, instruindo
 o que PRESERVAR (a comida) e o que CORRIGIR (logo, tipografia, remoção de elipses).
 """
 import base64
@@ -48,7 +48,7 @@ Responda EXCLUSIVAMENTE com um objeto JSON, sem markdown ou texto antes/depois:
   "pontuacao": 8,
   "diagnostico": "Resumo crítico e direto da avaliação em 1 ou 2 frases em português",
   "precisa_refino": false,
-  "instrucoes_de_correcao": "Instruções cirúrgicas em inglês para a IA de edição caso precise_refino seja true. Especifique com clareza: (1) O que PRESERVAR (a comida, os pratos reais) e (2) O que CORRIGIR (ex: reinserir o logo oficial a partir do template de guia, remover contornos brancos esfumados, remover selo de elipse, etc.). Se aprovado, deixe string vazia."
+  "instrucoes_de_correcao": "Instruções cirúrgicas em inglês para a IA de edição caso precisa_refino seja true. Especifique com clareza: (1) O que PRESERVAR (a comida, os pratos reais) e (2) O que CORRIGIR (ex: reinserir o logo oficial a partir do template de guia, remover contornos brancos esfumados, remover selo de elipse, etc.). Se aprovado, deixe string vazia."
 }
 """
 
@@ -125,15 +125,13 @@ def revisar_e_aprovar_layout(
             )
         ]
 
-        # Template do Logo oficial como guia visual prioritário
+        # Logotipo oficial como guia visual prioritário
         from agents.agente_design_fotos import _logo
         logo_arquivo, posicao_logo = _logo(cliente, referencia)
         if logo_arquivo:
-            guia_logo = image_overlay.guia_posicao_logo(logo_arquivo, posicao_logo)
             referencias_refino.append((
-                guia_logo,
-                "the official client logo guide template. Reproduce the client's official logo exactly "
-                "from this template at this scale and position.",
+                logo_arquivo.read_bytes(),
+                "the official authentic client BRAND LOGO. Reproduce this exact logo with absolute fidelity, clean typography, correct colors and sharp contrast.",
             ))
 
         # Se for campanha, guia de zona de CTA
@@ -152,7 +150,7 @@ def revisar_e_aprovar_layout(
             f"{instrucoes}\n\n"
             "STRICT RULES:\n"
             "- Keep the authentic food dish, its textures and appetizing culinary presentation unchanged.\n"
-            "- Ensure the official client logo is clearly and cleanly reproduced from the logo guide template.\n"
+            "- Ensure the official client logo is clearly and cleanly reproduced from the authentic logo reference.\n"
             "- NEVER add white glow, blurry white outlines, or diffuse halos around text letters.\n"
             "- Do NOT add circular stamp badges, fork/knife ellipses, or amateur clutter.\n"
             "- Deliver a polished, crisp, editorial-quality piece in 1080x1440 portrait format."
