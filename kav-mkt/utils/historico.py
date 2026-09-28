@@ -1,153 +1,152 @@
-from __future__ import annotations
-"""Histórico de posts criados por cliente — usado para não repetir produtos dentro de um
-período (padrão 30 dias, configurável por cliente em config.json).
+"""Módulo de Persistência e Anti-Repetição Histórica.
 
-No Streamlit Community Cloud o disco é apagado quando o servidor reinicia, então o
-histórico fica salvo no próprio repositório do GitHub, na branch "dados". O Streamlit só
-acompanha a branch principal, por isso gravar lá não reinicia o app. Ative configurando
-GITHUB_TOKEN e GITHUB_REPO nos Secrets; sem eles, o histórico vai para um arquivo local
-(só serve para rodar no próprio computador).
+Garante que nenhuma pauta ou layout seja repetido consecutivamente para o mesmo cliente,
+respeitando a janela configurada em dias_sem_repetir_pauta e dias_sem_repetir_layout.
 """
-import base64
-import json
-import os
 from datetime import datetime, timedelta
+import json
 from pathlib import Path
-from zoneinfo import ZoneInfo
-
-import requests
+from typing import Optional
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-API_GITHUB = "https://api.github.com"
-FUSO = ZoneInfo("America/Sao_Paulo")
-# Registros mais antigos que isso são descartados ao gravar, pra o arquivo não crescer
-# além do limite de leitura da API do GitHub (1 MB).
-RETER_DIAS = 90
+CLIENTES_DIR = BASE_DIR / "clientes"
 
 
-def agora() -> datetime:
-    return datetime.now(FUSO).replace(tzinfo=None)
+def caminho_historico(slug: str) -> Path:
+    return CLIENTES_DIR / slug / "historico.json"
 
 
-def usa_github() -> bool:
-    return bool(os.environ.get("GITHUB_TOKEN") and os.environ.get("GITHUB_REPO"))
-
-
-def carregar(cliente: str) -> list:
-    registros, _ = _ler(cliente)
-    return registros
-
-
-def ultimo_uso_por_produto(cliente: str) -> dict:
-    """Retorna {id_do_produto: data do uso mais recente}."""
-    ultimo = {}
-    for registro in carregar(cliente):
-        produto_id = registro.get("produto_id")
-        quando = _data(registro)
-        if produto_id and quando > ultimo.get(produto_id, datetime.min):
-            ultimo[produto_id] = quando
-    return ultimo
-
-
-def registrar(cliente: str, registro: dict) -> None:
-    registros, sha = _ler(cliente)
-    corte = agora() - timedelta(days=RETER_DIAS)
-    registros = [r for r in registros if _data(r) >= corte]
-    registros.append({"data": agora().isoformat(timespec="seconds"), **registro})
-    _escrever(cliente, json.dumps(registros, ensure_ascii=False, indent=2), sha)
-
-
-def _data(registro: dict) -> datetime:
+def carregar_historico(slug: str) -> dict:
+    caminho = caminho_historico(slug)
+    if not caminho.exists():
+        return {"posts": []}
     try:
-        return datetime.fromisoformat(registro["data"])
-    except (KeyError, ValueError):
-        return datetime.min
+        return json.loads(caminho.read_text(encoding="utf-8"))
+    except Exception:
+        return {"posts": []}
 
 
-# --- Armazenamento ------------------------------------------------------------------
-
-def _arquivo_local(cliente: str) -> Path:
-    return BASE_DIR / "data" / cliente / "historico.json"
-
-
-def _ler(cliente: str) -> tuple:
-    if usa_github():
-        return _ler_github(cliente)
-    arquivo = _arquivo_local(cliente)
-    if not arquivo.exists():
-        return [], None
-    return json.loads(arquivo.read_text(encoding="utf-8")), None
+def salvar_historico(slug: str, dados: dict) -> None:
+    caminho = caminho_historico(slug)
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    caminho.write_text(json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def _escrever(cliente: str, conteudo: str, sha) -> None:
-    if usa_github():
-        _escrever_github(cliente, conteudo, sha)
-        return
-    arquivo = _arquivo_local(cliente)
-    arquivo.parent.mkdir(parents=True, exist_ok=True)
-    arquivo.write_text(conteudo, encoding="utf-8")
+def registrar_post(
+    slug: str,
+    pauta: dict,
+    copy: dict,
+    referencia_nome: Optional[str] = None,
+    formato: str = "estatico",
+) -> dict:
+    """Registra uma publicação no histórico do cliente para alimentar o filtro anti-repetição."""
+    dados = carregar_historico(slug)
+    agora_iso = datetime.now().isoformat()
 
-
-def _config_github() -> tuple:
-    return (
-        os.environ["GITHUB_TOKEN"],
-        os.environ["GITHUB_REPO"],
-        os.environ.get("GITHUB_BRANCH_DADOS", "dados"),
-    )
-
-
-def _headers(token: str) -> dict:
-    return {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
+    registro = {
+        "id": f"post_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+        "data": agora_iso,
+        "pauta_id": pauta.get("id"),
+        "pauta_tema": pauta.get("tema"),
+        "pilar": pauta.get("pilar"),
+        "headline": copy.get("headline_imagem") or copy.get("headline"),
+        "referencia": referencia_nome,
+        "formato": formato,
     }
 
+    dados["posts"].append(registro)
+    salvar_historico(slug, dados)
+    return registro
 
-def _url_arquivo(repo: str, cliente: str) -> str:
-    return f"{API_GITHUB}/repos/{repo}/contents/historico/{cliente}.json"
+
+def listar_posts_cliente(slug: str) -> list[dict]:
+    return carregar_historico(slug).get("posts", [])
 
 
-def _ler_github(cliente: str) -> tuple:
-    token, repo, branch = _config_github()
-    resposta = requests.get(
-        _url_arquivo(repo, cliente), params={"ref": branch}, headers=_headers(token), timeout=20
+def escolher_pauta_sem_repetir(cliente: dict, pautas: list[dict]) -> dict:
+    """Seleciona uma pauta da lista excluindo aquelas usadas dentro da janela de anti-repetição."""
+    if not pautas:
+        raise ValueError(f"Nenhuma pauta cadastrada para o cliente {cliente.get('slug')}.")
+
+    slug = cliente.get("slug", "")
+    config = cliente.get("config", {})
+    dias_limite = int(config.get("dias_sem_repetir_pauta", 30))
+    limite_dt = datetime.now() - timedelta(days=dias_limite)
+
+    historico_posts = listar_posts_cliente(slug)
+    pautas_bloqueadas = set()
+
+    for p in historico_posts:
+        data_str = p.get("data")
+        if data_str:
+            try:
+                dt = datetime.fromisoformat(data_str)
+                if dt >= limite_dt:
+                    if p.get("pauta_id"):
+                        pautas_bloqueadas.add(p["pauta_id"])
+                    if p.get("pauta_tema"):
+                        pautas_bloqueadas.add(p["pauta_tema"])
+            except ValueError:
+                pass
+
+    disponiveis = [p for p in pautas if p.get("id") not in pautas_bloqueadas and p.get("tema") not in pautas_bloqueadas]
+
+    if disponiveis:
+        return disponiveis[0]
+
+    # Se todas as pautas foram usadas no período, pega a usada há mais tempo
+    ultima_data_por_id = {}
+    for p in historico_posts:
+        pid = p.get("pauta_id") or p.get("pauta_tema")
+        if pid and p.get("data"):
+            ultima_data_por_id[pid] = p["data"]
+
+    pautas_ordenadas = sorted(
+        pautas,
+        key=lambda item: ultima_data_por_id.get(item.get("id") or item.get("tema"), "1970-01-01"),
     )
-    if resposta.status_code == 404:  # arquivo (ou a própria branch) ainda não existe
-        return [], None
-    resposta.raise_for_status()
-    dados = resposta.json()
-    return json.loads(base64.b64decode(dados["content"]).decode("utf-8")), dados["sha"]
+    return pautas_ordenadas[0]
 
 
-def _escrever_github(cliente: str, conteudo: str, sha) -> None:
-    token, repo, branch = _config_github()
-    _garantir_branch(token, repo, branch)
-    corpo = {
-        "message": f"historico: {cliente}",
-        "content": base64.b64encode(conteudo.encode("utf-8")).decode("ascii"),
-        "branch": branch,
-    }
-    if sha:
-        corpo["sha"] = sha
-    requests.put(_url_arquivo(repo, cliente), json=corpo, headers=_headers(token), timeout=20).raise_for_status()
+def escolher_referencia_sem_repetir(cliente: dict) -> Optional[dict]:
+    """Seleciona um layout de referência do cliente realizando rodízio contínuo sem repetições consecutivas."""
+    referencias = cliente.get("referencias", [])
+    if not referencias:
+        return None
 
+    slug = cliente.get("slug", "")
+    config = cliente.get("config", {})
+    dias_limite = int(config.get("dias_sem_repetir_layout", 15))
+    limite_dt = datetime.now() - timedelta(days=dias_limite)
 
-def _garantir_branch(token: str, repo: str, branch: str) -> None:
-    """Cria a branch de dados a partir da branch principal na primeira gravação."""
-    resposta = requests.get(f"{API_GITHUB}/repos/{repo}/git/ref/heads/{branch}", headers=_headers(token), timeout=20)
-    if resposta.status_code == 200:
-        return
-    if resposta.status_code != 404:
-        resposta.raise_for_status()
-    info = requests.get(f"{API_GITHUB}/repos/{repo}", headers=_headers(token), timeout=20)
-    info.raise_for_status()
-    principal = info.json()["default_branch"]
-    base = requests.get(f"{API_GITHUB}/repos/{repo}/git/ref/heads/{principal}", headers=_headers(token), timeout=20)
-    base.raise_for_status()
-    requests.post(
-        f"{API_GITHUB}/repos/{repo}/git/refs",
-        json={"ref": f"refs/heads/{branch}", "sha": base.json()["object"]["sha"]},
-        headers=_headers(token),
-        timeout=20,
-    ).raise_for_status()
+    historico_posts = listar_posts_cliente(slug)
+    layouts_usados_recentes = set()
+
+    for p in historico_posts:
+        data_str = p.get("data")
+        ref = p.get("referencia")
+        if data_str and ref:
+            try:
+                dt = datetime.fromisoformat(data_str)
+                if dt >= limite_dt:
+                    layouts_usados_recentes.add(ref)
+            except ValueError:
+                pass
+
+    disponiveis = [r for r in referencias if r["arquivo"].name not in layouts_usados_recentes]
+
+    if disponiveis:
+        return disponiveis[0]
+
+    # Se todos já foram usados, pega o layout usado há mais tempo (round-robin)
+    ultima_data_por_ref = {}
+    for p in historico_posts:
+        ref = p.get("referencia")
+        if ref and p.get("data"):
+            ultima_data_por_ref[ref] = p["data"]
+
+    referencias_ordenadas = sorted(
+        referencias,
+        key=lambda item: ultima_data_por_ref.get(item["arquivo"].name, "1970-01-01"),
+    )
+    return referencias_ordenadas[0]
