@@ -9,13 +9,17 @@ lidas), reaproveitadas pra não duplicar geometria/constantes que não têm nada
 específico de cliente.
 
 DIRETRIZ CENTRAL DE ARTE:
-A comida mostrada na foto real (escolhida por agents/agente_foto.py em clientes/<slug>/fotos/)
-é a comida autêntica do restaurante — mantenha a fidelidade aos ingredientes reais do prato,
-mas ELEVE a apresentação visual: ambientação gastronômica profissional (mesa de madeira rústica,
-iluminação quente de restaurante, fundo desfocado aconchegante), eliminando elementos amadores
-da foto crua de celular (como mãos segurando potes plásticos ou fundos domésticos improvisados).
-Sobre essa fotografia profissional, aplica-se diagramação limpa, sofisticada e sem clichês.
+A comida do restaurante é autêntica e farta.
+Se houver foto real (acervo), mantém-se a fidelidade aos ingredientes reais, elevando a
+apresentação para fotografia profissional de gastronomia.
+Se for um prato do cardápio do OlaClick sem foto no acervo, gera-se a cena culinária
+brasileira autêntica do zero, seguindo rigorosamente a ambientação do restaurante do Nico:
+prato branco comercial ou marmitex, mesa de madeira rústica com leve textura esbranquiçada,
+fundo desfocado com cadeiras de carvalho e parede vermelha, acompanhamentos brasileiros
+clássicos (arroz soltinho, feijão, batata, macarrão, farofa) e logotipo oficial da N&N no topo.
 """
+from __future__ import annotations
+
 import base64
 from typing import Optional
 
@@ -33,13 +37,9 @@ DIRETRIZES DE MARCA E KV DO CLIENTE:
 __SKILL__
 
 DIREÇÃO DE ARTE E FOTOGRAFIA CULINÁRIA:
-- BASE DA CENA: a comida da foto real de referência é o herói da imagem. Os ingredientes, carnes,
-  acompanhamentos e porção real devem ser preservados com fidelidade.
-- AMBIENTAÇÃO E ELEVAÇÃO DO CENÁRIO: eleve a foto amadora de celular para um padrão editorial
-  de fotografia de comida. O prato deve estar ambientado com elegância sobre uma mesa de madeira
-  rústica de restaurante, com iluminação quente, natural e apetitosa. Se a foto original tiver
-  uma mão segurando uma embalagem plástica ou fundo doméstico/parede com planta, ELIMINE a mão
-  e a embalagem plástica e apresente a refeição servida de forma impecável sobre a mesa.
+- BASE DA CENA: a comida é o grande herói apetitoso da imagem. Os ingredientes, carnes,
+  acompanhamentos e porção real devem ser fartos, suculentos e bem preparados.
+__CONTEXTO_CENA__
 __CONTEXTO_LAYOUT__
 - LOGOTIPO OFICIAL DA MARCA: uma das imagens de referência fornecidas é o logotipo oficial da
   empresa. Você DEVE reproduzir esse logotipo exatamente (mesma tipografia, símbolo/emblema, cores
@@ -65,8 +65,7 @@ REGRAS RÍGIDAS DE DIAGRAMAÇÃO E TIPOGRAFIA (ANTI-AMADORISMO):
    - O logo vai na faixa indicada (__AREA_LOGO__) com área de respiro ao redor.
 
 O brief (em inglês) deve definir, em um parágrafo denso e direto:
-- Que a comida da foto real deve ser reproduzida fielmente em seus ingredientes, mas ambientada
-  em fotografia gastronômica profissional sobre mesa de madeira rústica, sem mãos ou fundos improvisados;
+- A cena fotográfica gastronômica com comida autêntica e apetitosa;
 - A headline exata, com tipografia serifada de alto impacto (Playfair Display), nítida e sem contornos
   brancos esfumados;
 - A ausência total de elipses/selos circulares amadores;
@@ -74,6 +73,29 @@ O brief (em inglês) deve definir, em um parágrafo denso e direto:
 
 Retorne APENAS o brief em texto corrido, em inglês — exceto a headline e o selo, citados
 entre aspas exatamente em português. Sem explicações, sem markdown, sem listas.
+"""
+
+CENA_FOTO_REAL = """
+- AMBIENTAÇÃO E ELEVAÇÃO DO CENÁRIO: eleve a foto real para um padrão editorial de fotografia
+  de comida. O prato deve estar ambientado com elegância sobre uma mesa de madeira rústica de
+  restaurante, com iluminação quente, natural e apetitosa. Se a foto original tiver uma mão segurando
+  uma embalagem plástica ou fundo doméstico/parede com planta, ELIMINE a mão e a embalagem plástica
+  e apresente a refeição servida de forma impecável sobre a mesa.
+"""
+
+CENA_PRATO_VIRTUAL = """
+- FOTOGRAFIA GASTRONÔMICA BRASILEIRA DO RESTAURANTE DO NICO:
+  Crie uma fotografia editorial e apetitosa de comida caseira brasileira recém-servida:
+  1. LOUÇA E APRESENTAÇÃO: Servido em prato branco simples de louça de restaurante comercial (louça
+     tradicional sem luxo excessivo) OU em uma marmitex brasileira tradicional bem servida e farta.
+  2. COMIDA BRASILEIRA REAL E ACOMPANHAMENTOS: A porção é farta, quente e com apetite visual marcante.
+     O prato principal vem acompanhado das guarnições clássicas de almoço comercial brasileiro: arroz
+     branco soltinho, feijão temperado, batata cozida ou frita douradinha, um toque de macarrão ao molho
+     e farofinha crocante. Comida fumegante com brilho natural de comida fresca.
+  3. MESA E AMBIENTAÇÃO DO RESTAURANTE: Mesa de madeira rústica com leve textura clara/esbranquiçada
+     (veios da madeira com leve pátina clara). Ao fundo, com profundidade de campo suave (bokeh):
+     cadeiras de madeira em tom carvalho escuro envernizado, piso de cerâmica branca e toques sutis de
+     parede vermelha aconchegante. Enquadramento fechado e convidativo no prato.
 """
 
 CONTEXTO_COM_REFERENCIA = (
@@ -89,15 +111,17 @@ CONTEXTO_SEM_REFERENCIA = (
 
 def gerar_brief_foto(copy: dict, foto: dict, cliente: dict, referencia: Optional[dict]) -> str:
     contexto = CONTEXTO_COM_REFERENCIA if referencia else CONTEXTO_SEM_REFERENCIA
+    cena_desc = CENA_PRATO_VIRTUAL if foto.get("foto_virtual") else CENA_FOTO_REAL
     _, posicao_logo = _logo(cliente, referencia)
     system = (
         SYSTEM_PROMPT.replace("__SKILL__", cliente["skill"])
+        .replace("__CONTEXTO_CENA__", cena_desc)
         .replace("__CONTEXTO_LAYOUT__", contexto)
         .replace("__MARGEM__", str(_margem_corte_vertical()))
         .replace("__MARGEM_LATERAL__", str(MARGEM_SEGURANCA_BORDA))
         .replace("__AREA_LOGO__", AREAS_LOGO.get(posicao_logo, "top header / branding area"))
     )
-    partes = [f"Foto/prato: {foto.get('nome') or foto['arquivo'].name}"]
+    partes = [f"Foto/prato: {foto.get('nome') or (foto['arquivo'].name if foto.get('arquivo') else 'Prato do dia')}"]
     if foto.get("categoria"):
         partes.append(f"Categoria: {foto['categoria']}")
     if foto.get("descricao"):
@@ -109,28 +133,42 @@ def gerar_brief_foto(copy: dict, foto: dict, cliente: dict, referencia: Optional
         )
     else:
         partes.append("Selo do prato: NENHUM (não desenhe nenhum selo, carimbo ou elipse — foque na foto e na headline)")
-    partes.append(
-        "Aplicação do logotipo oficial: entre as imagens de referência fornecidas, utilize a imagem "
-        "oficial do logotipo da empresa, reproduzindo-o fielmente no cabeçalho ou área de marca da peça."
-    )
-    return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=650, temperature=0.7)
+
+    if foto.get("foto_virtual"):
+        partes.append(
+            f"Diretriz de Composição Visual: Prato comercial branco na mesa de madeira clara com textura levemente esbranquiçada. "
+            f"Acompanha arroz, feijão, batata, macarrão e farofa. Fundo desfocado com cadeiras de carvalho envernizado e parede vermelha. "
+            f"Aplicar logotipo oficial da N&N da referência no cabeçalho com alto contraste."
+        )
+    else:
+        partes.append(
+            "Aplicação do logotipo oficial: entre as imagens de referência fornecidas, utilize a imagem "
+            "oficial do logotipo da empresa, reproduzindo-o fielmente no cabeçalho ou área de marca da peça."
+        )
+
+    return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=700, temperature=0.7)
 
 
 def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optional[dict]) -> dict:
-    """Gera a imagem do post a partir da foto REAL escolhida (referência obrigatória) +,
-    quando houver, a referência de layout do cliente + o logotipo oficial do cliente como referência."""
+    """Gera a imagem do post. Se houver foto real, usa ela como base. Se for prato virtual do OlaClick,
+    gera a cena gastronômica autêntica guiada com as diretrizes do restaurante."""
     avisos = []
-    referencias_imagem = [(
-        foto["arquivo"].read_bytes(),
-        "the reference photo showing the authentic dish/food served by the restaurant. "
-        "Preserve this exact meal, ingredients, and culinary richness faithfully, but ELEVATE the "
-        "presentation into professional food photography: stage the dish in an appetizing "
-        "restaurant dining setting (on a warm rustic wooden table, natural warm restaurant lighting, "
-        "soft background dining room bokeh). If the original photo has awkward hands holding a container "
-        "or a distracting domestic wall/plant background, remove the hands and domestic clutter, "
-        "and present the delicious food cleanly and appetisingly on the table.",
-    )]
+    referencias_imagem = []
 
+    # 1. Se houver arquivo de foto real, inclui como referência principal
+    if foto.get("arquivo") and not foto.get("foto_virtual"):
+        referencias_imagem.append((
+            foto["arquivo"].read_bytes(),
+            "the reference photo showing the authentic dish/food served by the restaurant. "
+            "Preserve this exact meal, ingredients, and culinary richness faithfully, but ELEVATE the "
+            "presentation into professional food photography: stage the dish in an appetizing "
+            "restaurant dining setting (on a warm rustic wooden table, natural warm restaurant lighting, "
+            "soft background dining room bokeh). If the original photo has awkward hands holding a container "
+            "or a distracting domestic wall/plant background, remove the hands and domestic clutter, "
+            "and present the delicious food cleanly and appetisingly on the table.",
+        ))
+
+    # 2. Template de layout da marca (se houver)
     if referencia:
         referencias_imagem.append((
             referencia["arquivo"].read_bytes(),
@@ -139,6 +177,7 @@ def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optiona
             "Do NOT invent ugly circular stamp graphics or fuzzy white glowing outlines around the text.",
         ))
 
+    # 3. Logotipo oficial da marca
     logo_arquivo, posicao_logo = _logo(cliente, referencia)
     if logo_arquivo:
         referencias_imagem.append((
@@ -151,14 +190,14 @@ def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optiona
     bruta = None
     layout_usado = referencia["arquivo"].name if referencia else None
     try:
-        imagens = [dados for dados, _ in referencias_imagem]
-        prompt = _prompt_com_referencias(brief, [desc for _, desc in referencias_imagem])
-        bruta = openai_client.gerar_imagem_com_referencias(prompt, imagens)
+        if referencias_imagem:
+            imagens = [dados for dados, _ in referencias_imagem]
+            prompt = _prompt_com_referencias(brief, [desc for _, desc in referencias_imagem])
+            bruta = openai_client.gerar_imagem_com_referencias(prompt, imagens)
+        else:
+            bruta = openai_client.gerar_imagem(brief)
     except Exception as exc:
-        raise RuntimeError(
-            f"A geração da imagem com a foto real falhou ({exc}). Sem a foto como "
-            "referência não é possível montar a peça deste cliente."
-        ) from exc
+        raise RuntimeError(f"A geração da imagem falhou ({exc}).") from exc
     if not bruta or not bruta.get("imagem_b64"):
         raise RuntimeError("A API de imagem não retornou nenhuma imagem.")
 
@@ -175,7 +214,7 @@ def gerar_imagem_foto(brief: str, foto: dict, cliente: dict, referencia: Optiona
         "qualidade": bruta.get("qualidade"),
         "tamanho_gerado": bruta.get("tamanho_real"),
         "referencia_layout": layout_usado,
-        "com_foto_real": True,
+        "com_foto_real": not foto.get("foto_virtual", False),
         "aviso": " ".join(avisos) or None,
     }
 

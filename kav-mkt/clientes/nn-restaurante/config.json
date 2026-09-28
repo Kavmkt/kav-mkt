@@ -1,10 +1,9 @@
 {
   "nome": "NN Restaurante",
   "tipo": "fotos",
-  "logo_posicao": "inferior-direito",
+  "logo_posicao": "superior-esquerdo",
   "dias_sem_repetir_foto": 45,
-  "meta": {
-    "ad_account_id": "act_1287739712222302",
-    "instagram_account_id": "17841447712158579"
+  "olaclick": {
+    "api_key": "olk_live_VGPXBpNNCmqd94WFjWhJqxkuKIfMohf5"
   }
 }

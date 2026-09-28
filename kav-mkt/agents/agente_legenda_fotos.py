@@ -7,6 +7,8 @@ em vez de dados de produto de loja — nenhum cliente de catálogo (ex: ponto-ca
 por este arquivo, e vice-versa. Isso é intencional: evita que um ajuste feito aqui para
 o NN Restaurante afete o fluxo de legenda dos outros clientes, e vice-versa.
 """
+from __future__ import annotations
+
 import random
 from datetime import datetime
 from typing import Tuple
@@ -82,10 +84,8 @@ GANCHOS_GERAIS = [
     "aquele feijão temperado na hora e carne suculenta",
 ]
 
-# Placeholders substituídos com .replace() (e não .format()): o padrão de legenda do
-# cliente pode ter chaves {} de exemplo que quebrariam o .format().
 SYSTEM_PROMPT = """Você é o redator sênior da Kav (@kav.mkt), responsável pelo conteúdo do Instagram do NN Restaurante.
-Sua missão é criar uma headline impactante para a arte e uma legenda extremamente apetitosa (appetite appeal), a partir da foto real do prato/ambiente escolhida.
+Sua missão é criar uma headline impactante para a arte e uma legenda extremamente apetitosa (appetite appeal), a partir do prato do dia escolhido.
 
 CONTEXTO TEMPORAL OBRIGATÓRIO:
 Hoje é __DIA_SEMANA__, dia __DATA__.
@@ -103,12 +103,12 @@ DIRETRIZES DE COPY E HEADLINE:
 1. HEADLINE DA IMAGEM (chamada principal sobre a foto):
    - Deve ter de 2 a 6 palavras, em português, sem pontuação final exagerada e sem emojis.
    - FUJA DE CLICHÊS GENÉRICOS: NÃO use frases vazias e repetitivas como "Sabor de casa", "Comida de verdade" ou trocadilhos previsíveis.
-   - Foque no APETITE REAL do prato fotografado: cite o prato ou a textura/sabor marcante dele.
+   - Foque no APETITE REAL do prato do dia: cite o prato ou a textura/sabor marcante dele.
      Exemplos excelentes:
+     * Para picadinho: "Picadinho farto com batatas no capricho" ou "Aquele picadinho caseiro suculento"
      * Para bife acebolado: "Bife acebolado suculento no ponto" ou "Aquele bife acebolado de dar água na boca"
      * Para feijoada: "Feijoada farta e quentinha" ou "A feijoada mais pedida da região"
      * Para prato do dia/executivo: "Almoço farto feito na hora" ou "A pausa perfeita pro seu dia"
-     * Para frango/carne de panela: "Carne de panela macia e saborosa" ou "Frango douradinho no capricho"
 
 2. SELO/TAG DO PRATO (opcional):
    - NUNCA use slogans clichês repetitivos (PROIBIDO: "Comida de Verdade", "Sabor de Casa" ou selos genéricos de carimbo).
@@ -146,12 +146,16 @@ def gerar_legenda_foto(foto: dict, cliente: dict) -> dict:
     )
     prompt = (
         f"Dia da semana atual: {nome_dia} ({data_fmt})\n"
-        f"Dados da foto selecionada:\n{_descrever(foto)}\n\n"
+        f"Dados do prato do dia selecionado:\n{_descrever(foto)}\n\n"
         f"Sugestão de ângulo para o gancho: {gancho_sugerido}\n"
         f"Lembre-se: foque no prato real e no apetite, sem clichês repetitivos de Sabor de Casa/Comida de Verdade."
     )
     resposta = chamar_ia(system=system, prompt=prompt, max_tokens=900, temperature=0.8, json_mode=True)
     return extrair_json(resposta)
+
+
+# Alias para retrocompatibilidade no orchestrator
+gerar_copy_foto = gerar_legenda_foto
 
 
 def _descrever(foto: dict) -> str:
@@ -162,8 +166,8 @@ def _descrever(foto: dict) -> str:
         ("Descrição", foto.get("descricao")),
     ]
     descricao = "\n".join(f"- {rotulo}: {valor}" for rotulo, valor in campos if valor)
-    return descricao or f"- Arquivo: {foto['arquivo'].name} (sem metadados cadastrados em fotos.json)"
-
-
-# Alias para compatibilidade total com o orchestrator
-gerar_copy_foto = gerar_legenda_foto
+    if descricao:
+        return descricao
+    if foto.get("arquivo"):
+        return f"- Arquivo: {foto['arquivo'].name} (sem metadados cadastrados em fotos.json)"
+    return f"- Prato: {foto.get('nome', 'Prato do Dia')}"
