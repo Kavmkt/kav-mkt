@@ -32,7 +32,7 @@ MODO DE PRODUÇÃO: __MODO__
 
 CHECKLIST CRÍTICO DE AVALIAÇÃO:
 1. PRESERVAÇÃO DA COMIDA REAL (SEM CARA DE IA):
-   - A peça DEVE preservar a comida autêntica da foto real do cliente (isolada/recortada e integrada na mesa).
+   - A peça DEVE preservar a comida autêntica da foto real do cliente (isolada/recortada e integrada na mesa ou na marmita de isopor).
    - REPROVE IMEDIATAMENTE (pontuação <= 4, precisa_refino=true) se a comida tiver aspecto de render 3D artificial, desenho, brilho de silicone ou pele plástica/grotesca de IA. A comida deve ter aparência 100% fotográfica natural de câmera.
 2. COERÊNCIA GASTRONÔMICA OBRIGATÓRIA (PRATO vs IMAGEM):
    - A chamada e a comida devem ser rigorosamente condizentes com o prato informado.
@@ -51,7 +51,8 @@ CHECKLIST CRÍTICO DE AVALIAÇÃO:
 6. PROIBIÇÃO DE ELIPSE / CARIMBO CLICHÊ:
    - REPROVE se houver carimbos redondos, elipses com garfo/faca ou selos amadores colados nos cantos.
 7. AMBIENTAÇÃO & RECORTE DO PRATO:
-   - O prato real com a comida autêntica do cliente deve estar bem integrado sobre a mesa de madeira rústica, com visual apetitoso e limpo.
+   - O prato real com a comida autêntica do cliente deve estar bem integrado sobre a mesa de madeira rústica ou dentro da marmita redonda de isopor (para delivery), com visual apetitoso e limpo.
+   - ATENÇÃO DELIVERY: Se for marmita de isopor, é NORMAL e OBRIGATÓRIO NÃO ter talheres em volta!
 
 Responda EXCLUSIVAMENTE com um objeto JSON, sem markdown ou texto antes/depois:
 {
@@ -95,7 +96,11 @@ def revisar_e_aprovar_layout(
         f"Modo de produção: {modo}\n"
         f"Headline esperada na peça: \"{copy.get('headline_imagem')}\"\n"
         f"Selo/tag esperado (se houver): \"{copy.get('selo_produto') or 'nenhum'}\"\n"
-        f"Prato/Foto base: {nome_prato}\n\n"
+        f"Prato/Foto base: {nome_prato}\n"
+        f"Estilo de layout aplicado: {imagem_dict.get('estilo_nome', 'Padrão Editorial')}\n\n"
+        f"DIRETRIZES DO ESTILO:\n"
+        f"- Se for estilo Marmita Delivery: A comida deve estar em marmita redonda de isopor de entrega e NÃO pode ter talheres em volta (sem garfos/facas).\n"
+        f"- Se for estilo Minimalista: Foco na fotografia da comida com texto enxuto e logo discreto. Não reprove por concisão.\n\n"
         f"Inspecione a imagem fornecida com olhar crítico e devolva o JSON de avaliação."
     )
 
