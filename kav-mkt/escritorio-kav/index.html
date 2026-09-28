@@ -3,322 +3,135 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kav — Escritório Virtual de Agentes de IA</title>
+  <title>Kav Hotel — Escritório Virtual Isométrico 2.5D</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <!-- Header / Top Bar -->
-  <header class="top-nav">
+<body class="habbo-theme">
+  <!-- Top Navigation / Habbo Hotel Bar -->
+  <header class="top-nav habbo-nav">
     <div class="brand">
-      <div class="brand-logo">KAV</div>
+      <div class="brand-logo habbo-badge-logo">🏨 KAV HOTEL</div>
       <div class="brand-meta">
-        <h1>Escritório Virtual</h1>
-        <span class="sub">@kav.mkt · Sistema Multi-Agente Autônomo</span>
+        <h1>Escritório Virtual 2.5D</h1>
+        <span class="sub">@kav.mkt · Sistema Multi-Agente Habbo Edition</span>
       </div>
     </div>
 
     <div class="status-center">
-      <div class="pill client-pill">
+      <div class="pill habbo-pill client-pill">
         <span class="dot live"></span>
-        <span>Cliente: <strong>NN Restaurante</strong></span>
+        <span>Cliente: <strong id="lbl-cliente-ativo">NN Restaurante</strong></span>
       </div>
-      <div class="pill team-pill">
-        <span>Equipe: <strong>6 Agentes Online</strong></span>
+      <div class="pill habbo-pill team-pill">
+        <span>Equipe: <strong>6 Habbos Online</strong></span>
       </div>
-      <div class="pill time-pill" id="live-clock">--:--:--</div>
+      <div class="pill habbo-pill time-pill" id="live-clock">--:--:--</div>
     </div>
 
     <div class="actions">
-      <select id="select-cliente" class="select-cliente" title="Selecione o cliente para produção">
+      <select id="select-cliente" class="select-cliente habbo-select" title="Selecione o cliente para produção">
         <option value="nn-restaurante">🍽️ NN Restaurante</option>
         <option value="ponto-car">🚗 Ponto Car</option>
         <option value="kav">🧠 Kav (@kav.mkt)</option>
       </select>
-      <select id="select-modo" class="select-cliente" title="Tipo de peça a produzir">
+      <select id="select-modo" class="select-cliente habbo-select" title="Tipo de peça a produzir">
         <option value="campanha">🎯 Campanha Meta Ads (Performance)</option>
         <option value="organico">📱 Feed Orgânico Tradicional</option>
       </select>
-      <button id="btn-play" class="btn btn-play" title="Disparar a esteira real de agentes de IA para criar o post">
+      <button id="btn-play" class="btn btn-play habbo-btn-green" title="Disparar a esteira real de agentes de IA para criar o post">
         ▶️ Dar o Play
       </button>
-      <button id="btn-ver-posts" class="btn btn-secondary" title="Ver posts e legendas concluídos">
+      <button id="btn-ver-posts" class="btn btn-secondary habbo-btn-secondary" title="Ver posts e legendas concluídos">
         📦 Posts & Legendas
       </button>
-      <button id="btn-refresh" class="btn btn-secondary" title="Recarregar estado atual dos agentes">
+      <button id="btn-refresh" class="btn btn-secondary habbo-btn-secondary" title="Resetar posições dos agentes no hotel">
         🔄
       </button>
-      <button id="btn-demo" class="btn btn-secondary" title="Simular animação de corrida e trabalho">
+      <button id="btn-demo" class="btn btn-secondary habbo-btn-gold" title="Simular animação de corrida e trabalho nos computadores">
         ⚡ Simular Corrida
       </button>
     </div>
   </header>
 
-  <!-- Main Office Stage -->
-  <main class="office-container">
-    <div class="isometric-world">
-      <!-- Whiteboard / Metas da Agência no Topo -->
-      <div class="wall-board">
-        <div class="board-header">🎯 METAS & DIRETRIZES KAV</div>
-        <div class="board-content">
-          <div class="board-metric">
-            <span class="label">Meta Ads (30d)</span>
-            <span class="val highlight">R$ 260,79</span>
-          </div>
-          <div class="board-metric">
-            <span class="label">Conversas WhatsApp</span>
-            <span class="val highlight">53 iniciadas</span>
-          </div>
-          <div class="board-metric">
-            <span class="label">Fotos Reais do Acervo</span>
-            <span class="val highlight">33 fotos ativas</span>
-          </div>
-          <div class="board-metric">
-            <span class="label">Status da Equipe</span>
-            <span class="val highlight" id="team-work-status">☕ Modo Relax no Café</span>
-          </div>
-        </div>
+  <!-- Painel de Metas & Diretrizes no Topo da Sala -->
+  <section class="habbo-metrics-strip">
+    <div class="metric-item">
+      <span class="m-label">META ADS (30D)</span>
+      <span class="m-val gold">R$ 260,79</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric-item">
+      <span class="m-label">WHATSAPP LEADS</span>
+      <span class="m-val green">53 iniciadas</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric-item">
+      <span class="m-label">FOTOS DO ACERVO</span>
+      <span class="m-val gold">33 fotos reais</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric-item">
+      <span class="m-label">SITUAÇÃO DO HOTEL</span>
+      <span class="m-val status" id="team-work-status">☕ Relax no Kav Café</span>
+    </div>
+  </section>
+
+  <!-- Palco Isométrico 3D / Habbo Room Viewport -->
+  <main class="habbo-office-container">
+    <div class="habbo-viewport" id="habbo-viewport">
+      <!-- Canvas 2.5D com renderização em Pixel Art estilo Habbo Hotel -->
+      <canvas id="habbo-canvas" width="1180" height="690"></canvas>
+
+      <!-- Camada DOM de Balões de Fala com Emojis (Habbo Chat Bubbles) -->
+      <div id="habbo-chat-layer" class="habbo-chat-layer">
+        <!-- Injetado dinamicamente pelo motor do Habbo -->
       </div>
 
-      <!-- Piso do Escritório com Áreas e Estações -->
-      <div class="office-floor" id="office-floor">
-
-        <!-- ============================================== -->
-        <!-- 1. ZONA DO CAFÉ & CONVIVÊNCIA (KAV CAFÉ)       -->
-        <!-- ============================================== -->
-        <div class="zone-coffee" id="zone-coffee">
-          <div class="coffee-neon">☕ KAV CAFÉ</div>
-          
-          <!-- Balcão principal do café -->
-          <div class="coffee-counter">
-            <div class="coffee-machine">
-              <span class="steam-vap">♨️</span>
-              <div class="espresso-nozzle"></div>
-            </div>
-            <div class="coffee-cups-rack">
-              <span class="mini-mug">☕</span>
-              <span class="mini-mug">☕</span>
-            </div>
-            <div class="water-cooler" title="Bebedouro de água">
-              <div class="water-bottle">💧</div>
-            </div>
-          </div>
-
-          <!-- Mesa Bistrô redonda com banquetas -->
-          <div class="bistro-area">
-            <div class="bistro-table">
-              <div class="bistro-plate">🥐</div>
-            </div>
-            <div class="bistro-stool stool-left"></div>
-            <div class="bistro-stool stool-right"></div>
-          </div>
-
-          <!-- Sofá Lounge & Plantas -->
-          <div class="lounge-sofa" title="Espaço de descompressão">
-            <div class="cushion"></div>
-          </div>
-          <div class="office-plant plant-left" title="Monstera / Costela-de-Adão">🪴</div>
-          <div class="office-plant plant-right">🌿</div>
-        </div>
-
-        <!-- ============================================== -->
-        <!-- 2. ZONA DE ESTAÇÕES DE TRABALHO (DESKS)        -->
-        <!-- ============================================== -->
-        <div class="zone-workstations">
-
-          <!-- Estação 1: Augusto (Supervisor) -->
-          <div class="workstation-desk desk-supervisor" id="desk-supervisor" data-agent="supervisor">
-            <div class="desk-furniture">
-              <div class="office-chair"></div>
-              <div class="desk-top">
-                <div class="computer-screen screen-supervisor"></div>
-                <div class="keyboard"></div>
-                <div class="mouse"></div>
-                <div class="station-plate">👔 Augusto · Supervisor</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Estação 2: Otávio (Diretor de Arte Sênior) -->
-          <div class="workstation-desk desk-diretor" id="desk-diretor" data-agent="diretor">
-            <div class="desk-furniture">
-              <div class="office-chair"></div>
-              <div class="desk-top">
-                <div class="computer-screen screen-diretor"></div>
-                <div class="keyboard"></div>
-                <div class="mouse"></div>
-                <div class="station-plate">🧐 Otávio · Dir. Arte</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Estação 3: Vicente (Métricas & Tráfego) -->
-          <div class="workstation-desk desk-metricas" id="desk-metricas" data-agent="metricas">
-            <div class="desk-furniture">
-              <div class="office-chair"></div>
-              <div class="desk-top">
-                <div class="dual-screens">
-                  <div class="computer-screen mini"></div>
-                  <div class="computer-screen"></div>
-                </div>
-                <div class="keyboard"></div>
-                <div class="mouse"></div>
-                <div class="station-plate">📊 Vicente · Métricas</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Estação 4: Clarice (Copywriter) -->
-          <div class="workstation-desk desk-copywriter" id="desk-copywriter" data-agent="copywriter">
-            <div class="desk-furniture">
-              <div class="office-chair"></div>
-              <div class="desk-top">
-                <div class="computer-screen screen-copywriter"></div>
-                <div class="keyboard"></div>
-                <div class="mouse"></div>
-                <div class="station-plate">✍️ Clarice · Redatora</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Estação 5: Benedito (Curador de Fotos & Cardápio) -->
-          <div class="workstation-desk desk-pesquisador" id="desk-pesquisador" data-agent="pesquisador">
-            <div class="desk-furniture">
-              <div class="office-chair"></div>
-              <div class="desk-top">
-                <div class="computer-screen screen-pesquisador"></div>
-                <div class="keyboard"></div>
-                <div class="mouse"></div>
-                <div class="station-plate">📸 Benedito · Curador</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Estação 6: Joaquim (Designer & Arte Final) -->
-          <div class="workstation-desk desk-designer" id="desk-designer" data-agent="designer">
-            <div class="desk-furniture">
-              <div class="office-chair"></div>
-              <div class="desk-top">
-                <div class="computer-screen screen-designer"></div>
-                <div class="drawing-pad"></div>
-                <div class="station-plate">🎨 Joaquim · Designer</div>
-              </div>
-            </div>
-          </div>
-
-        </div> <!-- /zone-workstations -->
-
-        <!-- ============================================== -->
-        <!-- 3. PERSONAGENS VIVOS QUE CIRCULAM E CORREM     -->
-        <!-- ============================================== -->
-        <div class="characters-layer" id="characters-layer">
-
-          <!-- Avatar Augusto (Supervisor) -->
-          <div class="avatar-actor" id="actor-supervisor" data-agent="supervisor">
-            <div class="emoji-bubble" id="bubble-supervisor">☕</div>
-            <div class="run-dust">💨</div>
-            <div class="avatar-sprite avatar-augusto"></div>
-            <div class="name-badge">
-              <span class="badge-dot status-online"></span>
-              <span>Augusto</span>
-            </div>
-          </div>
-
-          <!-- Avatar Otávio (Diretor de Arte) -->
-          <div class="avatar-actor" id="actor-diretor" data-agent="diretor">
-            <div class="emoji-bubble" id="bubble-diretor">💬</div>
-            <div class="run-dust">💨</div>
-            <div class="avatar-sprite avatar-otavio"></div>
-            <div class="name-badge">
-              <span class="badge-dot status-online"></span>
-              <span>Otávio</span>
-            </div>
-          </div>
-
-          <!-- Avatar Vicente (Métricas) -->
-          <div class="avatar-actor" id="actor-metricas" data-agent="metricas">
-            <div class="emoji-bubble" id="bubble-metricas">📱</div>
-            <div class="run-dust">💨</div>
-            <div class="avatar-sprite avatar-vicente"></div>
-            <div class="name-badge">
-              <span class="badge-dot status-online"></span>
-              <span>Vicente</span>
-            </div>
-          </div>
-
-          <!-- Avatar Clarice (Copywriter) -->
-          <div class="avatar-actor" id="actor-copywriter" data-agent="copywriter">
-            <div class="emoji-bubble" id="bubble-copywriter">🍩</div>
-            <div class="run-dust">💨</div>
-            <div class="avatar-sprite avatar-clarice"></div>
-            <div class="name-badge">
-              <span class="badge-dot status-online"></span>
-              <span>Clarice</span>
-            </div>
-          </div>
-
-          <!-- Avatar Benedito (Curador) -->
-          <div class="avatar-actor" id="actor-pesquisador" data-agent="pesquisador">
-            <div class="emoji-bubble" id="bubble-pesquisador">☕</div>
-            <div class="run-dust">💨</div>
-            <div class="avatar-sprite avatar-benedito"></div>
-            <div class="name-badge">
-              <span class="badge-dot status-online"></span>
-              <span>Benedito</span>
-            </div>
-          </div>
-
-          <!-- Avatar Joaquim (Designer) -->
-          <div class="avatar-actor" id="actor-designer" data-agent="designer">
-            <div class="emoji-bubble" id="bubble-designer">🥐</div>
-            <div class="run-dust">💨</div>
-            <div class="avatar-sprite avatar-joaquim"></div>
-            <div class="name-badge">
-              <span class="badge-dot status-online"></span>
-              <span>Joaquim</span>
-            </div>
-          </div>
-
-        </div> <!-- /characters-layer -->
-
-      </div> <!-- /office-floor -->
-    </div> <!-- /isometric-world -->
+      <!-- Legendas Rápidas de Navegação -->
+      <div class="habbo-room-tags">
+        <div class="room-tag-zone tag-cafe">☕ KAV CAFÉ & LOUNGE</div>
+        <div class="room-tag-zone tag-work">💻 ESTAÇÕES EXECUTIVAS KAV</div>
+      </div>
+    </div>
   </main>
 
-  <!-- Live Feed Ticker at Bottom -->
-  <footer class="activity-bar">
-    <div class="feed-label">
-      <span class="pulse-indicator"></span>
-      <span>ESTATUTO DA AGÊNCIA:</span>
+  <!-- Rodapé / Barra de Atividade Estilo Habbo Console -->
+  <footer class="habbo-footer-bar">
+    <div class="habbo-feed-badge">
+      <span class="habbo-pulse-dot"></span>
+      <span>HABBO CONSOLE:</span>
     </div>
-    <div class="feed-ticker-container">
-      <div class="feed-ticker" id="feed-ticker">
-        Agentes online · Modo coffee break ativo · Clique em '▶️ Dar o Play' para iniciar o ciclo de produção
+    <div class="habbo-feed-scroll">
+      <div class="habbo-feed-text" id="feed-ticker">
+        Hotel Kav 2.5D online · Equipe relaxando no café · Clique em '▶️ Dar o Play' para os Habbos correrem para suas estações de trabalho!
       </div>
     </div>
   </footer>
 
-  <!-- Modal / Crachá Detalhado do Funcionário -->
+  <!-- Modal / Crachá Estilo Habbo Passport / Habbo Club -->
   <div class="modal-overlay" id="agent-modal">
-    <div class="modal-card">
+    <div class="modal-card habbo-modal-card">
       <button class="btn-close" id="modal-close">&times;</button>
-      <div class="modal-header">
-        <div class="modal-avatar-preview" id="modal-avatar-icon"></div>
+      <div class="modal-header habbo-modal-header">
+        <div class="modal-avatar-preview habbo-passport-avatar" id="modal-avatar-icon">
+          <canvas id="passport-avatar-canvas" width="64" height="64"></canvas>
+        </div>
         <div>
           <h2 id="modal-name">Nome do Agente</h2>
-          <span class="modal-role" id="modal-role">Cargo</span>
+          <span class="modal-role habbo-gold-text" id="modal-role">Cargo</span>
           <span class="modal-dept" id="modal-dept">Departamento</span>
         </div>
       </div>
 
       <div class="modal-body">
         <div class="modal-section">
-          <h4>STATUS ATUAL</h4>
-          <div class="status-indicator-box">
+          <h4>STATUS ATUAL NO HOTEL</h4>
+          <div class="status-indicator-box habbo-status-box">
             <span class="badge-dot" id="modal-status-dot"></span>
-            <span id="modal-status-text">Online</span>
+            <span id="modal-status-text">Online no Hotel</span>
           </div>
         </div>
 
@@ -328,14 +141,14 @@
         </div>
 
         <div class="modal-section">
-          <h4>HUMOR DO AVATAR</h4>
-          <div class="quote-box" id="modal-speech">☕ Pausa pro café</div>
+          <h4>HUMOR DO HABBO</h4>
+          <div class="quote-box habbo-quote-box" id="modal-speech">☕ Pausa pro café</div>
         </div>
 
         <div class="modal-section">
-          <h4>HISTÓRICO RECENTE</h4>
-          <ul class="activity-history-list" id="modal-history">
-            <li>Nenhuma atividade registrada ainda.</li>
+          <h4>HISTÓRICO NO QUARTO</h4>
+          <ul class="activity-history-list habbo-history-list" id="modal-history">
+            <li>Quarto Kav Hotel carregado com motor 2.5D isométrico.</li>
           </ul>
         </div>
       </div>
@@ -344,23 +157,23 @@
 
   <!-- Modal de Entrega do Post Gerado -->
   <div class="modal-overlay" id="post-delivery-modal">
-    <div class="modal-card modal-post-card">
+    <div class="modal-card modal-post-card habbo-post-modal">
       <button class="btn-close" id="post-modal-close">&times;</button>
-      <div class="modal-header">
+      <div class="modal-header habbo-modal-header">
         <div>
           <h2 id="post-modal-title">🎉 Post Concluído com Sucesso!</h2>
-          <span class="modal-role" id="post-modal-subtitle">Esteira de Agentes Autônomos Kav</span>
+          <span class="modal-role habbo-gold-text" id="post-modal-subtitle">Esteira de Agentes Autônomos Kav · Habbo Edition</span>
         </div>
       </div>
       <div class="modal-body post-modal-grid">
         <div class="post-preview-col">
-          <div class="post-image-container" id="post-image-box">
+          <div class="post-image-container habbo-img-frame" id="post-image-box">
             <img id="post-modal-img" src="" alt="Arte do Post" style="display:none;">
             <div id="post-modal-img-placeholder" style="color:#8A9BB8; font-size:12px; text-align:center; padding:20px;">
               Imagem em processamento ou modo teste
             </div>
           </div>
-          <a id="post-modal-download-link" href="#" download="post-kav.png" class="btn btn-primary btn-block" style="text-decoration:none; text-align:center;">
+          <a id="post-modal-download-link" href="#" download="post-kav.png" class="btn btn-primary habbo-btn-gold btn-block" style="text-decoration:none; text-align:center;">
             ⬇️ Baixar Imagem (.png)
           </a>
         </div>
@@ -371,14 +184,14 @@
           </div>
           <div class="modal-section">
             <h4>SELO</h4>
-            <span class="badge-selo" id="post-modal-selo">-</span>
+            <span class="badge-selo habbo-badge-selo" id="post-modal-selo">-</span>
           </div>
           <div class="modal-section">
             <div class="section-header-flex">
               <h4>LEGENDA DO POST</h4>
-              <button id="post-modal-copy-btn" class="btn btn-secondary btn-sm">📋 Copiar Legenda</button>
+              <button id="post-modal-copy-btn" class="btn btn-secondary btn-sm habbo-btn-secondary">📋 Copiar Legenda</button>
             </div>
-            <pre class="post-copy-box" id="post-modal-copy"></pre>
+            <pre class="post-copy-box habbo-copy-box" id="post-modal-copy"></pre>
           </div>
           <div class="modal-section">
             <h4>CRIAÇÃO</h4>
