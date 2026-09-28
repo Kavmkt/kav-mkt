@@ -1,0 +1,65 @@
+[
+  {
+    "arquivo": "ref_manifesto_palavra_dourada.png",
+    "estilo": "manifesto_palavra_dourada",
+    "descricao": "Inspirado no estilo Focus/Izaque: Headline imponente com 1 a 2 palavras-chave destacadas em Dourado Kav (#EEB730) com sublinhado de acento, badge superior KAV e botão pill inferior 'Leia a legenda ->'.",
+    "posicao_logo": "superior_centro",
+    "paleta": {
+      "fundo": "#001424",
+      "destaque": "#EEB730",
+      "texto_principal": "#FFFFFF",
+      "texto_secundario": "#94A3B8"
+    }
+  },
+  {
+    "arquivo": "ref_afirmacao_tweet_box.png",
+    "estilo": "afirmacao_tweet_box",
+    "descricao": "Inspirado no estilo Samuel Reis: Topo com badge @kav.mkt, grande headline afiada, tese central envolta em card/box escuro translúcido com borda sutil e CTA com seta dourada 'Leia a legenda ↘'.",
+    "posicao_logo": "superior_esquerda",
+    "paleta": {
+      "fundo": "#001424",
+      "card": "#031E34",
+      "destaque": "#EEB730",
+      "texto_principal": "#FFFFFF",
+      "texto_secundario": "#94A3B8"
+    }
+  },
+  {
+    "arquivo": "ref_impacto_condensado_grid.png",
+    "estilo": "impacto_condensado_grid",
+    "descricao": "Inspirado no estilo Agência Workspace: Micro-grid técnico escuro de fundo, badge de tendência com ícone 📈, headline maciça em caixa alta e nuvem tonal de palavras-chave da agência no rodapé.",
+    "posicao_logo": "inferior_esquerda",
+    "paleta": {
+      "fundo": "#001424",
+      "grid": "#072036",
+      "destaque": "#EEB730",
+      "texto_principal": "#FFFFFF",
+      "texto_secundario": "#94A3B8"
+    }
+  },
+  {
+    "arquivo": "ref_destaque_dourado.png",
+    "estilo": "destaque_dourado_contraste",
+    "descricao": "Inspirado no estilo Cadeira Laranja/Well.dsg/ORB: Composição de quebra de padrão visual. Frase superior de reflexão, elemento gráfico central em destaque absoluto Dourado Kav e conclusão direta inferior.",
+    "posicao_logo": "inferior_direita",
+    "paleta": {
+      "fundo": "#001424",
+      "destaque": "#EEB730",
+      "texto_principal": "#FFFFFF",
+      "texto_secundario": "#94A3B8"
+    }
+  },
+  {
+    "arquivo": "ref_quebra_objecao_card.png",
+    "estilo": "quebra_objecao_card",
+    "descricao": "Inspirado no estilo Geovane Rocha/Izaque Araujo: Headline de choque sobre posicionamento e preços, card de sustentação com borda dourada e botão pill 'Arrasta pra entender ->'.",
+    "posicao_logo": "superior_esquerda",
+    "paleta": {
+      "fundo": "#001424",
+      "card": "#031E34",
+      "destaque": "#EEB730",
+      "texto_principal": "#FFFFFF",
+      "texto_secundario": "#94A3B8"
+    }
+  }
+]

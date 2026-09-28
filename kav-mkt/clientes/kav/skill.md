@@ -1,97 +1,72 @@
-# Kav / HyperKav (@kav.mkt)
+# Kav Marketing & Performance (@kav.mkt)
 
-> Baseado no documento de direcionamento da marca (set/2026) e nas cores oficiais
-> enviadas em 25/09/2026. Itens marcados **[TODO]** ainda precisam de material da
-> marca — o resto já reflete o posicionamento e a identidade visual real da Kav.
+> Diretrizes oficiais de marca, posicionamento e Key Visual da Kav.
+> Este arquivo é a fonte única de verdade para a esteira de criação autônoma de conteúdo estático.
 
-## Sobre
+---
 
-A Kav é uma consultoria/agência de marketing de performance. O produto/metodologia
-central se chama **HyperKav**: um "ambiente científico" de marketing — decisões
-baseadas em dados (projeção de ROI, avaliação de risco, crescimento previsível), no
-lugar de "achismo". O diferencial não é só execução criativa, é previsibilidade e
-segurança na decisão de investir.
+## 1. Sobre a Agência
+A Kav é uma agência de inteligência em marketing digital e performance para Pequenas e Médias Empresas (PMEs).
+O objetivo é transformar negócios locais em máquinas de captação contínua de clientes no WhatsApp e no balcão,
+utilizando Tráfego Pago Hiper-Local (Meta Ads e Google Ads) e Esteiras Inteligentes com Agentes de IA.
 
-## Público
+---
 
-Donos de pequeno e médio negócio (comércio local, serviços) que já fazem ou pretendem
-fazer tráfego pago (Google Ads, Meta Ads), mas sentem falta de estratégia, dados e
-acompanhamento mais sofisticado do que agências/freelancers genéricos oferecem.
+## 2. Público-Alvo Principal
+- Donos, sócios e gestores de PMEs (restaurantes, buffets, clínicas médicas/odontológicas/estéticas, oficinas, serviços especializados e comércio local).
+- **Dores centrais:** Falta de tempo para produzir conteúdo, frustração com o "botão impulsionar" que só traz curtida vazia, medo de termos técnicos confusos ("marketalês"), agências tradicionais que cobram caro e entregam pouca transparência.
 
-**O público é leigo em marketing.** Regras de linguagem:
-- Nunca use a sigla "PME" — diga "seu negócio", "dono de empresa", "empresário".
-- Qualquer termo técnico ou sigla (ROAS, LTV, CAC, funil, GEO etc.) precisa vir
-  explicado ao lado, em linguagem simples, na mesma frase ou logo em seguida.
+---
 
-## Tom de voz
+## 3. Linha Editorial: "Marketing Descomplicado"
+- **Linguagem Direta:** Eliminamos o jargão vazio. Cada conceito técnico de anúncio ou métrica é sempre traduzido através de uma situação prática do dia a dia do empresário.
+- **Autoridade sem Arrogância:** Posicionamento de parceiro estratégico de crescimento, não de professor acadêmico.
+- **Velocidade & Resultados:** Foco obsessivo em métricas que importam para o caixa: mensagens no WhatsApp, custo por lead qualificado e clientes na loja.
 
-Direto e consultivo — não vendedor raso. Usa perguntas retóricas pra gerar
-identificação ("Você já pensou no seu funil?"). Confiante e um pouco professoral, mas
-acessível: combina autoridade técnica (dados, métricas) com proximidade (linguagem
-coloquial, humor leve em datas sazonais). "Achismo" é a palavra-chave usada como
-contraponto ao método proposto.
+---
 
-## Lógica de conteúdo (importante, aplica-se a TODO carrossel educativo)
+## 4. Identidade Visual Oficial (Key Visual)
 
-Ensinar gera autoridade → autoridade gera confiança → confiança gera venda. O
-carrossel deve ensinar o suficiente pra gerar identificação e autoridade, **sem
-entregar o passo a passo completo de execução** — o "como fazer" é o que se vende.
-Termine sempre abrindo uma porta (CTA), nunca fechando o assunto por completo.
+### A. Paleta de Cores Estrita (HEX)
+*Nenhuma outra cor primária ou de destaque (como laranja, vermelho ou roxo) deve ser usada.*
+- **Azul Noturno Profundo (Fundo Principal):** `#001D32` (com gradiente sutil até `#001424` / `#000E19` para profundidade e sofisticação dark tech).
+- **Dourado Kav (Cor Oficial de Acento e Destaque):** `#EEB730`
+  - Utilizado exclusivamente para: palavras-chave na headline, sublinhados de ênfase, setas de CTA (`↘`, `→`), ícones gráficos (`📈`, `★`), badges de destaque e bordas ativas.
+- **Branco Puro (Tipografia Principal):** `#FFFFFF` (Garante contraste absoluto e impacto visual imediato no feed escuro).
+- **Slate Metálico (Textos Secundários e @kav.mkt):** `#94A3B8` (Usado em frases explicativas, créditos e @handle).
+- **Azul Card / Linhas de Borda:** `#031E34` (Preenchimento de cards) e `#123452` (Bordas translúcidas de pills e caixas de texto).
 
-## Pilares de conteúdo (varie entre eles ao escrever o roteiro)
+### B. Fonte Definitiva da Marca
+- **Família Oficial Definitiva:** **Plus Jakarta Sans** *(Fallback universal: Inter)*.
+- **Por que esta fonte:** Família geométrica neo-grotesca de alta nitidez para telas móveis, com kerning equilibrado que transmite tecnologia, clareza e autoridade institucional.
+- **Pesos e Aplicação:**
+  1. **Headline de Impacto (Tamanho Hero: 56px a 80px):** ExtraBold (800) ou Black (900), em caixa alta ou caixa baixa imponente.
+  2. **Subtítulo de Apoio (Tamanho Médio: 26px a 36px):** Medium (500) ou Regular (400), em caixas/cards ou texto corrido.
+  3. **Badges, Selos e CTAs (Tamanho Reduzido: 20px a 24px):** SemiBold (600) com tracking levemente expandido para máxima legibilidade.
 
-1. **Educação em marketing** — glossário e conceitos (ROAS, LTV, funil de vendas,
-   personalização), sempre explicando o termo técnico em linguagem simples.
-2. **Institucional/produto** — a metodologia HyperKav (dados, ROI, previsibilidade,
-   "ambiente científico" de marketing).
-3. **Prova social** — cases de clientes reais (ex: parceria com a Ponto Car).
-4. **Provocação/reflexão** — comportamento do consumidor: por que as pessoas compram,
-   fidelização, relação genuína com o cliente (não só preço/produto).
-5. **Institucional/sazonal** — datas comemorativas e mensagens motivacionais.
+---
 
-## Pode / não pode
+## 5. Estrutura e Arquétipos de Layout (Baseados nas Referências Oficiais)
+A esteira visual da Kav roda um sistema de anti-repetição contínua alternando entre 5 estilos de layout derivados das referências oficiais:
 
-- Pode: comparar "achismo" vs. decisão orientada a dados, citar conceitos de marketing
-  (sempre explicados), convidar pra um diagnóstico/conversa gratuita.
-- Não pode: usar "PME", prometer resultado garantido de vendas, citar preço de serviço
-  sem confirmação, inventar caso/depoimento de cliente, ou entregar o passo a passo
-  completo de uma estratégia (isso é o que se vende).
+1. **Manifesto com Palavra Dourada (`ref_manifesto_palavra_dourada.png`):**
+   - Headline afiada com 1 a 2 palavras centrais em Dourado Kav `#EEB730` com traço de acento.
+   - Pill arredondada de ação no rodapé: `[ →  Leia a legenda ]`.
 
-## KV — identidade visual
+2. **Afirmação em Card / Tweet Box (`ref_afirmacao_tweet_box.png`):**
+   - Topo com handle `@kav.mkt` e avatar estilizado.
+   - Frase provocativa inicial + tese de sustentação dentro de um card azul noturno com borda fina translúcida.
+   - Chamada lateral: `Leia a legenda ↘` com a seta em Dourado Kav.
 
-- **Logo oficial** (recebido em 25/09/2026): wordmark "KAV", PNG transparente, em duas
-  versões — `logo-fundo-claro.png` (azul-marinho escuro, pra usar sobre fundo claro) e
-  `logo-fundo-escuro.png` (azul claro/gradiente, pra usar sobre fundo escuro).
-- **Paleta oficial** (confirmada em 25/09/2026):
-  - `#0F286B` — azul-marinho (cor principal)
-  - `#001D32` — quase-preto azulado (fundo escuro / base)
-  - `#4D587B` — azul-acinzentado (apoio / textos secundários)
-  - `#EEB730` — dourado/amarelo (destaque, usar com moderação — accent color)
-  - `#EBEFFA` — lavanda muito claro (texto sobre fundo escuro / respiros claros)
-- **Estilo gráfico do carrossel — FIXO, baseado num carrossel real aprovado pelo cliente
-  (25/09/2026), seguir à risca** (não é mais um "norte" solto — ver `agente_carrossel.py`
-  pro prompt completo):
-  - Fundo **100% chapado**, uma cor sólida só — **sem gradiente, sem glow, sem grid, sem
-    textura**. Nada de efeito de luz no fundo (testamos e ficou artificial/genérico).
-  - Cor do fundo **alterna ao longo do carrossel**: a maior parte das páginas em claro
-    (`#EBEFFA`, texto em `#001D32`), as últimas ~40% em escuro (`#001D32`, texto em
-    `#EBEFFA`/branco) — sempre fechando escuro no CTA. É essa alternância página a
-    página que dá o dinamismo, não um painel dentro da página.
-  - Texto **sempre alinhado à esquerda** — nunca centralizado, nunca à direita.
-  - Estrutura por página: `eyebrow` (linha pequena opcional antes do título, ausente na
-    capa) → `título` (grande, dominante) → `apoio` (frase solta abaixo, sem caixa/pílula
-    atrás).
-  - Palavra de maior impacto dentro do título em itálico serifado (Playfair
-    Display/Didot), sempre na cor dourada `#EEB730` — em qualquer fundo, claro ou escuro.
-  - Cabeçalho e rodapé pequenos e fixos em **toda** página (discretos, caixa alta):
-    `@KAV.MKT` (superior esquerdo), `KAV` (superior direito), `KAV` (inferior esquerdo),
-    `KAVOFICIAL.COM.BR` (inferior direito).
-  - **Logo desenhado por extenso e botão de CTA (pílula dourada) só na última página**,
-    centralizado — nenhuma outra página leva o logo gráfico.
-  - Muito espaço negativo — poucos elementos, nunca a página lotada.
-  - Sem fotografia de pessoas (não temos fotos reais do fundador/equipe pra usar como
-    referência) — carrossel 100% tipográfico.
+3. **Impacto Condensado sobre Grid (`ref_impacto_condensado_grid.png`):**
+   - Fundo com micro-grade técnica de performance.
+   - Badge superior `📈 QUER CRESCER?`.
+   - Headline maciça ocupando largura total e nuvem tonal de palavras-chave da agência na base.
 
-## Produtos Coringa
+4. **Destaque Visual de Contraste (`ref_destaque_dourado.png`):**
+   - Metáfora do "elemento que se destaca": enquanto todos fazem o comum, a PME com a Kav vira o ponto de destaque dourado do bairro.
+   - Reflexão superior e conclusão inferior direta.
 
-(não se aplica — carrossel de conteúdo, não de produto)
+5. **Quebra de Objeção com Card de Solução (`ref_quebra_objecao_card.png`):**
+   - Headline atacando crenças erradas sobre preço ou concorrência.
+   - Card com borda Dourada `#EEB730` explicando a virada de chave e botão `Arrasta pra entender →`.

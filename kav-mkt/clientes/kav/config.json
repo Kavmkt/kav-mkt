@@ -1,7 +1,8 @@
 {
-  "nome": "Kav",
-  "tipo": "carrossel",
-  "paginas_padrao": 5,
+  "nome": "Kav (@kav.mkt)",
+  "tipo": "estatico",
+  "formato": "1080x1350",
   "logo_posicao": "inferior-direito",
-  "dias_sem_repetir_pauta": 30
+  "dias_sem_repetir_pauta": 30,
+  "dias_sem_repetir_layout": 15
 }
