@@ -4,16 +4,18 @@ Atua como o supervisor e aprovador de arte da Kav (@kav.mkt).
 Analisa visualmente (usando visão computacional multimodal) a imagem gerada pelo
 designer júnior (Joaquim) para posts de feed (orgânico) e peças de anúncio (campanha).
 
-Avalia rigorosamente:
-1. Presença e integridade do logo oficial da marca (sem sumir, deformar ou ficar ilegível);
-2. Tipografia, legibilidade e ausência de amadorismos (sem contorno/sombra branca borrada);
-3. Ausência de elementos gráficos proibidos (sem elipses/carimbos repetitivos com talheres);
-4. Apresentação gastronômica/composição da cena (comida apetitosa em mesa de restaurante).
-
-Se o layout tiver nota baixa ou falhas críticas, o Diretor de Arte aciona UMA rodada de
-refino com gpt-image-2.5-sunburst enviando o rascunho atual + logo oficial, instruindo
-o que PRESERVAR (a comida) e o que CORRIGIR (logo, tipografia, remoção de elipses).
+Avalia com extremo rigor:
+1. COERÊNCIA GASTRONÔMICA: O prato na imagem DEVE ser estritamente o prato do dia esperado!
+   Se o post for sobre Frango ao Molho e a imagem mostrar Feijoada ou bife, REPROVA imediatamente!
+2. REGRA DA FEIJOADA: Feijoada é permitida exclusivamente às quartas-feiras e sábados.
+3. PROIBIÇÃO DO TERMO "EXECUTIVO": O restaurante do Nico não usa "almoço executivo" (preço de R$ 26 a R$ 35).
+   Se houver "executivo" escrito, REPROVA e manda trocar por "Almoço do Dia" ou "Comida Caseira".
+4. Presença e integridade do logo oficial da marca (sem sumir ou deformar).
+5. Tipografia, legibilidade e ausência de amadorismos (sem contorno/sombra branca borrada).
+6. Ausência de elementos gráficos proibidos (sem elipses/carimbos repetitivos com talheres).
 """
+from __future__ import annotations
+
 import base64
 from typing import Callable, Optional
 
@@ -21,26 +23,32 @@ from utils import image_overlay, openai_client
 from utils.openai_client import chamar_ia_visao, extrair_json
 
 SYSTEM_PROMPT_DIRETOR = """Você é o Diretor de Arte Sênior da Kav (@kav.mkt).
-Sua responsabilidade é avaliar com alto senso estético e rigor visual a peça criada pelo designer júnior para o cliente.
+Sua responsabilidade é avaliar com alto senso estético, rigor visual e precisão gastronômica a peça criada para o restaurante NN Restaurante.
 
 DIRETRIZES DA MARCA:
 __SKILL__
 
-CHECKLIST CRÍTICO DE AVALIAÇÃO:
-1. LOGO OFICIAL DA MARCA:
-   - O logo oficial do cliente deve estar presente, nítido e legível.
-   - REPROVE se o logo estiver ausente, distorcido, com texto ilegível ou trocado por ícone genérico.
-2. TIPOGRAFIA & CONTRASTE (ANTI-AMADORISMO):
-   - A chamada/headline deve estar perfeitamente legível, elegante e com hierarquia clara.
+PRATO DO DIA ESPERADO NA PEÇA: "__PRATO_ESPERADO__"
+DIA DA SEMANA: __DIA_SEMANA__
+
+CHECKLIST CRÍTICO DE AVALIAÇÃO (REPROVAÇÃO AUTOMÁTICA):
+1. COERÊNCIA GASTRONÔMICA OBRIGATÓRIA (PRATO vs IMAGEM):
+   - A comida mostrada na imagem DEVE ser rigorosamente "__PRATO_ESPERADO__".
+   - REPROVE IMEDIATAMENTE (pontuação <= 4, precisa_refino=true) se a peça for sobre '__PRATO_ESPERADO__' (ex: Frango ao Molho) e a imagem estiver mostrando Feijoada, bife de carne vermelha ou qualquer outro prato diferente.
+   - REGRA DA FEIJOADA: Feijoada é servida EXCLUSIVAMENTE às quartas-feiras e aos sábados. Hoje é __DIA_SEMANA__. Se hoje NÃO for quarta-feira ou sábado e a imagem estiver mostrando feijoada, REPROVE SUMARIAMENTE!
+2. PROIBIÇÃO ABSOLUTA DA PALAVRA "EXECUTIVO":
+   - REPROVE (pontuação <= 5, precisa_refino=true) se a imagem contiver a palavra "EXECUTIVO" ou "ALMOÇO EXECUTIVO" escrita na headline, no selo ou em qualquer lugar. Os pratos custam entre R$ 26 e R$ 35 e o termo executivo passa impressão de restaurante caro. Deve ser trocado por "ALMOÇO DO DIA" ou "COMIDA CASEIRA".
+3. LOGO OFICIAL DA MARCA:
+   - O logo oficial do cliente (N&N Restaurante) deve estar presente, nítido e legível no cabeçalho/topo.
+   - REPROVE se o logo estiver ausente, distorcido ou trocado por ícone genérico.
+4. TIPOGRAFIA & CONTRASTE (ANTI-AMADORISMO):
+   - A headline deve estar perfeitamente legível, elegante e com hierarquia clara.
    - REPROVE se o texto tiver contorno branco grosso (stroke), glow branco esfumado ou sombra difusa artificial (WordArt amador).
-3. PROIBIÇÃO DE ELIPSE / CARIMBO CLICHÊ:
-   - REPROVE se houver carimbos redondos, elipses com garfo/faca ou selos amadores ("Comida de Verdade" etc.) colados no canto da imagem. A composição deve ser limpa.
-4. AMBIENTAÇÃO & FOTOGRAFIA CULINÁRIA:
-   - A comida deve ser apetitosa e estar ambientada como fotografia profissional de gastronomia (mesa de restaurante, iluminação quente, ambiente aconchegante).
-   - REPROVE se parecer uma foto crua de celular com mão segurando pote plástico ou fundo doméstico improvisado.
-5. CONTEXTO DO MODO (__MODO__):
-   - Se for 'campanha': deve conter hierarquia visual de anúncio de alta conversão e faixa/bloco claro de chamada de ação (WhatsApp / localização).
-   - Se for 'organico': deve ter composição editorial sofisticada para o feed do Instagram.
+5. PROIBIÇÃO DE ELIPSE / CARIMBO CLICHÊ:
+   - REPROVE se houver carimbos redondos, elipses com garfo/faca ou selos amadores colados nos cantos.
+6. AMBIENTAÇÃO & APRESENTAÇÃO CULINÁRIA:
+   - Comida farta e apetitosa de almoço comercial brasileiro (arroz soltinho, feijão, guarnições).
+   - Louça comercial branca tradicional ou marmitex, mesa de madeira clara com textura levemente esbranquiçada.
 
 Responda EXCLUSIVAMENTE com um objeto JSON, sem markdown ou texto antes/depois:
 {
@@ -48,7 +56,7 @@ Responda EXCLUSIVAMENTE com um objeto JSON, sem markdown ou texto antes/depois:
   "pontuacao": 8,
   "diagnostico": "Resumo crítico e direto da avaliação em 1 ou 2 frases em português",
   "precisa_refino": false,
-  "instrucoes_de_correcao": "Instruções cirúrgicas em inglês para a IA de edição caso precisa_refino seja true. Especifique com clareza: (1) O que PRESERVAR (a comida, os pratos reais) e (2) O que CORRIGIR (ex: reinserir o logo oficial a partir do template de guia, remover contornos brancos esfumados, remover selo de elipse, etc.). Se aprovado, deixe string vazia."
+  "instrucoes_de_correcao": "Instruções cirúrgicas em inglês para a IA de edição caso precisa_refino seja true. Especifique com clareza: (1) O que PRESERVAR e (2) O que CORRIGIR (ex: substituir feijoada por frango ao molho com arroz e feijão, remover a palavra EXECUTIVO e substituir por ALMOÇO DO DIA, reinserir logo oficial, etc.). Se aprovado, deixe string vazia."
 }
 """
 
@@ -67,20 +75,26 @@ def revisar_e_aprovar_layout(
     if not imagem_dict or not imagem_dict.get("imagem_b64"):
         return imagem_dict
 
-    avisar("🎨 [Diretor de Arte]: Inspecionando layout do Joaquim com visão computacional...")
+    nome_prato = foto.get("nome") or (foto["arquivo"].stem if foto.get("arquivo") else "Prato do Dia")
+    avisar(f"🎨 [Diretor de Arte]: Inspecionando layout de '{nome_prato}' com visão computacional...")
+
+    from agents.agente_legenda_fotos import obter_contexto_temporal
+    nome_dia, _, _ = obter_contexto_temporal()
 
     # 1. Avaliação multimodal com GPT-4o-mini
     system = (
         SYSTEM_PROMPT_DIRETOR.replace("__SKILL__", cliente.get("skill", ""))
-        .replace("__MODO__", modo)
+        .replace("__PRATO_ESPERADO__", nome_prato)
+        .replace("__DIA_SEMANA__", nome_dia)
     )
     prompt = (
         f"Avalie esta peça criada para o cliente '{cliente.get('nome')}'.\n"
-        f"Modo de produção: {modo}\n"
-        f"Headline esperada na peça: \"{copy.get('headline_imagem')}\"\n"
-        f"Selo/tag esperado (se houver): \"{copy.get('selo_produto') or 'nenhum'}\"\n"
-        f"Prato/Foto base: {foto.get('nome') or foto.get('arquivo', 'Prato')}\n\n"
-        f"Inspecione a imagem fornecida com olhar crítico e devolva o JSON de avaliação."
+        f"Dia da semana: {nome_dia}\n"
+        f"Prato do dia esperado: \"{nome_prato}\"\n"
+        f"Headline na copy: \"{copy.get('headline_imagem')}\"\n"
+        f"Selo esperado: \"{copy.get('selo_produto') or 'nenhum'}\"\n\n"
+        f"Verifique especialmente se a comida na imagem corresponde a '{nome_prato}' (não pode ser feijoada se o prato for frango) "
+        f"e se a palavra 'EXECUTIVO' foi evitada. Devolva o JSON de avaliação."
     )
 
     try:
@@ -88,7 +102,7 @@ def revisar_e_aprovar_layout(
             system=system,
             prompt=prompt,
             imagem_b64=imagem_dict["imagem_b64"],
-            max_tokens=600,
+            max_tokens=650,
             temperature=0.3,
             json_mode=True,
         )
@@ -121,7 +135,7 @@ def revisar_e_aprovar_layout(
         referencias_refino = [
             (
                 imagem_bytes_atual,
-                "the current draft layout of the post. Keep the authentic food and dish composition.",
+                "the current draft layout of the post. Keep the authentic restaurant dining staging.",
             )
         ]
 
@@ -149,7 +163,8 @@ def revisar_e_aprovar_layout(
             "You are executing an art direction revision on this post design. Apply ONLY the following corrections:\n"
             f"{instrucoes}\n\n"
             "STRICT RULES:\n"
-            "- Keep the authentic food dish, its textures and appetizing culinary presentation unchanged.\n"
+            f"- Ensure the food depicted is strictly '{nome_prato}'. Never display feijoada or red meat if the dish is chicken.\n"
+            "- Never include the word 'EXECUTIVO' or 'ALMOÇO EXECUTIVO'; replace with 'ALMOÇO DO DIA' or 'COMIDA CASEIRA'.\n"
             "- Ensure the official client logo is clearly and cleanly reproduced from the authentic logo reference.\n"
             "- NEVER add white glow, blurry white outlines, or diffuse halos around text letters.\n"
             "- Do NOT add circular stamp badges, fork/knife ellipses, or amateur clutter.\n"

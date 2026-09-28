@@ -145,7 +145,7 @@ def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callabl
     foto = escolher_foto(cliente)
     avisos = list(foto.pop("avisos", []))
 
-    nome_prato = foto.get("nome") or (foto["arquivo"].name if foto.get("arquivo") else "Prato do Dia")
+    nome_prato = foto.get("nome") or (foto["arquivo"].stem if foto.get("arquivo") else "Prato do Dia")
     avisar(f"Escrevendo chamada, selo e legenda para: {nome_prato}")
     copy = gerar_copy_foto(foto, cliente)
     post = {
@@ -163,7 +163,7 @@ def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callabl
         return post
 
     post["referencia"] = escolher_referencia(cliente)
-    avisar("Montando o brief do layout...")
+    avisar(f"Montando o brief do layout para '{nome_prato}'...")
     post["brief"] = gerar_brief_foto(copy, foto, cliente, post["referencia"])
     avisar("Gerando a imagem da peça (pode levar até 1 minuto)...")
     post["imagem"] = gerar_imagem_foto(post["brief"], foto, cliente, post["referencia"])
@@ -187,7 +187,7 @@ def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callabl
 
     try:
         historico.registrar(slug, {
-            "produto_id": foto.get("id") or (foto["arquivo"].name if foto.get("arquivo") else "prato"),
+            "produto_id": foto.get("id") or (foto["arquivo"].stem if foto.get("arquivo") else "prato"),
             "produto_nome": nome_prato,
             "headline": copy.get("headline_imagem"),
             "legenda": copy.get("legenda"),
@@ -222,7 +222,7 @@ def gerar_campanha(
 
     # 2. Estrategista de Performance (Gestor de Tráfego)
     from agents.agente_estrategia_campanha import criar_estrategia_campanha
-    nome_prato = foto.get("nome") or (foto["arquivo"].name if foto.get("arquivo") else "Prato")
+    nome_prato = foto.get("nome") or (foto["arquivo"].stem if foto.get("arquivo") else "Prato")
     avisar(f"2/4 [Estrategista]: Analisando concorrência e desenhando estratégia para '{nome_prato}'...")
     estrategia = criar_estrategia_campanha(cliente, foto_escolhida=foto)
 
@@ -266,7 +266,7 @@ def gerar_campanha(
         f"⏰ Almoço de Segunda a Sábado, das 11h às 15h\n"
         f"🚗 Estacionamento fácil no entorno · Salão aconchegante\n\n"
         f"{copy_anuncio.get('cta_final', '👉 Venha almoçar hoje ou toque no link para ver a localização exata!')}\n\n"
-        f"#SantanaDeParnaiba #AlmocoExecutivo #ComidaCaseira #BuffetDeAlmoco #NNRestaurante"
+        f"#SantanaDeParnaiba #AlmocoDoDia #ComidaCaseira #PratoFeito #NNRestaurante"
     )
 
     resultado = {

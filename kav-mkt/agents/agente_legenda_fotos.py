@@ -1,11 +1,11 @@
-"""Agente de Legenda (Fotos): a partir da foto escolhida pelo Agente de Repositório de
-Fotos, escreve a chamada da imagem, o selo do prato e a legenda completa do post,
-seguindo à risca o padrão de legenda do cliente (clientes/<slug>/legenda.md).
+"""Agente de Legenda (Fotos): a partir da foto/prato escolhido pelo Curador,
+escreve a chamada da imagem, o selo do prato e a legenda completa do post,
+seguindo rigorosamente as diretrizes da marca (clientes/<slug>/legenda.md).
 
-Cópia isolada de agents/agente_legenda.py, adaptada para dados de foto (prato/ambiente)
-em vez de dados de produto de loja — nenhum cliente de catálogo (ex: ponto-car) passa
-por este arquivo, e vice-versa. Isso é intencional: evita que um ajuste feito aqui para
-o NN Restaurante afete o fluxo de legenda dos outros clientes, e vice-versa.
+REGRAS RÍGIDAS DE ALINHAMENTO:
+1. Proibido o uso da palavra "executivo" ou "almoço executivo" (preços de R$ 26 a R$ 35).
+2. Feijoada é permitida exclusivamente às quartas-feiras e sábados.
+3. Coerência total entre a copy e o prato do dia informado.
 """
 from __future__ import annotations
 
@@ -85,13 +85,20 @@ GANCHOS_GERAIS = [
 ]
 
 SYSTEM_PROMPT = """Você é o redator sênior da Kav (@kav.mkt), responsável pelo conteúdo do Instagram do NN Restaurante.
-Sua missão é criar uma headline impactante para a arte e uma legenda extremamente apetitosa (appetite appeal), a partir do prato do dia escolhido.
+Sua missão é criar uma headline impactante para a arte e uma legenda extremamente apetitosa (appetite appeal), a partir do prato do dia escolhido: "__NOME_PRATO__".
 
 CONTEXTO TEMPORAL OBRIGATÓRIO:
 Hoje é __DIA_SEMANA__, dia __DATA__.
-REGRA TEMPORAL RÍGIDA:
-- NUNCA use "Sextou", "quase sexta" ou menções a fim de semana se hoje NÃO for sexta-feira, sábado ou domingo.
-- Adapte o gancho rigorosamente ao momento da semana (ex: em dias úteis foque na pausa do almoço de trabalho, praticidade, comida quente e reconfortante; em sextas e finais de semana foque na celebração e descanso).
+
+REGRAS RÍGIDAS DE NEGÓCIO E ALINHAMENTO:
+1. PROIBIDO USAR A PALAVRA "EXECUTIVO":
+   - NUNCA use "executivo", "almoço executivo", "buffet executivo" ou "prato executivo".
+   - O restaurante trabalha na faixa acessível de R$ 26 a R$ 35. Use termos como: "Almoço do Dia", "Comida Caseira", "Prato Feito", "Almoço Comercial" ou o próprio nome do prato.
+2. REGRA DA FEIJOADA (QUARTAS E SÁBADOS):
+   - Feijoada é servida EXCLUSIVAMENTE às quartas-feiras e sábados.
+   - Hoje é __DIA_SEMANA__. Se hoje NÃO for quarta ou sábado, é TERMINANTEMENTE PROIBIDO citar feijoada. Fale estritamente do prato do dia informado (__NOME_PRATO__).
+3. COERÊNCIA TOTAL COM O PRATO DO DIA:
+   - Toda a copy (headline, gancho e descrição) DEVE focar no prato do dia: "__NOME_PRATO__" (__DESCRICAO_PRATO__).
 
 DIRETRIZES DE MARCA DO CLIENTE:
 __SKILL__
@@ -101,28 +108,20 @@ __PADRAO__
 
 DIRETRIZES DE COPY E HEADLINE:
 1. HEADLINE DA IMAGEM (chamada principal sobre a foto):
-   - Deve ter de 2 a 6 palavras, em português, sem pontuação final exagerada e sem emojis.
-   - FUJA DE CLICHÊS GENÉRICOS: NÃO use frases vazias e repetitivas como "Sabor de casa", "Comida de verdade" ou trocadilhos previsíveis.
-   - Foque no APETITE REAL do prato do dia: cite o prato ou a textura/sabor marcante dele.
-     Exemplos excelentes:
-     * Para picadinho: "Picadinho farto com batatas no capricho" ou "Aquele picadinho caseiro suculento"
-     * Para bife acebolado: "Bife acebolado suculento no ponto" ou "Aquele bife acebolado de dar água na boca"
-     * Para feijoada: "Feijoada farta e quentinha" ou "A feijoada mais pedida da região"
-     * Para prato do dia/executivo: "Almoço farto feito na hora" ou "A pausa perfeita pro seu dia"
-
+   - De 2 a 6 palavras, em português, sem pontuação exagerada e sem emojis.
+   - Foque no apetite real de __NOME_PRATO__ (ex: para frango ao molho: "Frango ao molho no capricho" ou "Aquele frango ao molho caseiro").
+   - NUNCA use clichês vazios ("Sabor de casa", "Comida de verdade").
 2. SELO/TAG DO PRATO (opcional):
-   - NUNCA use slogans clichês repetitivos (PROIBIDO: "Comida de Verdade", "Sabor de Casa" ou selos genéricos de carimbo).
-   - Se o prato tiver um nome específico ou categoria útil, use-o (ex: "Prato Executivo", "Buffet Livre", "Feito na Hora"), OU retorne null se a headline já disser tudo com clareza.
-
+   - Use uma tag funcional como "Almoço do Dia", "Feito na Hora", ou o nome da receita. NUNCA use "Executivo".
 3. LEGENDA DO POST:
-   - Siga a estrutura de 3 parágrafos curtos + 4 hashtags.
-   - O primeiro parágrafo (gancho) deve abrir o apetite de imediato, em harmonia com o dia da semana atual (__DIA_SEMANA__).
-   - Mantenha tom caloroso, honesto e acolhedor.
+   - Estrutura de 3 parágrafos curtos + 4 hashtags locais.
+   - Primeiro parágrafo: gancho apetitoso compatível com __DIA_SEMANA__.
+   - Segundo parágrafo: destaque para o sabor e os acompanhamentos do prato (__NOME_PRATO__).
 
 Responda APENAS com um objeto JSON, sem markdown ou texto antes/depois:
 {
-  "headline_imagem": "Chamada apetitosa e específica (2 a 6 palavras)",
-  "selo_produto": "Nome curto/categoria funcional ou null se desnecessário",
+  "headline_imagem": "Chamada apetitosa e específica para __NOME_PRATO__ (2 a 6 palavras)",
+  "selo_produto": "Nome curto/categoria funcional (ex: Almoço do Dia) ou null",
   "legenda": "Legenda completa formatada conforme o padrão"
 }
 """
@@ -138,19 +137,25 @@ def gerar_legenda_foto(foto: dict, cliente: dict) -> dict:
     ganchos_candidatos = GANCHOS_POR_DIA.get(dia_idx, []) + GANCHOS_GERAIS
     gancho_sugerido = random.choice(ganchos_candidatos)
 
+    nome_prato = foto.get("nome") or (foto["arquivo"].stem if foto.get("arquivo") else "Prato do Dia")
+    desc_prato = foto.get("descricao") or ""
+
     system = (
         SYSTEM_PROMPT.replace("__SKILL__", cliente["skill"])
         .replace("__PADRAO__", cliente["legenda_padrao"] or PADRAO_AUSENTE)
         .replace("__DIA_SEMANA__", nome_dia)
         .replace("__DATA__", data_fmt)
+        .replace("__NOME_PRATO__", nome_prato)
+        .replace("__DESCRICAO_PRATO__", desc_prato)
     )
     prompt = (
         f"Dia da semana atual: {nome_dia} ({data_fmt})\n"
-        f"Dados do prato do dia selecionado:\n{_descrever(foto)}\n\n"
+        f"Prato do dia oficial: {nome_prato}\n"
+        f"Dados do prato:\n{_descrever(foto)}\n\n"
         f"Sugestão de ângulo para o gancho: {gancho_sugerido}\n"
-        f"Lembre-se: foque no prato real e no apetite, sem clichês repetitivos de Sabor de Casa/Comida de Verdade."
+        f"Lembre-se: foque no apetite real de '{nome_prato}', NUNCA use a palavra 'executivo' e respeite o dia da semana ({nome_dia})."
     )
-    resposta = chamar_ia(system=system, prompt=prompt, max_tokens=900, temperature=0.8, json_mode=True)
+    resposta = chamar_ia(system=system, prompt=prompt, max_tokens=900, temperature=0.7, json_mode=True)
     return extrair_json(resposta)
 
 

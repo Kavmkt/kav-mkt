@@ -8,7 +8,10 @@ de altíssimo nível em formato 4:5 (1080x1440), aplicando rigorosa hierarquia v
 - Selo/Badge do prato em cor de destaque (âmbar/dourado #EEB730 ou vermelho #A31D1D)
 - Logotipo oficial da N&N diagramado com respiro e fidelidade total
 - A comida real como grande protagonista apetitosa da cena.
+- PROIBIDO o termo "executivo" (preço popular acessível de R$ 26 a R$ 35).
 """
+from __future__ import annotations
+
 import base64
 from pathlib import Path
 from typing import Optional
@@ -27,12 +30,15 @@ HIERARQUIA TIPOGRÁFICA & CONTRASTE (REGRA INEGOCIÁVEL):
 O cliente N&N exige contraste nítido e hierarquia visual bem demarcada:
 1. **DESTAQUE PRINCIPAL**: A headline "__HEADLINE__" deve ser desenhada com grande peso visual, letras expressivas e impactantes (estilo fonte serifada clássica/editorial marcante em cor clara de alto contraste). Ela deve saltar aos olhos imediatamente.
 2. **TEXTO DE APOIO**: A frase secundária "__APOIO__" deve ter tamanho menor e visual mais discreto e limpo, sem disputar atenção com a headline principal.
-3. **SELO DE OFERTA/AUTORIDADE**: O selo "__SELO__" fica em formato de badge ou etiqueta elegante nas cores de destaque da marca (#EEB730 Dourado ou #A31D1D Vermelho).
+3. **SELO DE OFERTA/AUTORIDADE**: O selo "__SELO__" fica em formato de badge ou etiqueta elegante nas cores de destaque da marca (#EEB730 Dourado ou #A31D1D Vermelho). NUNCA use a palavra "executivo".
 4. **LOCALIZAÇÃO**: Indicação limpa e legível de endereço: "__CTA_LOCAL__".
 5. **MARCA OFICIAL**: O logotipo oficial da empresa (fornecido na imagem de referência de logo) deve ser diagramado no topo/cabeçalho, integrado com harmonia e respirando confortavelmente (mínimo de 5% de distância de qualquer borda).
 
-CENA E FOTO REAL:
-- A foto real enviada como referência é a BASE da peça: a comida/buffet deve permanecer suculenta, apetitosa e autêntica.
+REGRA DE TERMOS:
+- PROIBIDO USAR A PALAVRA "EXECUTIVO": NUNCA use a palavra "executivo" ou "almoço executivo" na arte. O preço médio do restaurante é de R$ 26 a R$ 35. Use "ALMOÇO DO DIA", "COMIDA CASEIRA" ou "PRATO FEITO".
+
+CENA E PRATO:
+- O prato real ou do dia enviado como referência é a BASE da peça: a comida deve permanecer farta, suculenta, apetitosa e autêntica.
 - O tratamento gráfico (faixas, blocos de texto, selo) envolve a foto sem nunca tampar o prato principal.
 
 Retorne APENAS um único parágrafo denso em inglês com o brief de direção de arte detalhado, pronto para o modelo de geração de imagem.
@@ -43,8 +49,11 @@ def montar_brief_layout(estrategia: dict, foto: dict, cliente: dict) -> str:
     hierarquia = estrategia.get("hierarquia_visual", {})
     headline = hierarquia.get("headline_destaque", "SABOR DE CASA")
     apoio = hierarquia.get("headline_apoio", "Comida caseira no capricho")
-    selo = hierarquia.get("selo", "Buffet Executivo")
+    selo = hierarquia.get("selo", "Almoço do Dia")
+    selo = selo.replace("Executivo", "do Dia").replace("executivo", "do Dia")
     cta_local = hierarquia.get("cta_visual", "Alameda das Garças, 45 — Santana de Parnaíba")
+
+    nome_prato = foto.get("nome") or (foto["arquivo"].stem if foto.get("arquivo") else "Prato do Dia")
 
     system = (
         SYSTEM_PROMPT.replace("__SKILL__", cliente.get("skill", ""))
@@ -55,15 +64,16 @@ def montar_brief_layout(estrategia: dict, foto: dict, cliente: dict) -> str:
     )
 
     partes = [
-        f"Prato/Foto Herói: {foto.get('nome') or foto['arquivo'].name}",
+        f"Prato/Foto Herói: {nome_prato}",
         f"Ângulo Estratégico: {estrategia.get('angulo_estrategico', 'Almoço Presencial')}",
         f"Instruções de Performance: {estrategia.get('diretriz_designer', '')}",
         f'Renderizar Headline em destaque: "{headline}"',
         f'Renderizar Apoio secundário: "{apoio}"',
-        f'Renderizar Selo: "{selo}"',
+        f'Renderizar Selo (sem palavra executivo): "{selo}"',
         f'Renderizar Endereço: "{cta_local}"',
         "Garantir hierarquia perfeita entre o texto principal grande e o apoio menor.",
         "Reproduzir fielmente o logotipo oficial fornecido na imagem de referência no topo/cabeçalho.",
+        "PROIBIDO renderizar a palavra executivo.",
     ]
 
     return chamar_ia(system=system, prompt="\n".join(partes), max_tokens=700, temperature=0.7)
@@ -71,12 +81,16 @@ def montar_brief_layout(estrategia: dict, foto: dict, cliente: dict) -> str:
 
 def gerar_arte_campanha(brief: str, foto: dict, cliente: dict, estrategia: dict) -> dict:
     """Renderiza a arte final de campanha com foto real e logo oficial do cliente."""
-    referencias = [(
-        foto["arquivo"].read_bytes(),
-        "the REAL food photograph to be used as the base scene. Keep the dish and food completely authentic, delicious and recognizable; apply the high-contrast graphic design and typography layout over it.",
-    )]
+    referencias = []
 
-    # Inclui o logotipo oficial do cliente se disponível
+    # 1. Se tiver foto real, inclui
+    if foto.get("arquivo") and not foto.get("foto_virtual"):
+        referencias.append((
+            foto["arquivo"].read_bytes(),
+            "the REAL food photograph to be used as the base scene. Keep the dish and food completely authentic, delicious and recognizable; apply the high-contrast graphic design and typography layout over it.",
+        ))
+
+    # 2. Logotipo oficial
     logo_arquivo = None
     if cliente.get("logo_referencias"):
         logo_arquivo = cliente["logo_referencias"][0]
@@ -92,13 +106,16 @@ def gerar_arte_campanha(brief: str, foto: dict, cliente: dict, estrategia: dict)
             "the official client BRAND LOGO. Faithfully reproduce this exact logo into the header/top branding area with clean contrast and safe margins.",
         ))
 
-    imagens = [bytes_data for bytes_data, _ in referencias]
-    prompt_completo = (
-        f"Reference 1 is the authentic dish photo. Reference 2 is the official brand logo.\n\n"
-        f"High-Performance Ad Creative for Instagram/Meta Ads (Vertical 4:5):\n{brief}"
-    )
+    if referencias:
+        imagens = [bytes_data for bytes_data, _ in referencias]
+        prompt_completo = (
+            "\n\n".join(f"Reference image {i + 1} is {desc}" for i, desc in enumerate([d for _, d in referencias]))
+            + f"\n\nHigh-Performance Ad Creative for Instagram/Meta Ads (Vertical 4:5):\n{brief}"
+        )
+        bruta = openai_client.gerar_imagem_com_referencias(prompt_completo, imagens)
+    else:
+        bruta = openai_client.gerar_imagem(brief)
 
-    bruta = openai_client.gerar_imagem_com_referencias(prompt_completo, imagens)
     final_bytes = image_overlay.recortar_formato_final(base64.b64decode(bruta["imagem_b64"]))
 
     return {
