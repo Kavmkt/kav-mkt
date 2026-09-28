@@ -74,6 +74,12 @@ def _carregar_logos(pasta: Path) -> tuple[dict, Path | None, Path | None]:
 
 
 def _carregar_referencias(pasta: Path) -> list:
+    if pasta.parent.name == "kav":
+        try:
+            from utils.gerador_referencias import garantir_referencias_kav
+            garantir_referencias_kav(pasta)
+        except Exception:
+            pass
     if not pasta.exists():
         return []
     metadados = _ler_json(pasta / "referencias.json", {})
