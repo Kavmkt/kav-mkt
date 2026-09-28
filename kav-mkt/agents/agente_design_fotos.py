@@ -8,10 +8,11 @@ DIRETRIZ CENTRAL DE ARTE — OPÇÃO B (RECORTE & AMBIENTAÇÃO DA FOTO REAL):
    e insere-o em um novo cenário esteticamente impecável (mesa de madeira nobre rústica com iluminação natural
    quente de almoço e sombra suave de contato sob o prato, fundo desfocado de restaurante acolhedor).
 4. Aplica a diagramação editorial da marca: headline de impacto em Playfair Display, selo minimalista
-   em Montserrat ('Almoço do Dia', 'Comida Caseira' - PROIBIDO 'executivo'), e o logotipo oficial da
+   em Montserrat ('Qualidade Garantida' - PROIBIDO 'Almoço do Dia' e 'executivo'), e o logotipo oficial da
    N&N Restaurante no cabeçalho com alto contraste e respiro.
 5. Preservação de textura fotográfica: 100% das texturas reais da comida de câmera (fibras reais, temperos,
    molho natural sem brilho de silicone) são mantidas, eliminando qualquer cara de IA.
+6. Rodapé 100% limpo: Sem frases pequenas embaixo e sem ícones com texto pequeno.
 """
 from __future__ import annotations
 
@@ -50,14 +51,19 @@ __CONTEXTO_LAYOUT__
   integrado com nitidez no cabeçalho ou área de branding indicada (__AREA_LOGO__), com respiro de borda.
 
 REGRAS RÍGIDAS DE DIAGRAMAÇÃO E ANTI-AMADORISMO:
-1. PROIBIDO O TERMO "EXECUTIVO": NUNCA escreva ou renderize a palavra "EXECUTIVO" ou "ALMOÇO EXECUTIVO"
-   na arte (nem na headline, nem no selo, nem em badges). O restaurante trabalha com preços populares
-   de R$ 26 a R$ 35. Use "ALMOÇO DO DIA", "COMIDA CASEIRA", "PRATO FEITO" ou o próprio nome do prato.
-2. PROIBIDO CONTORNO BRANCO / GLOW: NUNCA crie letras com sombra branca difusa, contorno branco grosso
-   (stroke) ou glow esfumado atrás do texto. Tipografia sólida, nítida e sofisticada.
-3. PROIBIDO SELO EM ELIPSE / CARIMBO REDONDO COM TALHERES: NUNCA desenhe selos circulares ou carimbos
-   com garfo e faca. Use etiquetas retangulares limpas ou integre o texto de forma minimalista.
-4. MARGENS DE SEGURANÇA:
+1. PROIBIDO "ALMOÇO DO DIA" OU REFERÊNCIAS A HORÁRIO DE ALMOÇO NO LAYOUT:
+   - Como os posts serão publicados também durante a tarde e noite para alcançar mais seguidores,
+     NUNCA escreva ou renderize "ALMOÇO DO DIA", "ALMOÇO EXECUTIVO" ou a palavra "ALMOÇO" em destaque no layout.
+   - Use chamadas atemporais e focadas no sabor e tradição do prato (ex: "Feito no Capricho", "Sabor Inconfundível", "Receita Tradicional", "Tradição em Cada Sabor" ou o próprio nome do prato).
+2. RODAPÉ 100% LIMPO (PROIBIDO FRASES PEQUENAS E ÍCONES EM BAIXO):
+   - NUNCA adicione frases pequenas no rodapé da arte (como "Boa comida faz bons encontros", slogans soltos ou legendas miúdas).
+   - NUNCA adicione barras de ícones com textos pequenos (ex: "Ingredientes de qualidade | Mais que comida | Tradição").
+   - A parte inferior deve ser totalmente desobstruída e limpa, deixando a mesa rústica e o prato brilharem com respiro.
+3. SELO "QUALIDADE GARANTIDA" (SE HOUVER SELO):
+   - Se for usar algum elemento de selo/etiqueta na arte, use EXCLUSIVAMENTE a frase menor "Qualidade Garantida" (etiqueta retangular minimalista, sóbria e discreta).
+   - NUNCA desenhe selos redondos, elipses com garfo e faca ou carimbos clichês.
+4. PROIBIDO CONTORNO BRANCO / GLOW: NUNCA crie letras com sombra branca difusa ou contorno grosso. Tipografia sólida em Playfair Display.
+5. MARGENS DE SEGURANÇA:
    - Deixe pelo menos __MARGEM__% de respiro livre no topo e no rodapé.
    - Mantenha texto e logo a pelo menos __MARGEM_LATERAL__% de distância das bordas.
 
@@ -80,11 +86,10 @@ def gerar_brief_foto(copy: dict, foto: dict, cliente: dict, referencia: Optional
     partes = [
         f"Prato real do cliente na foto de referência: {nome_prato}",
         f"Detalhes da receita: {desc_prato}" if desc_prato else "",
-        f'Headline da arte: "{copy.get("headline_imagem")}"',
+        f'Headline da arte (atemporal, sem a palavra almoço): "{copy.get("headline_imagem")}"',
     ]
-    if copy.get("selo_produto"):
-        selo_limpo = copy["selo_produto"].replace("Executivo", "do Dia").replace("executivo", "do Dia")
-        partes.append(f'Selo do prato: "{selo_limpo}"')
+    selo_texto = "Qualidade Garantida" if copy.get("selo_produto") else "nenhum"
+    partes.append(f'Selo do prato (se renderizar, use estritamente formato retangular minimalista com): "{selo_texto}"')
 
     partes.append(
         f"DIRETRIZ DE EXECUÇÃO (OPÇÃO B - COMPOSIÇÃO FOTOGRÁFICA DO PRATO REAL): "
@@ -92,7 +97,9 @@ def gerar_brief_foto(copy: dict, foto: dict, cliente: dict, referencia: Optional
         "Treat it as an authentic photographic cutout: preserve the exact real camera textures of the meat, sauce, and garnish without waxy/plastic AI smoothing. "
         "Your task is to generate the surrounding professional environment: stage the cutout dish onto a beautiful rustic wooden dining table with soft realistic contact shadows and natural lunch light. "
         "Behind and above, render a warm, softly blurred restaurant interior. In the header, display the official N&N logo and the headline in elegant Playfair Display with high contrast. "
-        "NEVER use the word executivo and NEVER generate synthetic CGI food."
+        "STRICT PROHIBITIONS: NEVER write 'Almoço do Dia' or lunch-bound phrasing (the post will run in the afternoon/evening). "
+        "NEVER add small text phrases at the bottom (no footer slogans like 'Boa comida faz bons encontros') and NO icon rows with small text at the bottom. Keep the lower third clean and breathing. "
+        "If a badge is added, it must say strictly 'Qualidade Garantida'."
     )
 
     return chamar_ia(system=system, prompt="\n".join(p for p in partes if p), max_tokens=750, temperature=0.7)
@@ -175,7 +182,8 @@ def _prompt_com_referencias(brief: str, descricoes: list) -> str:
         "natural herbs, and matte homemade sauce without ANY waxy, plastic, or 3D CGI gloss.\n"
         "- Cutout/isolate the authentic dish and stage it seamlessly onto a rustic wooden dining table with realistic soft contact shadows.\n"
         "- In the upper portion, create a softly blurred, warm ambient restaurant dining background.\n"
-        "- Apply editorial graphic typography: prominent Playfair Display headline, minimal badge, and the authentic brand logo from Reference 3 in the header with clear breathing room.",
+        "- Graphic design rules: Display prominent Playfair Display headline at the top/center (focus on dish flavor and craftsmanship; NEVER write 'Almoço do Dia' or lunch-restricted phrasing), optional minimal rectangular badge saying strictly 'Qualidade Garantida', and the authentic brand logo in the header.",
+        "- STRICT CLEAN FOOTER MANDATE: The lower portion and bottom of the image must remain COMPLETELY CLEAN. DO NOT add small footer phrases (no 'Boa comida faz bons encontros'), and DO NOT add icon rows with tiny text. Only the authentic dish, rustic wood, and natural shadows.",
     ]
     for i, desc in enumerate(descricoes):
         partes.append(f"Reference image {i + 1}: {desc}")

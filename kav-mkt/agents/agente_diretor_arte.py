@@ -7,10 +7,11 @@ designer júnior (Joaquim) para posts de feed (orgânico) e peças de anúncio (
 Avalia rigorosamente:
 1. Preservação da comida real (sem cara de IA, sem texturas plásticas, waxy ou 3D CGI);
 2. Coerência gastronômica com o prato esperado do dia (e regra da feijoada);
-3. Proibição absoluta do termo "executivo";
-4. Presença e integridade do logo oficial da marca (sem sumir, deformar ou ficar ilegível);
-5. Tipografia, legibilidade e ausência de amadorismos (sem contorno/sombra branca borrada);
-6. Ausência de elementos gráficos proibidos (sem elipses/carimbos repetitivos com talheres).
+3. Proibição absoluta dos termos "Almoço do Dia" e "Executivo" no layout;
+4. Rodapé 100% limpo: sem frases pequenas soltas embaixo e sem ícones com texto minúsculo;
+5. Selo discreto com "Qualidade Garantida" (se houver selo);
+6. Presença e integridade do logo oficial da marca (sem sumir, deformar ou ficar ilegível);
+7. Tipografia, legibilidade e ausência de amadorismos (sem contorno/sombra branca borrada).
 
 Se o layout tiver nota baixa ou falhas críticas, o Diretor de Arte aciona UMA rodada de
 refino com gpt-image-2.5-sunburst enviando o rascunho atual + foto real + guia oficial de logo.
@@ -37,8 +38,10 @@ CHECKLIST CRÍTICO DE AVALIAÇÃO:
    - A chamada e a comida devem ser rigorosamente condizentes com o prato informado.
    - REPROVE IMEDIATAMENTE se a peça for sobre um prato (ex: Frango ao Molho) e a imagem estiver mostrando outro prato incompatível.
    - REGRA DA FEIJOADA: Feijoada é servida EXCLUSIVAMENTE às quartas-feiras e aos sábados. Se não for dia de feijoada e a imagem mostrar feijoada, REPROVE.
-3. PROIBIÇÃO ABSOLUTA DA PALAVRA "EXECUTIVO":
-   - REPROVE (pontuação <= 5, precisa_refino=true) se a imagem contiver a palavra "EXECUTIVO" ou "ALMOÇO EXECUTIVO" escrita na headline, no selo ou em qualquer lugar. Os pratos custam entre R$ 26 e R$ 35 e o termo executivo passa impressão errada de restaurante caro. Deve ser trocado por "ALMOÇO DO DIA" ou "COMIDA CASEIRA".
+3. PROIBIÇÃO DE "ALMOÇO DO DIA", "EXECUTIVO" E RODAPÉ POLUÍDO:
+   - REPROVE (pontuação <= 5, precisa_refino=true) se a imagem contiver a palavra "EXECUTIVO", "ALMOÇO DO DIA" ou termos presos estritamente ao almoço na headline ou selo. O restaurante publica posts à tarde/noite para alcançar mais pessoas.
+   - REPROVE IMEDIATAMENTE se houver frases pequenas no rodapé (ex: "Boa comida faz bons encontros") ou barras de ícones com texto minúsculo na parte inferior. O rodapé deve ser 100% limpo.
+   - Se houver selo, deve conter a frase menor "Qualidade Garantida".
 4. LOGO OFICIAL DA MARCA:
    - O logo oficial do cliente (N&N Restaurante) deve estar presente, nítido e legível no cabeçalho/topo.
    - REPROVE se o logo estiver ausente, distorcido ou trocado por ícone genérico.
@@ -56,7 +59,7 @@ Responda EXCLUSIVAMENTE com um objeto JSON, sem markdown ou texto antes/depois:
   "pontuacao": 8,
   "diagnostico": "Resumo crítico e direto da avaliação em 1 ou 2 frases em português",
   "precisa_refino": false,
-  "instrucoes_de_correcao": "Instruções cirúrgicas em inglês para a IA de edição caso precisa_refino seja true. Especifique com clareza: (1) O que PRESERVAR e (2) O que CORRIGIR (ex: restaurar textura real da comida sem aspecto plástico 3D, remover a palavra EXECUTIVO e substituir por ALMOÇO DO DIA, reinserir logo oficial, etc.). Se aprovado, deixe string vazia."
+  "instrucoes_de_correcao": "Instruções cirúrgicas em inglês para a IA de edição caso precisa_refino seja true. Especifique com clareza: (1) O que PRESERVAR e (2) O que CORRIGIR (ex: remover frases pequenas do rodapé, remover 'Almoço do Dia' e usar 'Qualidade Garantida', etc.). Se aprovado, deixe string vazia."
 }
 """
 
@@ -176,7 +179,9 @@ def revisar_e_aprovar_layout(
             "STRICT RULES:\n"
             "- Restore and keep the authentic real food textures from the real camera photo, eliminating any artificial 3D CGI gloss, waxy skin, or silicone sheen.\n"
             "- Ensure the official client logo is clearly and cleanly reproduced from the logo guide template in the header.\n"
-            "- Never use the word 'EXECUTIVO' or 'ALMOÇO EXECUTIVO'; replace with 'ALMOÇO DO DIA' or 'COMIDA CASEIRA'.\n"
+            "- NEVER use 'ALMOÇO DO DIA', 'EXECUTIVO' or lunch-restricted phrasing; use timeless appetizing calls or 'Qualidade Garantida'.\n"
+            "- REMOVE any small footer phrases, taglines, or tiny icon rows from the bottom of the image. Keep the lower area completely clean and breathing.\n"
+            "- If a badge/seal is present, it must say strictly 'Qualidade Garantida'.\n"
             "- NEVER add white glow, blurry white outlines, or diffuse halos around text letters.\n"
             "- Do NOT add circular stamp badges, fork/knife ellipses, or amateur clutter.\n"
             "- Deliver a polished, crisp, photographic piece in 1080x1440 portrait format."
