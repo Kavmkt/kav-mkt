@@ -50,16 +50,16 @@
       <button id="btn-refresh" class="btn btn-secondary" title="Recarregar estado atual dos agentes">
         🔄
       </button>
-      <button id="btn-demo" class="btn btn-secondary" title="Simular animação rápida">
-        ⚡ Simular
+      <button id="btn-demo" class="btn btn-secondary" title="Simular animação de corrida e trabalho">
+        ⚡ Simular Corrida
       </button>
     </div>
   </header>
 
-  <!-- Main Isometric Office Canvas / Container -->
+  <!-- Main Office Stage -->
   <main class="office-container">
     <div class="isometric-world">
-      <!-- Office Wall Decor & Whiteboard -->
+      <!-- Whiteboard / Metas da Agência no Topo -->
       <div class="wall-board">
         <div class="board-header">🎯 METAS & DIRETRIZES KAV</div>
         <div class="board-content">
@@ -69,278 +69,326 @@
           </div>
           <div class="board-metric">
             <span class="label">Conversas WhatsApp</span>
-            <span class="val success">53 leads</span>
+            <span class="val highlight">53 iniciadas</span>
           </div>
           <div class="board-metric">
-            <span class="label">Cadência Feed</span>
-            <span class="val alert">Defasada</span>
+            <span class="label">Fotos Reais do Acervo</span>
+            <span class="val highlight">33 fotos ativas</span>
+          </div>
+          <div class="board-metric">
+            <span class="label">Status da Equipe</span>
+            <span class="val highlight" id="team-work-status">☕ Modo Relax no Café</span>
           </div>
         </div>
       </div>
 
-      <!-- Water Cooler Area (Relax) -->
-      <div class="break-zone">
-        <div class="water-cooler">
-          <div class="bottle"></div>
-          <div class="base"></div>
-        </div>
-        <div class="coffee-machine">☕</div>
-        <div class="snack-table"></div>
-      </div>
+      <!-- Piso do Escritório com Áreas e Estações -->
+      <div class="office-floor" id="office-floor">
 
-      <!-- Workstations Grid (Isometric Plan) -->
-      <div class="workstations-cluster">
-
-        <!-- 1. Estação Supervisor (Liderança) -->
-        <div class="workstation station-supervisor" data-agent="supervisor">
-          <div class="speech-bubble" id="bubble-supervisor">
-            <span class="agent-tag">Supervisor</span>
-            <p class="bubble-text">Monitorando alinhamento: Meta Ads ativo e feed sem posts.</p>
-          </div>
-          <div class="desk executive-desk">
-            <div class="desk-surface">
-              <div class="laptop dual-screen"></div>
-              <div class="coffee-mug"></div>
-              <div class="kpi-sheet"></div>
+        <!-- ============================================== -->
+        <!-- 1. ZONA DO CAFÉ & CONVIVÊNCIA (KAV CAFÉ)       -->
+        <!-- ============================================== -->
+        <div class="zone-coffee" id="zone-coffee">
+          <div class="coffee-neon">☕ KAV CAFÉ</div>
+          
+          <!-- Balcão principal do café -->
+          <div class="coffee-counter">
+            <div class="coffee-machine">
+              <span class="steam-vap">♨️</span>
+              <div class="espresso-nozzle"></div>
             </div>
-            <div class="avatar-entity" id="avatar-supervisor">
-              <div class="avatar-sprite avatar-augusto"></div>
-              <div class="name-badge">
-                <span class="badge-dot status-alerta"></span>
-                <span>Augusto · Supervisor</span>
+            <div class="coffee-cups-rack">
+              <span class="mini-mug">☕</span>
+              <span class="mini-mug">☕</span>
+            </div>
+            <div class="water-cooler" title="Bebedouro de água">
+              <div class="water-bottle">💧</div>
+            </div>
+          </div>
+
+          <!-- Mesa Bistrô redonda com banquetas -->
+          <div class="bistro-area">
+            <div class="bistro-table">
+              <div class="bistro-plate">🥐</div>
+            </div>
+            <div class="bistro-stool stool-left"></div>
+            <div class="bistro-stool stool-right"></div>
+          </div>
+
+          <!-- Sofá Lounge & Plantas -->
+          <div class="lounge-sofa" title="Espaço de descompressão">
+            <div class="cushion"></div>
+          </div>
+          <div class="office-plant plant-left" title="Monstera / Costela-de-Adão">🪴</div>
+          <div class="office-plant plant-right">🌿</div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 2. ZONA DE ESTAÇÕES DE TRABALHO (DESKS)        -->
+        <!-- ============================================== -->
+        <div class="zone-workstations">
+
+          <!-- Estação 1: Augusto (Supervisor) -->
+          <div class="workstation-desk desk-supervisor" id="desk-supervisor" data-agent="supervisor">
+            <div class="desk-furniture">
+              <div class="office-chair"></div>
+              <div class="desk-top">
+                <div class="computer-screen screen-supervisor"></div>
+                <div class="keyboard"></div>
+                <div class="mouse"></div>
+                <div class="station-plate">👔 Augusto · Supervisor</div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- 2. Estação Analista de Métricas / Performance -->
-        <div class="workstation station-metricas" data-agent="metricas">
-          <div class="speech-bubble" id="bubble-metricas">
-            <span class="agent-tag">Métricas</span>
-            <p class="bubble-text">Graph API: 594 cliques e 53 mensagens no WhatsApp.</p>
-          </div>
-          <div class="desk tech-desk">
-            <div class="desk-surface">
-              <div class="terminal-monitor">
-                <div class="screen-glitch"></div>
-              </div>
-              <div class="chart-tablet"></div>
-            </div>
-            <div class="avatar-entity" id="avatar-metricas">
-              <div class="avatar-sprite avatar-vicente"></div>
-              <div class="name-badge">
-                <span class="badge-dot status-trabalhando"></span>
-                <span>Vicente · Métricas</span>
+          <!-- Estação 2: Otávio (Diretor de Arte Sênior) -->
+          <div class="workstation-desk desk-diretor" id="desk-diretor" data-agent="diretor">
+            <div class="desk-furniture">
+              <div class="office-chair"></div>
+              <div class="desk-top">
+                <div class="computer-screen screen-diretor"></div>
+                <div class="keyboard"></div>
+                <div class="mouse"></div>
+                <div class="station-plate">🧐 Otávio · Dir. Arte</div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- 3. Estação Redatora / Copywriter -->
-        <div class="workstation station-copywriter" data-agent="copywriter">
-          <div class="speech-bubble" id="bubble-copywriter">
-            <span class="agent-tag">Copywriter</span>
-            <p class="bubble-text">Criando headline e legenda com gancho de almoço e fome.</p>
-          </div>
-          <div class="desk creative-desk">
-            <div class="desk-surface">
-              <div class="typewriter-screen"></div>
-              <div class="notebook-notes"></div>
-              <div class="pen-holder"></div>
-            </div>
-            <div class="avatar-entity" id="avatar-copywriter">
-              <div class="avatar-sprite avatar-clarice"></div>
-              <div class="name-badge">
-                <span class="badge-dot status-online"></span>
-                <span>Clarice · Copywriter</span>
+          <!-- Estação 3: Vicente (Métricas & Tráfego) -->
+          <div class="workstation-desk desk-metricas" id="desk-metricas" data-agent="metricas">
+            <div class="desk-furniture">
+              <div class="office-chair"></div>
+              <div class="desk-top">
+                <div class="dual-screens">
+                  <div class="computer-screen mini"></div>
+                  <div class="computer-screen"></div>
+                </div>
+                <div class="keyboard"></div>
+                <div class="mouse"></div>
+                <div class="station-plate">📊 Vicente · Métricas</div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- 4. Estação Designer -->
-        <div class="workstation station-designer" data-agent="designer">
-          <div class="speech-bubble" id="bubble-designer">
-            <span class="agent-tag">Designer</span>
-            <p class="bubble-text">Diagramando layouts 1080x1440 sobre as fotos reais.</p>
-          </div>
-          <div class="desk design-desk">
-            <div class="desk-surface">
-              <div class="drawing-tablet"></div>
-              <div class="pantone-swatch"></div>
-              <div class="post-preview-holo"></div>
-            </div>
-            <div class="avatar-entity" id="avatar-designer">
-              <div class="avatar-sprite avatar-lucas"></div>
-              <div class="name-badge">
-                <span class="badge-dot status-online"></span>
-                <span>Joaquim · Designer</span>
+          <!-- Estação 4: Clarice (Copywriter) -->
+          <div class="workstation-desk desk-copywriter" id="desk-copywriter" data-agent="copywriter">
+            <div class="desk-furniture">
+              <div class="office-chair"></div>
+              <div class="desk-top">
+                <div class="computer-screen screen-copywriter"></div>
+                <div class="keyboard"></div>
+                <div class="mouse"></div>
+                <div class="station-plate">✍️ Clarice · Redatora</div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- 5. Estação Diretor de Arte Sênior -->
-        <div class="workstation station-diretor" data-agent="diretor">
-          <div class="speech-bubble" id="bubble-diretor">
-            <span class="agent-tag">Diretor de Arte</span>
-            <p class="bubble-text">Inspecionando rigor estético, tipografia e logo oficial da N&N.</p>
-          </div>
-          <div class="desk design-desk">
-            <div class="desk-surface">
-              <div class="drawing-tablet"></div>
-              <div class="pantone-swatch"></div>
-              <div class="post-preview-holo"></div>
-            </div>
-            <div class="avatar-entity" id="avatar-diretor">
-              <div class="avatar-sprite avatar-lucas"></div>
-              <div class="name-badge">
-                <span class="badge-dot status-online"></span>
-                <span>Otávio · Diretor de Arte</span>
+          <!-- Estação 5: Benedito (Curador de Fotos & Cardápio) -->
+          <div class="workstation-desk desk-pesquisador" id="desk-pesquisador" data-agent="pesquisador">
+            <div class="desk-furniture">
+              <div class="office-chair"></div>
+              <div class="desk-top">
+                <div class="computer-screen screen-pesquisador"></div>
+                <div class="keyboard"></div>
+                <div class="mouse"></div>
+                <div class="station-plate">📸 Benedito · Curador</div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- 6. Estação Curador de Catálogo & Acervo -->
-        <div class="workstation station-pesquisador" data-agent="pesquisador">
-          <div class="speech-bubble" id="bubble-pesquisador">
-            <span class="agent-tag">Curador</span>
-            <p class="bubble-text">33 fotos no acervo. Rotação ativa sem repetições em 45 dias.</p>
-          </div>
-          <div class="desk curator-desk">
-            <div class="desk-surface">
-              <div class="photo-lightbox"></div>
-              <div class="catalog-binder"></div>
-            </div>
-            <div class="avatar-entity" id="avatar-pesquisador">
-              <div class="avatar-sprite avatar-enzo"></div>
-              <div class="name-badge">
-                <span class="badge-dot status-online"></span>
-                <span>Benedito · Curador</span>
+          <!-- Estação 6: Joaquim (Designer & Arte Final) -->
+          <div class="workstation-desk desk-designer" id="desk-designer" data-agent="designer">
+            <div class="desk-furniture">
+              <div class="office-chair"></div>
+              <div class="desk-top">
+                <div class="computer-screen screen-designer"></div>
+                <div class="drawing-pad"></div>
+                <div class="station-plate">🎨 Joaquim · Designer</div>
               </div>
             </div>
           </div>
-        </div>
 
-      </div>
-    </div>
+        </div> <!-- /zone-workstations -->
+
+        <!-- ============================================== -->
+        <!-- 3. PERSONAGENS VIVOS QUE CIRCULAM E CORREM     -->
+        <!-- ============================================== -->
+        <div class="characters-layer" id="characters-layer">
+
+          <!-- Avatar Augusto (Supervisor) -->
+          <div class="avatar-actor" id="actor-supervisor" data-agent="supervisor">
+            <div class="emoji-bubble" id="bubble-supervisor">☕</div>
+            <div class="run-dust">💨</div>
+            <div class="avatar-sprite avatar-augusto"></div>
+            <div class="name-badge">
+              <span class="badge-dot status-online"></span>
+              <span>Augusto</span>
+            </div>
+          </div>
+
+          <!-- Avatar Otávio (Diretor de Arte) -->
+          <div class="avatar-actor" id="actor-diretor" data-agent="diretor">
+            <div class="emoji-bubble" id="bubble-diretor">💬</div>
+            <div class="run-dust">💨</div>
+            <div class="avatar-sprite avatar-otavio"></div>
+            <div class="name-badge">
+              <span class="badge-dot status-online"></span>
+              <span>Otávio</span>
+            </div>
+          </div>
+
+          <!-- Avatar Vicente (Métricas) -->
+          <div class="avatar-actor" id="actor-metricas" data-agent="metricas">
+            <div class="emoji-bubble" id="bubble-metricas">📱</div>
+            <div class="run-dust">💨</div>
+            <div class="avatar-sprite avatar-vicente"></div>
+            <div class="name-badge">
+              <span class="badge-dot status-online"></span>
+              <span>Vicente</span>
+            </div>
+          </div>
+
+          <!-- Avatar Clarice (Copywriter) -->
+          <div class="avatar-actor" id="actor-copywriter" data-agent="copywriter">
+            <div class="emoji-bubble" id="bubble-copywriter">🍩</div>
+            <div class="run-dust">💨</div>
+            <div class="avatar-sprite avatar-clarice"></div>
+            <div class="name-badge">
+              <span class="badge-dot status-online"></span>
+              <span>Clarice</span>
+            </div>
+          </div>
+
+          <!-- Avatar Benedito (Curador) -->
+          <div class="avatar-actor" id="actor-pesquisador" data-agent="pesquisador">
+            <div class="emoji-bubble" id="bubble-pesquisador">☕</div>
+            <div class="run-dust">💨</div>
+            <div class="avatar-sprite avatar-benedito"></div>
+            <div class="name-badge">
+              <span class="badge-dot status-online"></span>
+              <span>Benedito</span>
+            </div>
+          </div>
+
+          <!-- Avatar Joaquim (Designer) -->
+          <div class="avatar-actor" id="actor-designer" data-agent="designer">
+            <div class="emoji-bubble" id="bubble-designer">🥐</div>
+            <div class="run-dust">💨</div>
+            <div class="avatar-sprite avatar-joaquim"></div>
+            <div class="name-badge">
+              <span class="badge-dot status-online"></span>
+              <span>Joaquim</span>
+            </div>
+          </div>
+
+        </div> <!-- /characters-layer -->
+
+      </div> <!-- /office-floor -->
+    </div> <!-- /isometric-world -->
   </main>
 
-  <!-- Live Feed / Status Footer Ticker -->
-  <footer class="bottom-bar">
-    <div class="ticker-label">
-      <span class="pulse-icon"></span>
-      ATIVIDADE DOS AGENTES EM TEMPO REAL:
+  <!-- Live Feed Ticker at Bottom -->
+  <footer class="activity-bar">
+    <div class="feed-label">
+      <span class="pulse-indicator"></span>
+      <span>ESTATUTO DA AGÊNCIA:</span>
     </div>
-    <div class="ticker-content" id="feed-ticker">
-      Augusto: "Supervisionando alinhamento de tráfego pago" ✦ Vicente: "Meta Ads 594 cliques" ✦ Clarice: "Escrevendo headlines" ✦ Joaquim: "Compondo artes 1080x1440" ✦ Otávio: "Aprovando layouts" ✦ Benedito: "33 fotos cadastradas"
+    <div class="feed-ticker-container">
+      <div class="feed-ticker" id="feed-ticker">
+        Agentes online · Modo coffee break ativo · Clique em '▶️ Dar o Play' para iniciar o ciclo de produção
+      </div>
     </div>
   </footer>
 
-  <!-- Modal Detalhes do Agente (Crachá) -->
+  <!-- Modal / Crachá Detalhado do Funcionário -->
   <div class="modal-overlay" id="agent-modal">
     <div class="modal-card">
-      <button class="modal-close" id="modal-close">×</button>
+      <button class="btn-close" id="modal-close">&times;</button>
       <div class="modal-header">
-        <div class="modal-badge-dot" id="modal-status-dot"></div>
+        <div class="modal-avatar-preview" id="modal-avatar-icon"></div>
         <div>
           <h2 id="modal-name">Nome do Agente</h2>
-          <span class="modal-sub" id="modal-role">Cargo</span> · <span id="modal-dept">Departamento</span>
+          <span class="modal-role" id="modal-role">Cargo</span>
+          <span class="modal-dept" id="modal-dept">Departamento</span>
         </div>
       </div>
+
       <div class="modal-body">
         <div class="modal-section">
-          <div class="section-title">STATUS ATUAL</div>
-          <div class="status-pill" id="modal-status-text">TRABALHANDO</div>
-        </div>
-        <div class="modal-section">
-          <div class="section-title">ATIVIDADE RECENTE</div>
-          <p id="modal-current-task">Carregando atividade...</p>
-        </div>
-        <div class="modal-section">
-          <div class="section-title">ÚLTIMO DIÁLOGO / COMENTÁRIO</div>
-          <blockquote class="modal-quote" id="modal-speech">"Carregando fala..."</blockquote>
-        </div>
-        <div class="modal-section">
-          <div class="section-title">HISTÓRICO DE PRODUÇÃO</div>
-          <ul class="activity-history" id="modal-history"></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Gaveta Lateral de Posts e Legendas Entregues (Drawer) -->
-  <div class="drawer-overlay" id="posts-drawer-overlay">
-    <div class="posts-drawer">
-      <div class="drawer-header">
-        <div class="drawer-title-group">
-          <h2>📦 Entregáveis da Kav</h2>
-          <span class="drawer-subtitle">Posts completos diagramados (4:5) prontos para publicação</span>
-        </div>
-        <button class="drawer-close" id="btn-close-drawer">×</button>
-      </div>
-      <div class="drawer-body" id="posts-list-container">
-        <!-- Inserido dinamicamente via app.js -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Zoom da Arte / Mockup Instagram Feed -->
-  <div class="modal-overlay" id="art-zoom-modal">
-    <div class="insta-modal-wrapper">
-      <button class="insta-modal-close" id="art-modal-close">×</button>
-      <div id="instagram-post-preview-container"></div>
-    </div>
-  </div>
-
-  <!-- Modal de Entrega de Post Imediato (Gerado no Play) -->
-  <div class="modal-overlay" id="post-delivery-modal">
-    <div class="post-delivery-dialog">
-      <button class="post-delivery-close" onclick="fecharPostModal()">×</button>
-      <div class="post-delivery-header">
-        <div class="success-icon">🎉</div>
-        <div>
-          <h2>Peça Criada com Sucesso!</h2>
-          <span class="sub" id="post-modal-creators">Curadoria: Benedito · Texto: Clarice · Arte: Joaquim · Direção de Arte: Otávio</span>
-        </div>
-      </div>
-      <div class="post-delivery-grid">
-        <div class="post-preview-col">
-          <div class="post-preview-box">
-            <img id="post-modal-img" src="" alt="Arte gerada" style="display:none; max-width:100%; border-radius:8px;" />
-            <div id="post-modal-img-placeholder" style="padding:40px; text-align:center; color:#94a3b8;">Gerando imagem...</div>
+          <h4>STATUS ATUAL</h4>
+          <div class="status-indicator-box">
+            <span class="badge-dot" id="modal-status-dot"></span>
+            <span id="modal-status-text">Online</span>
           </div>
-          <a id="post-modal-download-link" href="#" download="post-kav.png" class="btn btn-secondary" style="display:none; margin-top:12px; width:100%; justify-content:center;">
+        </div>
+
+        <div class="modal-section">
+          <h4>EM EXECUÇÃO</h4>
+          <p class="task-desc" id="modal-current-task">Monitorando contas e campanhas.</p>
+        </div>
+
+        <div class="modal-section">
+          <h4>HUMOR DO AVATAR</h4>
+          <div class="quote-box" id="modal-speech">☕ Pausa pro café</div>
+        </div>
+
+        <div class="modal-section">
+          <h4>HISTÓRICO RECENTE</h4>
+          <ul class="activity-history-list" id="modal-history">
+            <li>Nenhuma atividade registrada ainda.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Entrega do Post Gerado -->
+  <div class="modal-overlay" id="post-delivery-modal">
+    <div class="modal-card modal-post-card">
+      <button class="btn-close" id="post-modal-close">&times;</button>
+      <div class="modal-header">
+        <div>
+          <h2 id="post-modal-title">🎉 Post Concluído com Sucesso!</h2>
+          <span class="modal-role" id="post-modal-subtitle">Esteira de Agentes Autônomos Kav</span>
+        </div>
+      </div>
+      <div class="modal-body post-modal-grid">
+        <div class="post-preview-col">
+          <div class="post-image-container" id="post-image-box">
+            <img id="post-modal-img" src="" alt="Arte do Post" style="display:none;">
+            <div id="post-modal-img-placeholder" style="color:#8A9BB8; font-size:12px; text-align:center; padding:20px;">
+              Imagem em processamento ou modo teste
+            </div>
+          </div>
+          <a id="post-modal-download-link" href="#" download="post-kav.png" class="btn btn-primary btn-block" style="text-decoration:none; text-align:center;">
             ⬇️ Baixar Imagem (.png)
           </a>
         </div>
-        <div class="post-caption-col">
-          <div class="caption-header">
-            <span class="headline-badge" id="post-modal-selo">Destaque</span>
-            <h3 id="post-modal-headline">Título</h3>
+        <div class="post-text-col">
+          <div class="modal-section">
+            <h4>CHAMADA (HEADLINE)</h4>
+            <p class="post-headline-text" id="post-modal-headline">-</p>
           </div>
-          <div class="caption-text-box" id="post-modal-copy"></div>
-          <button class="btn btn-primary" onclick="copiarLegendaModal(this)" style="margin-top:12px; width:100%; justify-content:center;">
-            📋 Copiar Legenda
-          </button>
+          <div class="modal-section">
+            <h4>SELO</h4>
+            <span class="badge-selo" id="post-modal-selo">-</span>
+          </div>
+          <div class="modal-section">
+            <div class="section-header-flex">
+              <h4>LEGENDA DO POST</h4>
+              <button id="post-modal-copy-btn" class="btn btn-secondary btn-sm">📋 Copiar Legenda</button>
+            </div>
+            <pre class="post-copy-box" id="post-modal-copy"></pre>
+          </div>
+          <div class="modal-section">
+            <h4>CRIAÇÃO</h4>
+            <p class="post-creators-text" id="post-modal-creators">Curadoria: Benedito · Texto: Clarice · Arte: Joaquim · Direção: Otávio</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <script src="app.js"></script>
-  <script>
-    function fecharPostModal() {
-      document.getElementById("post-delivery-modal").classList.remove("open");
-    }
-    function copiarLegendaModal(btn) {
-      const copy = document.getElementById("post-modal-copy").textContent;
-      navigator.clipboard.writeText(copy).then(() => {
-        btn.textContent = "✅ Copiado!";
-        setTimeout(() => btn.textContent = "📋 Copiar Legenda", 2000);
-      });
-    }
-  </script>
 </body>
 </html>
