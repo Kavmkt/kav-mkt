@@ -47,15 +47,29 @@ const AGENTES_INICIAIS = {
   designer: {
     id: "designer",
     nome: "Joaquim",
-    cargo: "Diretor de Arte & Designer",
+    cargo: "Designer Júnior",
     departamento: "Criação",
     status: "trabalhando",
-    fala: "Compondo headline e selo sobre a foto real do buffet. Formato 1080x1440 pronto.",
+    fala: "Compondo headline sobre a foto real do buffet. Formato 1080x1440 pronto.",
     atividade: "Diagramando arte gráfica sobre a foto real (sem alterar a comida)",
     historico: [
       "Tratamento gráfico aplicado sobre foto real do buffet executivo.",
-      "Cores da marca utilizadas: Cinza #2A2A2E + Dourado #EEB730 + Vermelho #A31D1D.",
-      "Margem de segurança de corte vertical respeitada."
+      "Cores da marca utilizadas: Cinza #2A2A2E + Vermelho #A31D1D.",
+      "Submetendo layout para revisão do Diretor de Arte."
+    ]
+  },
+  diretor: {
+    id: "diretor",
+    nome: "Otávio",
+    cargo: "Diretor de Arte Sênior & Head Visual",
+    departamento: "Criação",
+    status: "online",
+    fala: "Supervisionando estética, tipografia refinada e integridade do logo oficial.",
+    atividade: "Inspecionando e refinando peças do Joaquim com visão computacional",
+    historico: [
+      "Critérios ativos: logo oficial N&N obrigatório, sem contorno branco (glow) e sem elipses toscas.",
+      "Inspeção multimodal automática em cada post gerado.",
+      "Aprovação e refino com alta fidelidade gpt-image-2.5-sunburst."
     ]
   },
   pesquisador: {
@@ -153,6 +167,7 @@ function atualizarFeedTicker() {
     `Vicente (Métricas): "${estadoAgentes.metricas.fala}"`,
     `Clarice (Copywriter): "${estadoAgentes.copywriter.fala}"`,
     `Joaquim (Designer): "${estadoAgentes.designer.fala}"`,
+    `Otávio (Diretor de Arte): "${estadoAgentes.diretor ? estadoAgentes.diretor.fala : 'Avaliando layouts'}"`,
     `Benedito (Curador): "${estadoAgentes.pesquisador.fala}"`
   ];
   ticker.textContent = frases.join("  ✦  ");
@@ -474,7 +489,7 @@ async function dispararProducaoReal() {
 
     let step = 0;
     const animInterval = setInterval(() => {
-      const agentes = ["pesquisador", "copywriter", "designer", "supervisor"];
+      const agentes = ["pesquisador", "copywriter", "designer", "diretor", "supervisor"];
       const agId = agentes[step % agentes.length];
       animarPulo(agId);
       step++;

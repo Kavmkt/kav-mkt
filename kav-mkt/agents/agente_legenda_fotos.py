@@ -163,3 +163,7 @@ def _descrever(foto: dict) -> str:
     ]
     descricao = "\n".join(f"- {rotulo}: {valor}" for rotulo, valor in campos if valor)
     return descricao or f"- Arquivo: {foto['arquivo'].name} (sem metadados cadastrados em fotos.json)"
+
+
+# Alias para compatibilidade total com o orchestrator
+gerar_copy_foto = gerar_legenda_foto
