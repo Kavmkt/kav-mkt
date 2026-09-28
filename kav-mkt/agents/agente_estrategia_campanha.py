@@ -12,6 +12,7 @@ sim sobre conversão imediata (pedido/visita hoje), então o tom, a urgência e 
 da copy são outros.
 """
 import json
+from typing import Optional
 
 from utils.openai_client import chamar_ia, extrair_json
 
@@ -68,6 +69,45 @@ def definir_estrategia_campanha(cliente: dict, foto: dict) -> dict:
     return extrair_json(resposta)
 
 
+def criar_estrategia_campanha(cliente: dict, foto_escolhida: Optional[dict] = None, foto: Optional[dict] = None) -> dict:
+    """Função invocada pelo orchestrator para criar a estratégia de campanha Meta Ads.
+    Normaliza os dados para garantir as chaves de hierarquia visual e copy estruturada."""
+    f = foto_escolhida if foto_escolhida is not None else foto
+    estrategia = definir_estrategia_campanha(cliente, f or {})
+
+    headline = estrategia.get("headline_impacto") or "SABOR DE CASA NO ALMOÇO"
+    apoio = estrategia.get("motivo_estrategico") or "Buffet farto e variado com tempero caseiro"
+    selo = estrategia.get("selo_produto") or (f.get("nome") if f else "Almoço Especial")
+    cta = estrategia.get("cta") or "Peça no WhatsApp"
+
+    estrategia["hierarquia_visual"] = {
+        "headline_destaque": headline,
+        "headline_apoio": apoio,
+        "selo": selo,
+        "cta_visual": cta,
+    }
+
+    raw_copy = estrategia.get("copy_anuncio")
+    if isinstance(raw_copy, str):
+        linhas = [l for l in raw_copy.strip().split("\n") if l.strip()]
+        gancho = linhas[0] if linhas else "Bateu aquela fome de almoço caseiro?"
+        corpo = "\n\n".join(linhas[1:-1]) if len(linhas) > 2 else ("\n".join(linhas[1:]) if len(linhas) > 1 else raw_copy)
+        cta_final = linhas[-1] if len(linhas) > 2 else "👉 Peça agora no WhatsApp ou venha nos visitar!"
+        estrategia["copy_anuncio"] = {
+            "gancho_linha_1": gancho,
+            "corpo": corpo,
+            "cta_final": cta_final,
+        }
+    elif not isinstance(raw_copy, dict):
+        estrategia["copy_anuncio"] = {
+            "gancho_linha_1": "Bateu aquela fome de almoço caseiro caprichado?",
+            "corpo": "Nosso buffet executivo é preparado diariamente com carnes nobres, saladas frescas e acompanhamentos tradicionais.",
+            "cta_final": "👉 Peça agora pelo WhatsApp ou venha almoçar com a gente!",
+        }
+
+    return estrategia
+
+
 def _carregar_mercado(slug: str) -> str:
     from utils.cliente import CLIENTES_DIR
 
@@ -79,8 +119,6 @@ def _carregar_mercado(slug: str) -> str:
     except Exception:
         return ""
     if not isinstance(dados, dict) or "_atencao" in dados:
-        # Ainda é o modelo/placeholder (ninguém preencheu com pesquisa real) — ignora,
-        # em vez de deixar a IA tratar campos vazios como "sem concorrência nenhuma".
         return ""
     return json.dumps(dados, ensure_ascii=False, indent=2)
 

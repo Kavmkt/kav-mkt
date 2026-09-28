@@ -1,44 +1,38 @@
-"""Servidor Interativo do Escritório Virtual Kav (@kav.mkt).
+"""Servidor HTTP simples para o Escritório Virtual da Kav (@kav.mkt).
+
+Serve os arquivos estáticos de `escritorio-kav/` (HTML, CSS, JS, imagens) e fornece a API
+para a interface interagir com a esteira real de agentes de IA:
+
+Rotas:
+- GET  /              -> Serve index.html
+- GET  /api/clientes  -> Lista clientes disponíveis em clientes/ (nome, slug, tipo)
+- GET  /api/estado    -> Retorna estado_agentes.json atualizado
+- POST /api/executar  -> Dispara a esteira real do orchestrator.py e devolve o post completo
+
+Execução:
+    cd /Users/kesley/Documents/kav-mkt/kav-mkt
+    source .venv/bin/activate
+    python3 escritorio-kav/server.py
 """
+import http.server
 import json
 import os
+import socketserver
 import sys
-import traceback
-from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
 
+# Garante que imports como 'orchestrator' e 'utils' funcionem a partir da raiz do kav-mkt
 BASE_DIR = Path(__file__).resolve().parent
-PASTAS_KAV = [
-    BASE_DIR.parent,
-    BASE_DIR.parent / "kav-mkt",
-    BASE_DIR / "kav-mkt",
-    BASE_DIR.parent.parent,
-    Path.cwd(),
-    Path.cwd().parent,
-]
+RAIZ_PROJETO = BASE_DIR.parent
+if str(RAIZ_PROJETO) not in sys.path:
+    sys.path.insert(0, str(RAIZ_PROJETO))
 
-for p in PASTAS_KAV:
-    if p.exists() and str(p) not in sys.path:
-        sys.path.insert(0, str(p))
-
-# Carrega a chave OPENAI_API_KEY do arquivo .env
-env_encontrado = None
-for p in PASTAS_KAV:
-    env_file = p / ".env"
-    if env_file.exists():
-        env_encontrado = env_file
-        try:
-            for linha in env_file.read_text(encoding="utf-8").splitlines():
-                linha = linha.strip()
-                if linha and not linha.startswith("#") and "=" in linha:
-                    k, v = linha.split("=", 1)
-                    os.environ.setdefault(k.strip(), v.strip().strip("'\""))
-        except Exception:
-            pass
-        break
+PORTA = int(os.environ.get("PORT", 8080))
 
 
-class KavOfficeHandler(SimpleHTTPRequestHandler):
+class KavRequestHandler(http.server.SimpleHTTPRequestHandler):
+    """Handler HTTP customizado com suporte a API JSON e arquivos estáticos."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(BASE_DIR), **kwargs)
 
@@ -55,61 +49,59 @@ class KavOfficeHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         caminho = self.path.split("?")[0]
         if caminho == "/api/executar":
-            length = int(self.headers.get("Content-Length", 0))
-            corpo = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
-            params = json.loads(corpo) if corpo else {}
-            slug = params.get("slug", "nn-restaurante")
-            com_imagem = params.get("com_imagem", True)
-            modo = params.get("modo", "campanha")
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                corpo = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
+                params = json.loads(corpo) if corpo else {}
+                slug = params.get("slug", "nn-restaurante")
+                com_imagem = params.get("com_imagem", True)
+                modo = params.get("modo", "campanha")
 
-            resultado = self._executar_agentes(slug, com_imagem=com_imagem, modo=modo)
-            self._resposta_json(resultado, status=200 if resultado.get("sucesso") else 400)
+                resultado = self._executar_agentes(slug, com_imagem=com_imagem, modo=modo)
+                self._resposta_json(resultado, status=200 if resultado.get("sucesso") else 400)
+            except Exception as exc:
+                import traceback
+                traceback.print_exc()
+                self._resposta_json({"sucesso": False, "erro": str(exc)}, status=500)
             return
 
         self.send_error(404, "Endpoint não encontrado")
 
     def _resposta_json(self, dados, status=200):
-        conteudo = json.dumps(dados, ensure_ascii=False, indent=2).encode("utf-8")
+        conteudo = json.dumps(dados, ensure_ascii=False, indent=2, default=str).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(conteudo)))
-        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(conteudo)
 
     def _listar_clientes(self):
-        try:
-            from utils.cliente import listar_clientes, carregar_cliente
-            slugs = listar_clientes()
-            lista = []
-            for s in slugs:
-                try:
-                    c = carregar_cliente(s)
-                    tipo = c.get("config", {}).get("tipo", "produto")
-                    icone = "🍽️" if tipo == "fotos" else ("🧠" if tipo == "carrossel" else "🚗")
-                    lista.append({"slug": s, "nome": c.get("nome", s), "tipo": tipo, "icone": icone})
-                except Exception:
-                    lista.append({"slug": s, "nome": s.replace("-", " ").title(), "tipo": "produto", "icone": "💼"})
-            return lista
-        except Exception:
-            return [
-                {"slug": "nn-restaurante", "nome": "NN Restaurante", "tipo": "fotos", "icone": "🍽️"},
-                {"slug": "ponto-car", "nome": "Ponto Car", "tipo": "produto", "icone": "🚗"},
-                {"slug": "kav", "nome": "Kav (@kav.mkt)", "tipo": "carrossel", "icone": "🧠"},
-            ]
+        clientes_dir = RAIZ_PROJETO / "clientes"
+        lista = []
+        if clientes_dir.exists():
+            for pasta in sorted(clientes_dir.iterdir()):
+                if pasta.is_dir() and not pasta.name.startswith("."):
+                    cfg_file = pasta / "config.json"
+                    nome = pasta.name
+                    tipo = "produto"
+                    if cfg_file.exists():
+                        try:
+                            cfg = json.loads(cfg_file.read_text(encoding="utf-8"))
+                            nome = cfg.get("nome", pasta.name)
+                            tipo = cfg.get("tipo", "produto")
+                        except Exception:
+                            pass
+                    lista.append({"slug": pasta.name, "nome": nome, "tipo": tipo})
+        return {"clientes": lista}
 
     def _obter_estado(self):
-        try:
-            from utils import estado_agentes
-            return estado_agentes.carregar_estado()
-        except Exception:
-            arquivo = BASE_DIR / "estado_agentes.json"
-            if arquivo.exists():
-                try:
-                    return json.loads(arquivo.read_text(encoding="utf-8"))
-                except Exception:
-                    pass
-            return {}
+        arquivo_estado = BASE_DIR / "estado_agentes.json"
+        if arquivo_estado.exists():
+            try:
+                return json.loads(arquivo_estado.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+        return {}
 
     def _executar_agentes(self, slug, com_imagem=True, modo="campanha"):
         print(f"\n🚀 [Execução Iniciada] Disparando esteira de agentes ({modo.upper()}) para o cliente '{slug}'...")
@@ -139,27 +131,25 @@ class KavOfficeHandler(SimpleHTTPRequestHandler):
             return {"sucesso": True, "post": post}
         except Exception as exc:
             print("\n❌ ERRO NA EXECUÇÃO DOS AGENTES:")
+            import traceback
             traceback.print_exc()
             return {"sucesso": False, "erro": str(exc)}
 
 
 def main():
-    porta = 8080
-    servidor = HTTPServer(("0.0.0.0", porta), KavOfficeHandler)
-    key = os.environ.get("OPENAI_API_KEY")
-    status_key = f"✅ Ativa ({key[:6]}...{key[-4:]})" if key else "⚠️ NÃO ENCONTRADA (Verifique o arquivo .env)"
-
-    print("\n=======================================================")
-    print(f"🏢 Escritório Virtual da Kav ativo em: http://localhost:{porta}")
-    print(f"🔑 Chave OpenAI: {status_key}")
-    if env_encontrado:
-        print(f"📄 Arquivo .env carregado de: {env_encontrado}")
-    print(f"👉 Abra http://localhost:{porta} no seu navegador!")
-    print("=======================================================\n")
-    try:
-        servidor.serve_forever()
-    except KeyboardInterrupt:
-        print("\nServidor finalizado.")
+    socketserver.TCPServer.allow_reuse_address = True
+    with socketserver.TCPServer(("", PORTA), KavRequestHandler) as httpd:
+        print("=" * 60)
+        print("🏢  KAV MARKETING — ESCRITÓRIO VIRTUAL DE AGENTES DE IA")
+        print("=" * 60)
+        print(f"📡  Servidor HTTP ativo em: http://localhost:{PORTA}")
+        print(f"📂  Diretório base: {BASE_DIR}")
+        print("⌨️   Pressione Ctrl+C para encerrar o servidor.")
+        print("=" * 60 + "\n")
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("\n🛑 Servidor encerrado.")
 
 
 if __name__ == "__main__":
