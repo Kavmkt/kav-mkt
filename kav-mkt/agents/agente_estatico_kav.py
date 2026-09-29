@@ -2,8 +2,14 @@
 
 Gera posts estáticos únicos de altíssimo impacto para o feed da própria agência,
 com foco em Tráfego Pago Local para PMEs e Marketing Descomplicado.
-Alterna dinamicamente entre os 5 arquétipos de layout oficiais da marca com anti-repetição contínua
-e aplica o logotipo oficial da Kav por código (Pillow) com nitidez vetorial e transparência perfeita,
+Alterna dinamicamente entre os 5 arquétipos de layout oficiais da marca com anti-repetição contínua:
+1. Card Flutuante / Tweet Box (Estilo Tweet de autoridade com avatar e arroba)
+2. Comparativo Duplo (Dois blocos: Erro da maioria vs Método Kav)
+3. Notificação de Celular / WhatsApp Alert (Simulação realista de mensagem de lead)
+4. Dashboard de Métricas & Performance (Grid técnico, métrica gigante e gráfico ascendente)
+5. Manifesto Editorial Monumental (100% tipográfico com palavra dourada sublinhada)
+
+Aplica o logotipo oficial da Kav por código (Pillow) com nitidez vetorial e transparência perfeita,
 eliminando de vez qualquer distorção de IA (letras trocadas, "WAV", etc.) e blocos desnecessários no topo.
 """
 from __future__ import annotations
@@ -33,85 +39,128 @@ ESTILOS_LAYOUT_KAV = [
         "arquivo_referencia": "ref_afirmacao_tweet_box.png",
         "nome": "Card Flutuante / Tweet Box",
         "posicao_logo": "superior-esquerdo",
+        "instrucao_copy": "\n".join([
+            "ESTRUTURA DA COPY PARA ARQUÉTIPO TWEET BOX:",
+            "- headline_imagem: Frase afiada e provocativa de abertura (4 a 8 palavras, caixa alta).",
+            "- texto_card: Frase reflexiva e direta para o interior do card (2 a 3 linhas curtas).",
+            "- destaque_dourado: 1 termo chave para brilhar em dourado.",
+            "- cta_card: 'Leia a legenda completa ↘'",
+        ]),
         "diretriz_cena": (
-            "ARQUÉTIPO: CARD FLUTUANTE CENTRALIZADO (Estilo Tweet de Autoridade / Post em Box). "
-            "No centro exato do layout, crie um CARD RETANGULAR ELEGANTE em tom azul noturno escuro (#031E34) "
-            "com borda fina translúcida ciano/azulada (#123452) e cantos suavemente arredondados. "
-            "Dentro deste card flutuante, a headline provocativa é renderizada em tipografia limpa com palavras em Dourado Kav (#EEB730). "
-            "Abaixo, dentro do mesmo card ou em um segundo card menor de apoio, a frase explicativa curta. "
-            "No rodapé do card, uma chamada elegante: 'Leia a legenda ↘' com a seta em Dourado Solar. "
-            "Fundo da imagem: Azul petróleo muito profundo (#00101C) com suave desfoque dark bokeh para dar destaque total ao card central. "
-            "PROIBIÇÃO RIGOROSA: PROIBIDO bloco ou caixa de texto no topo ('PERFORMANCE LOCAL'). O topo deve ser limpo! "
+            "ARQUÉTIPO VISUAL: CARD FLUTUANTE DE REDE SOCIAL (ESTILO TWEET DE AUTORIDADE / BOX). "
+            "No centro da tela, renderize um elegante CARD RETANGULAR FLUTUANTE em tom azul noturno escuro (#031E34) "
+            "com cantos suavemente arredondados e borda sutil translúcida (#123452). "
+            "Dentro do topo do card: um pequeno avatar circular com ícone dourado 'K', ao lado o nome 'Kav Marketing' "
+            "em tipografia branca, seguido do handle '@kav.mkt' em cinza e selo de verificado. "
+            "No corpo do card: a tese de autoridade em tipografia geométrica neo-grotesca branca e dourada. "
+            "No rodapé interno do card: linha divisória fina e a chamada 'Leia a legenda completa ↘' com seta dourada. "
+            "Fora do card: fundo profundo (#001424) com leve desfoque dark bokeh. "
+            "PROIBIÇÃO RIGOROSA: PROIBIDO bloco no topo ('PERFORMANCE LOCAL'). Topo limpo! "
             "PROIBIDO mapas 3D ou pins de GPS."
-        ),
-    },
-    {
-        "id": "destaque_dourado",
-        "arquivo_referencia": "ref_destaque_dourado.png",
-        "nome": "Destaque Visual de Contraste Dourado",
-        "posicao_logo": "inferior-direito",
-        "diretriz_cena": (
-            "ARQUÉTIPO: ELEMENTO GRÁFICO CENTRAL DE DESTAQUE DOURADO (Metáfora de Destaque Local). "
-            "No centro vertical da arte, renderize uma MATRIZ GEOMÉTRICA MINIMALISTA: uma grade simétrica de pequenos quadrados "
-            "ou pontos translúcidos discretos, onde APENAS O ELEMENTO DO CENTRO se destaca brilhando intensamente em Dourado Solar "
-            "(#EEB730 com símbolo de estrela '★' e leve aura luminosa), simbolizando a única empresa que brilha na região. "
-            "Na metade superior, acima do gráfico, frase reflexiva em tipografia cinza metálica (#94A3B8). "
-            "Na base inferior, abaixo do gráfico, conclusão impactante em tipografia branca forte. "
-            "Fundo: Azul petróleo nobre (#00101C) com iluminação sutil e focal concentrada no elemento dourado central. "
-            "PROIBIÇÃO RIGOROSA: PROIBIDO bloco no topo ('PERFORMANCE LOCAL'). Topo totalmente limpo. "
-            "PROIBIDO mapa 3D com radar ou pin de GPS."
-        ),
-    },
-    {
-        "id": "impacto_condensado_grid",
-        "arquivo_referencia": "ref_impacto_condensado_grid.png",
-        "nome": "Impacto Condensado com Grade Técnica",
-        "posicao_logo": "superior-direito",
-        "diretriz_cena": (
-            "ARQUÉTIPO: GRADE TÉCNICA DE DADOS & TIPOGRAFIA FULL-WIDTH MACIÇA. "
-            "Fundo: Superfície azul-marinho profunda com uma MICRO-GRADE TÉCNICA GEOMÉTRICA nítida e sutil (linhas vetoriais "
-            "milimétricas em azul técnico #072036 formando um grid de blueprint ou coordenadas de performance). "
-            "No corpo da peça, a HEADLINE É GIGANTE E MACIÇA (Full-Width Typography em Plus Jakarta Sans 900), "
-            "ocupando de 60% a 70% da área útil em letras maiúsculas monumentais brancas e douradas com peso visual brutal. "
-            "Na base da imagem, uma barra/tarja horizontal limpa com termos técnicos de performance separados por pontos. "
-            "PROIBIÇÃO RIGOROSA: PROIBIDO bloco de texto no topo ('PERFORMANCE LOCAL'). "
-            "PROIBIDO mapas 3D ou pins de GPS. O grid deve ser estritamente técnico e bidimensional."
         ),
     },
     {
         "id": "quebra_objecao_card",
         "arquivo_referencia": "ref_quebra_objecao_card.png",
-        "nome": "Quebra de Objeção com Card de Solução",
+        "nome": "Comparativo Duplo (Erro vs Método Kav)",
         "posicao_logo": "superior-esquerdo",
+        "instrucao_copy": "\n".join([
+            "ESTRUTURA DA COPY PARA ARQUÉTIPO COMPARATIVO (DOIS BLOCOS):",
+            "- titulo_topo: 'POR QUE SUA EMPRESA NÃO VENDE?' ou pergunta provocativa similar.",
+            "- headline_imagem: O grande contraste da tese (ex: 'O ERRO vs A VIRADA').",
+            "- bloco_erro: '✕ COMO A MAIORIA FAZ: [Descrever o erro amador, ex: apertar impulsionar e esperar milagre]'",
+            "- bloco_solucao: '✓ COM O MÉTODO KAV: [Descrever a estratégia lucrativa, ex: tráfego geolocalizado raio 5km direto no WhatsApp]'",
+            "- cta_pill: 'Arrasta pra entender →'",
+        ]),
         "diretriz_cena": (
-            "ARQUÉTIPO: DOIS BLOCOS ASSIMÉTRICOS COM CARD DE BORDA DOURADA. "
-            "A arte é dividida verticalmente em dois blocos contrastantes: "
-            "Metade superior: Frase afiada atacando um mito de marketing (em tipografia branca limpa de alto impacto). "
-            "Metade inferior: Um CARD RETANGULAR DESTACADO com CONTORNO DOURADO KAV (#EEB730, borda nítida de 2px) e fundo escuro (#031E34), "
-            "apresentando a virada de chave do negócio. Abaixo do card, botão pill arredondado: '[ Arrasta pra entender → ]'. "
-            "Fundo: Gradiente escuro noturno profundo e minimalista. "
-            "PROIBIÇÃO RIGOROSA: PROIBIDO bloco no topo ('PERFORMANCE LOCAL'). Topo limpo! PROIBIDO mapas 3D ou pins de GPS."
+            "ARQUÉTIPO VISUAL: COMPARATIVO EM DOIS BLOCOS VERTICAIS CONTRASTANTES (ERRO vs MÉTODO KAV). "
+            "A arte é estruturada claramente em DOIS CARDS/CAIXAS RETANGULARES empilhados verticalmente: "
+            "1. Card Superior (O Erro): Fundo escuro com tom carmesim sutil (#1C0E12) e borda discreta, encabeçado por ícone vermelho '✕', "
+            "mostrando o erro amador da concorrência em tipografia branca/cinza. "
+            "2. Card Inferior (O Método Kav): Card em destaque premium com contorno Dourado Kav (#EEB730, borda nítida de 3px) "
+            "e fundo marinho escuro (#031E34), encabeçado por ícone dourado '✓', destacando a solução da Kav em tipografia branca. "
+            "Abaixo dos cards, botão pill arredondado centralizado: '[ Arrasta pra entender → ]'. "
+            "PROIBIÇÃO RIGOROSA: PROIBIDO bloco no topo ('PERFORMANCE LOCAL'). Topo limpo! "
+            "PROIBIDO mapas 3D ou pins de GPS. O layout deve ser inconfundivelmente um comparativo de dois blocos!"
+        ),
+    },
+    {
+        "id": "destaque_dourado",
+        "arquivo_referencia": "ref_destaque_dourado.png",
+        "nome": "Notificação de WhatsApp / Smartphone Alert",
+        "posicao_logo": "inferior-direito",
+        "instrucao_copy": "\n".join([
+            "ESTRUTURA DA COPY PARA ARQUÉTIPO NOTIFICAÇÃO SMARTPHONE:",
+            "- frase_topo: 'ISSO É O QUE DEVERIA ESTAR ACONTECENDO NO SEU WHATSAPP:'",
+            "- headline_imagem: Simulação de mensagem de cliente real (ex: Novo Cliente: 'Olá! Vi seu anúncio e quero agendar hoje!').",
+            "- headline_conclusao: Frase de autoridade da Kav sobre dominar o raio local.",
+            "- destaque_dourado: 1 termo da conclusão em Dourado Kav.",
+        ]),
+        "diretriz_cena": (
+            "ARQUÉTIPO VISUAL: NOTIFICAÇÃO REALISTA DE SMARTPHONE (PUSH NOTIFICATION / WHATSAPP ALERT). "
+            "No centro da tela, renderize com alta fidelidade visual uma NOTIFICAÇÃO DE MENSAGEM DE CELULAR (estilo push notification): "
+            "Um card horizontal elegante com cantos arredondados, fundo escuro translúcido (#031E34) e borda fina. "
+            "No topo do card: ícone circular verde com balão de mensagem, o texto 'WHATSAPP BUSINESS' e timestamp 'agora' no canto direito. "
+            "Dentro do card: texto destacado simulando a mensagem de um cliente real: 'Novo Cliente Local: Olá! Vi seu anúncio na região e quero agendar...'. "
+            "Acima da notificação: frase provocativa em tipografia cinza e branca. "
+            "Abaixo da notificação: conclusão de autoridade em Dourado Kav (#EEB730) sobre anúncios no raio do negócio. "
+            "PROIBIÇÃO RIGOROSA: PROIBIDO bloco no topo ('PERFORMANCE LOCAL'). Topo limpo! "
+            "PROIBIDO mapas 3D ou pins de GPS. O foco é a notificação realista de mensagem de celular!"
+        ),
+    },
+    {
+        "id": "impacto_condensado_grid",
+        "arquivo_referencia": "ref_impacto_condensado_grid.png",
+        "nome": "Dashboard de Métricas & Performance",
+        "posicao_logo": "superior-direito",
+        "instrucao_copy": "\n".join([
+            "ESTRUTURA DA COPY PARA ARQUÉTIPO DASHBOARD DE MÉTRICAS:",
+            "- metrica_destaque: Um número/percentual de alto impacto (ex: '+340%', 'ROAS 5.4X', 'R$ 2,10 / LEAD').",
+            "- rotulo_metrica: 'CRESCIMENTO EM VENDAS LOCAIS' ou similar em caixa alta.",
+            "- headline_imagem: A conclusão estratégica (ex: 'TRÁFEGO NÃO É GASTO. É MÁQUINA DE CLIENTES.').",
+            "- submetricas: Termos técnicos da Kav (ex: 'ROAS 5.4x · Custo por Mensagem: R$ 2,10 · Raio 5km').",
+            "- destaque_dourado: A métrica ou palavra em dourado.",
+        ]),
+        "diretriz_cena": (
+            "ARQUÉTIPO VISUAL: DASHBOARD DE ANALYTICS & MÉTRICAS COM GRÁFICO ASCENDENTE. "
+            "Fundo: Fundo azul noturno escuro com MICRO-GRADE TÉCNICA VETORIAL sutil (grid de coordenadas técnicas em #072036). "
+            "No centro da arte: um CARD DE DASHBOARD ESTILO SAAS/META ADS em #031E34 com borda técnica. "
+            "Elemento de destaque: UM NÚMERO MONUMENTAL GIGANTE EM DOURADO KAV (#EEB730) como '+340%' ou '5.4X', acompanhado de um "
+            "GRÁFICO LINEAR ASCENDENTE VETORIAL EM DOURADO com pontos de dados brilhantes mostrando curva de crescimento. "
+            "Na base do card: indicadores técnicos de performance separados por pontos ('ROAS 5.4x · Custo Lead: R$ 2,10 · Raio: 5 km'). "
+            "Abaixo do card: frase de impacto em tipografia branca limpa. "
+            "PROIBIÇÃO RIGOROSA: PROIBIDO bloco no topo ('PERFORMANCE LOCAL'). Topo limpo! "
+            "PROIBIDO mapas 3D ou pins de GPS. O foco é analytics, números e gráfico de crescimento!"
         ),
     },
     {
         "id": "manifesto_palavra_dourada",
         "arquivo_referencia": "ref_manifesto_palavra_dourada.png",
-        "nome": "Manifesto com Palavra Dourada",
+        "nome": "Manifesto Editorial Monumental",
         "posicao_logo": "inferior-direito",
+        "instrucao_copy": "\n".join([
+            "ESTRUTURA DA COPY PARA ARQUÉTIPO MANIFESTO EDITORIAL:",
+            "- headline_imagem: Frase monumental de 3 a 5 palavras em caixa alta.",
+            "- destaque_dourado: 1 a 2 palavras centrais em Dourado Kav com sublinhado.",
+            "- headline_apoio: Frase reflexiva sóbria de 1 a 2 linhas.",
+            "- cta_pill: '→ Leia a legenda'",
+        ]),
         "diretriz_cena": (
-            "ARQUÉTIPO: MANIFESTO EDITORIAL MINIMALISTA MONUMENTAL. "
-            "A peça é 100% tipográfica, sóbria e imponente. Tipografia monumental em Plus Jakarta Sans Black na metade superior, "
-            "com 1 a 2 palavras centrais em Dourado Kav (#EEB730) sublinhadas com traço fino dourado de destaque. "
-            "Frase curta de apoio embaixo e botão pill fino arredondado no rodapé inferior contendo estritamente '[ →  Leia a legenda ]'. "
-            "Fundo: Azul noturno escuro puro (#001424 com gradiente radial sutil). "
-            "PROIBIÇÃO RIGOROSA: PROIBIDO qualquer bloco ou caixa de texto no topo ('PERFORMANCE LOCAL' está proibido!). "
-            "PROIBIDO mapas 3D, radares ou pins de localização."
+            "ARQUÉTIPO VISUAL: MANIFESTO EDITORIAL MINIMALISTA MONUMENTAL (100% TIPOGRÁFICO). "
+            "A arte é estritamente tipográfica, sóbria, sem cards, sem gráficos de dashboard e sem notificações de celular. "
+            "Na metade superior e centro: TIPOGRAFIA MONUMENTAL GIGANTE em Plus Jakarta Sans 900 (Black) ocupando a largura com peso brutal. "
+            "A palavra-chave central brilha em Dourado Kav (#EEB730) sublinhada por um traço fino elegante de ouro. "
+            "Abaixo da headline: frase curta de apoio reflexivo em cinza ardósia (#94A3B8). "
+            "No rodapé: botão pill fino arredondado minimalista contendo estritamente '[ →  Leia a legenda ]'. "
+            "Fundo: Gradiente sutil azul noturno puro (#001424). "
+            "PROIBIÇÃO RIGOROSA: PROIBIDO caixas no topo ('PERFORMANCE LOCAL'), mapas 3D ou pins de GPS."
         ),
     },
 ]
 
 SYSTEM_COPY_KAV = """Você é a Redatora Sênior & Copywriter da Kav (@kav.mkt).
-Sua missão é escrever a chamada visual (headline e apoio) e a legenda completa para um post estático de Instagram da Kav.
+Sua missão é escrever o conteúdo visual e a legenda completa para um post estático de Instagram da Kav,
+formatado sob medida para o ARQUÉTIPO DE LAYOUT selecionado.
 
 DIRETRIZES DE MARCA DA KAV:
 __SKILL__
@@ -119,12 +168,15 @@ __SKILL__
 PADRÃO DE LEGENDA DA KAV:
 __PADRAO_LEGENDA__
 
+ARQUÉTIPO DE LAYOUT ESCOLHIDO: __NOME_ESTILO__
+__INSTRUCAO_COPY__
+
 REGRAS RÍGIDAS DE COPYWRITING:
-1. HEADLINE DA IMAGEM: Curta, magnética, de 2 a 6 palavras. Deve parar imediatamente o scroll do empresário de PME.
+1. HEADLINE DA IMAGEM: Curta, magnética, de 2 a 7 palavras. Deve parar imediatamente o scroll do empresário de PME.
    Foque na dor real do negócio local (atrair clientes na região, mensagens no WhatsApp, parar de queimar verba no botão impulsionar).
    NUNCA escreva a palavra "Kav", "Cave" ou o nome da agência na headline da imagem — a chamada deve focar no cliente e no negócio dele.
-2. DESTAQUE DOURADO: Indique 1 a 2 palavras da headline que devem receber o Dourado Kav (#EEB730) para quebra de padrão visual.
-3. HEADLINE DE APOIO: 1 frase complementar direta que explica a tese sem jargões desnecessários.
+2. DESTAQUE DOURADO: Indique 1 a 2 palavras que devem receber o Dourado Kav (#EEB730) para quebra de padrão visual.
+3. ADAPTAÇÃO AO FORMATO: Preencha com rigor os campos estruturais do arquétipo solicitado (ex: bloco de erro vs solução, ou texto do card, ou notificação do whatsapp, ou métrica).
 4. LEGENDA DO POST:
    - Gancho provocativo na 1ª linha.
    - 2 a 3 parágrafos objetivos explicando o conceito com analogia simples do comércio/serviço.
@@ -133,9 +185,15 @@ REGRAS RÍGIDAS DE COPYWRITING:
 
 Responda APENAS com um objeto JSON:
 {
-  "headline_imagem": "HEADLINE FORTE EM CAIXA ALTA (2 A 6 PALAVRAS)",
+  "headline_imagem": "HEADLINE FORTE EM CAIXA ALTA (2 A 7 PALAVRAS)",
   "destaque_dourado": "PALAVRA EM DOURADO",
   "headline_apoio": "Frase de apoio complementar de 1 linha com benefício direto",
+  "texto_card": "Texto para dentro do card (se aplicável ao formato)",
+  "bloco_erro": "✕ COMO A MAIORIA FAZ: ... (se aplicável ao formato)",
+  "bloco_solucao": "✓ COM O MÉTODO KAV: ... (se aplicável ao formato)",
+  "notificacao_lead": "Texto de mensagem do lead (se aplicável ao formato)",
+  "metrica_destaque": "+340% ou ROAS 5.4X (se aplicável ao formato)",
+  "rotulo_metrica": "CRESCIMENTO EM VENDAS LOCAIS (se aplicável ao formato)",
   "legenda": "Legenda completa formatada"
 }
 """
@@ -236,12 +294,18 @@ def _logo_kav(cliente: dict, referencia: Optional[dict] = None) -> tuple[Optiona
     return (Path(arquivo) if arquivo and Path(arquivo).exists() else None, posicao)
 
 
-def gerar_copy_kav(pauta: dict, cliente: dict) -> dict:
-    """Gera os textos do post estático da Kav a partir da pauta sorteada com higienização estrita."""
+def gerar_copy_kav(pauta: dict, cliente: dict, estilo: Optional[dict] = None) -> dict:
+    """Gera os textos do post estático da Kav adaptados rigorosamente ao arquétipo visual sorteado."""
+    estilo = estilo or ESTILOS_LAYOUT_KAV[0]
     skill = cliente.get("skill", "")
     padrao = cliente.get("legenda_padrao", "") or "(Padrão Kav: gancho, explicação prática para PME, CTA no direct, hashtags)"
 
-    system = SYSTEM_COPY_KAV.replace("__SKILL__", skill).replace("__PADRAO_LEGENDA__", padrao)
+    system = (
+        SYSTEM_COPY_KAV.replace("__SKILL__", skill)
+        .replace("__PADRAO_LEGENDA__", padrao)
+        .replace("__NOME_ESTILO__", estilo["nome"])
+        .replace("__INSTRUCAO_COPY__", estilo.get("instrucao_copy", ""))
+    )
 
     prompt = (
         f"Pauta selecionada:\n"
@@ -251,27 +315,35 @@ def gerar_copy_kav(pauta: dict, cliente: dict) -> dict:
         f"- Analogia Prática: {pauta.get('analogia_pratica', '')}\n"
         f"- Headline sugerida pela pauta: {pauta.get('headline_sugerida', '')}\n"
         f"- Subtítulo sugerido: {pauta.get('subtitulo_apoio', '')}\n"
-        f"- CTA sugerido: {pauta.get('cta', 'Mande um direct')}\n"
+        f"- CTA sugerido: {pauta.get('cta', 'Mande um direct')}\n\n"
+        f"ATENÇÃO: Escreva a copy formatada rigorosamente para o arquétipo '{estilo['nome']}'."
     )
 
-    resposta = chamar_ia(system=system, prompt=prompt, max_tokens=750, temperature=0.75, json_mode=True)
-    dados = extrair_json(resposta)
-
-    # Remove qualquer selo antigo ou menção à marca
-    dados.pop("selo_produto", None)
+    try:
+        resposta = chamar_ia(system=system, prompt=prompt, max_tokens=850, temperature=0.75, json_mode=True)
+        dados = extrair_json(resposta)
+    except Exception:
+        dados = {
+            "headline_imagem": pauta.get("headline_sugerida", "TRÁFEGO LOCAL DE ALTA PERFORMANCE"),
+            "destaque_dourado": "PERFORMANCE",
+            "headline_apoio": pauta.get("subtitulo_apoio", "Mais clientes da sua região direto no seu WhatsApp."),
+            "legenda": "Legenda padrão da Kav para o post de teste.",
+        }
 
     headline = dados.get("headline_imagem", "")
     headline = re.sub(r"\b(KAV|CAVE|WAV)\b", "", headline, flags=re.IGNORECASE).strip()
     dados["headline_imagem"] = headline
+    dados["estilo_layout"] = estilo["id"]
+    dados["estilo_nome"] = estilo["nome"]
 
     return dados
 
 
 def gerar_brief_arte_kav(
-    copy: dict, pauta: dict, cliente: dict, referencia: Optional[dict]
+    copy: dict, pauta: dict, cliente: dict, referencia: Optional[dict], estilo: Optional[dict] = None
 ) -> tuple[str, dict]:
     """Monta o briefing em inglês para a IA de geração de imagem com diretrizes contrastantes por estilo."""
-    estilo = obter_estilo_kav(referencia)
+    estilo = estilo or obter_estilo_kav(referencia)
     posicao_logo = estilo.get("posicao_logo", "inferior-direito")
     area_logo = AREAS_LOGO.get(posicao_logo, "bottom-right corner")
 
@@ -284,10 +356,25 @@ def gerar_brief_arte_kav(
     partes = [
         f"Chosen Layout Archetype: {estilo['nome']} (ID: {estilo['id']})",
         f"Topic: {pauta.get('tema')}",
-        f'Headline to render in large bold type: "{copy.get("headline_imagem")}"',
-        f'Kav Gold (#EEB730) Highlighted Term: "{copy.get("destaque_dourado", "")}"',
-        f'Support text to render in smaller type: "{copy.get("headline_apoio")}"',
-        f"MANDATORY ARCHETYPE DIRECTIVE: {estilo['diretriz_cena']}",
+        f"MANDATORY ARCHETYPE DIRECTIVE:\n{estilo['diretriz_cena']}",
+        f'Main Headline: "{copy.get("headline_imagem")}"',
+        f'Kav Gold Highlight Term: "{copy.get("destaque_dourado", "")}"',
+    ]
+
+    if copy.get("texto_card"):
+        partes.append(f'Card Body Text: "{copy.get("texto_card")}"')
+    if copy.get("bloco_erro") and copy.get("bloco_solucao"):
+        partes.append(f'Box 1 (Amateur Mistake): "{copy.get("bloco_erro")}"')
+        partes.append(f'Box 2 (Kav Solution): "{copy.get("bloco_solucao")}"')
+    if copy.get("notificacao_lead"):
+        partes.append(f'Phone Push Notification Text: "{copy.get("notificacao_lead")}"')
+    if copy.get("metrica_destaque"):
+        partes.append(f'Huge Metric Number: "{copy.get("metrica_destaque")}"')
+        partes.append(f'Metric Label: "{copy.get("rotulo_metrica", "CRESCIMENTO EM VENDAS LOCAIS")}"')
+    if copy.get("headline_apoio"):
+        partes.append(f'Support Headline: "{copy.get("headline_apoio")}"')
+
+    partes.extend([
         (
             "STRICT NEGATIVE SPACE & NO BADGE MANDATE: "
             "1. NO TOP BOX/BADGE: DO NOT render any box or badge at the top (NO 'PERFORMANCE LOCAL', NO badges). "
@@ -298,9 +385,9 @@ def gerar_brief_arte_kav(
             "STRICT ANTI-CLICHE MANDATE: ABSOLUTELY DO NOT RENDER generic 3D miniature city maps, "
             "radar grids, or glowing yellow GPS location pins! Follow the specific archetype composition."
         ),
-    ]
+    ])
 
-    brief_gerado = chamar_ia(system=system, prompt="\n".join(partes), max_tokens=700, temperature=0.7)
+    brief_gerado = chamar_ia(system=system, prompt="\n".join(partes), max_tokens=750, temperature=0.7)
     return brief_gerado, estilo
 
 
@@ -311,7 +398,6 @@ def gerar_imagem_estatica_kav(
     estilo = estilo or obter_estilo_kav(referencia)
     referencias_imagem = []
 
-    # 1. Adiciona a referência de layout se existir
     if referencia and referencia.get("arquivo") and referencia["arquivo"].exists():
         referencias_imagem.append((
             referencia["arquivo"].read_bytes(),
@@ -340,11 +426,8 @@ def gerar_imagem_estatica_kav(
     if not bruta or not bruta.get("imagem_b64"):
         raise RuntimeError("A API de imagem não retornou nenhuma imagem.")
 
-    # Redimensiona para 1080x1350
     final_bytes = image_overlay.recortar_formato_final(base64.b64decode(bruta["imagem_b64"]))
 
-    # APLICAÇÃO PERFEITA DO LOGO POR CÓDIGO (PILLOW):
-    # Garante que o logotipo oficial da Kav fique 100% nítido, sem distorções de IA (evita "WAV", letras borradas ou tortas)
     if logo_arquivo and logo_arquivo.exists():
         final_bytes = image_overlay.aplicar_logo(final_bytes, logo_arquivo, posicao_logo)
 
