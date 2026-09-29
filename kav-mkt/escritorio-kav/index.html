@@ -1,207 +1,203 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kav Mkt — Escritório Virtual dos Agentes de IA</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kav Hotel — Escritório Virtual Isométrico 2.5D</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body class="habbo-theme">
-
-  <!-- CABEÇALHO DO ESCRITÓRIO ESTILO HABBO HOTEL -->
-  <header class="habbo-topbar">
-    <div class="habbo-brand">
-      <span class="habbo-logo-icon">🏢</span>
-      <div class="habbo-titles">
-        <h1 class="habbo-title">KAV MKT HOTEL</h1>
-        <p class="habbo-subtitle">Andar 7 · Sala de Performance & Criação Autônoma</p>
+  <!-- Top Navigation / Habbo Hotel Bar -->
+  <header class="top-nav habbo-nav">
+    <div class="brand">
+      <div class="brand-logo habbo-badge-logo">🏨 KAV HOTEL</div>
+      <div class="brand-meta">
+        <h1>Escritório Virtual 2.5D</h1>
+        <span class="sub">@kav.mkt · Sistema Multi-Agente Habbo Edition</span>
       </div>
     </div>
 
-    <!-- SELETOR DE CLIENTES NO TOPO -->
-    <div class="cliente-selector-container">
-      <label for="select-cliente" class="cliente-label">CLIENTE ATIVO:</label>
+    <div class="status-center">
+      <div class="pill habbo-pill client-pill">
+        <span class="dot live"></span>
+        <span>Cliente: <strong id="lbl-cliente-ativo">NN Restaurante</strong></span>
+      </div>
+      <div class="pill habbo-pill team-pill">
+        <span>Equipe: <strong>6 Habbos Online</strong></span>
+      </div>
+      <div class="pill habbo-pill time-pill" id="live-clock">--:--:--</div>
+    </div>
+
+    <div class="actions">
       <select id="select-cliente" class="select-cliente habbo-select" title="Selecione o cliente para produção">
         <option value="nn-restaurante">🍽️ NN Restaurante</option>
-        <option value="kav">🚀 Kav (@kav.mkt)</option>
         <option value="ponto-car">🚗 Ponto Car</option>
+        <option value="kav">🚀 Kav (@kav.mkt)</option>
       </select>
-    </div>
-
-    <div class="habbo-actions">
-      <button id="btn-produzir" class="habbo-btn habbo-btn-gold">
-        <span class="btn-icon">⚡</span> PRODUZIR POST
+      <select id="select-modo" class="select-cliente habbo-select" title="Tipo de peça a produzir">
+        <option value="campanha">🎯 Campanha Meta Ads (Performance)</option>
+        <option value="organico">📱 Feed Orgânico Tradicional</option>
+      </select>
+      <button id="btn-play" class="btn btn-play habbo-btn-green" title="Disparar a esteira real de agentes de IA para criar o post">
+        ▶️ Dar o Play
       </button>
-      <button id="btn-demo" class="habbo-btn habbo-btn-blue">
-        <span>🎮</span> SIMULAR
+      <button id="btn-ver-posts" class="btn btn-secondary habbo-btn-secondary" title="Ver posts e legendas concluídos">
+        📦 Posts & Legendas
       </button>
-      <div class="habbo-status-badge">
-        <span class="status-dot pulsing"></span>
-        <span id="label-status">4 AGENTES ONLINE</span>
-      </div>
+      <button id="btn-refresh" class="btn btn-secondary habbo-btn-secondary" title="Resetar posições dos agentes no hotel">
+        🔄
+      </button>
+      <button id="btn-demo" class="btn btn-secondary habbo-btn-gold" title="Simular animação de corrida e trabalho nos computadores">
+        ⚡ Simular Corrida
+      </button>
     </div>
   </header>
 
-  <!-- CENÁRIO ISOMÉTRICO DO ESCRITÓRIO HABBO -->
-  <main class="habbo-hotel-room">
-    <!-- PISO ISOMÉTRICO QUADRICULADO -->
-    <div class="isometric-floor-grid"></div>
+  <!-- Painel de Metas & Diretrizes no Topo da Sala -->
+  <section class="habbo-metrics-strip">
+    <div class="metric-item">
+      <span class="m-label">META ADS (30D)</span>
+      <span class="m-val gold">R$ 260,79</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric-item">
+      <span class="m-label">WHATSAPP LEADS</span>
+      <span class="m-val green">53 iniciadas</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric-item">
+      <span class="m-label">FOTOS DO ACERVO</span>
+      <span class="m-val gold">33 fotos reais</span>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric-item">
+      <span class="m-label">SITUAÇÃO DO HOTEL</span>
+      <span class="m-val status" id="team-work-status">☕ Relax no Kav Café</span>
+    </div>
+  </section>
 
-    <!-- PAREDES DO ESCRITÓRIO -->
-    <div class="room-wall room-wall-left"></div>
-    <div class="room-wall room-wall-right"></div>
+  <!-- Palco Isométrico 3D / Habbo Room Viewport -->
+  <main class="habbo-office-container">
+    <div class="habbo-viewport" id="habbo-viewport">
+      <!-- Canvas 2.5D com renderização em Pixel Art estilo Habbo Hotel -->
+      <canvas id="habbo-canvas" width="1180" height="690"></canvas>
 
-    <!-- QUADRO DE METAS NA PAREDE -->
-    <div class="wall-decoration chalkboard">
-      <div class="chalkboard-header">METAS DA SEMANA</div>
-      <div class="chalkboard-content">
-        <span>✓ 5 Posts Orgânicos</span>
-        <span>✓ 2 Campanhas Tráfego</span>
-        <span>⏱️ Custo/Msg: &lt; R$ 1,80</span>
+      <!-- Camada DOM de Balões de Fala com Emojis (Habbo Chat Bubbles) -->
+      <div id="habbo-chat-layer" class="habbo-chat-layer">
+        <!-- Injetado dinamicamente pelo motor do Habbo -->
+      </div>
+
+      <!-- Legendas Rápidas de Navegação -->
+      <div class="habbo-room-tags">
+        <div class="room-tag-zone tag-cafe">☕ KAV CAFÉ & LOUNGE</div>
+        <div class="room-tag-zone tag-work">💻 ESTAÇÕES EXECUTIVAS KAV</div>
       </div>
     </div>
-
-    <!-- ESTAÇÕES DE TRABALHO DOS 4 AGENTES -->
-    <div class="workstations-container">
-
-      <!-- ESTAÇÃO 1: BENEDITO (CURADOR DE FOTOS / PRODUTO) -->
-      <div class="agent-desk" id="desk-benedito" data-agent="curador">
-        <div class="agent-avatar habbo-avatar avatar-benedito">
-          <div class="avatar-head"></div>
-          <div class="avatar-body"></div>
-          <div class="avatar-bubble" id="bubble-benedito">Analisando fotos...</div>
-        </div>
-        <div class="desk-furniture">
-          <div class="desk-computer screen-on"></div>
-          <div class="desk-chair"></div>
-          <div class="desk-item food-plate"></div>
-        </div>
-        <div class="agent-nametag">
-          <span class="agent-badge">CURADOR</span>
-          <span class="agent-name">Benedito</span>
-        </div>
-      </div>
-
-      <!-- ESTAÇÃO 2: CLARICE (COPYWRITER / REDATORA) -->
-      <div class="agent-desk" id="desk-clarice" data-agent="copywriter">
-        <div class="agent-avatar habbo-avatar avatar-clarice">
-          <div class="avatar-head"></div>
-          <div class="avatar-body"></div>
-          <div class="avatar-bubble" id="bubble-clarice">Criando headline...</div>
-        </div>
-        <div class="desk-furniture">
-          <div class="desk-computer screen-on typing"></div>
-          <div class="desk-chair"></div>
-          <div class="desk-item coffee-mug"></div>
-        </div>
-        <div class="agent-nametag">
-          <span class="agent-badge">COPYWRITER</span>
-          <span class="agent-name">Clarice</span>
-        </div>
-      </div>
-
-      <!-- ESTAÇÃO 3: JOAQUIM (DESIGNER / ARTISTA) -->
-      <div class="agent-desk" id="desk-joaquim" data-agent="designer">
-        <div class="agent-avatar habbo-avatar avatar-joaquim">
-          <div class="avatar-head"></div>
-          <div class="avatar-body"></div>
-          <div class="avatar-bubble" id="bubble-joaquim">Montando layout 4:5...</div>
-        </div>
-        <div class="desk-furniture">
-          <div class="desk-computer dual-screen screen-art"></div>
-          <div class="desk-chair"></div>
-          <div class="desk-item graphic-tablet"></div>
-        </div>
-        <div class="agent-nametag">
-          <span class="agent-badge">DESIGNER</span>
-          <span class="agent-name">Joaquim</span>
-        </div>
-      </div>
-
-      <!-- ESTAÇÃO 4: OTÁVIO (DIRETOR DE ARTE / SUPERVISOR) -->
-      <div class="agent-desk desk-executive" id="desk-otavio" data-agent="diretor_arte">
-        <div class="agent-avatar habbo-avatar avatar-otavio">
-          <div class="avatar-head"></div>
-          <div class="avatar-body"></div>
-          <div class="avatar-bubble" id="bubble-otavio">Avaliando contraste...</div>
-        </div>
-        <div class="desk-furniture executive-furniture">
-          <div class="desk-computer screen-inspect"></div>
-          <div class="desk-chair leather-chair"></div>
-          <div class="desk-item magnifying-glass"></div>
-        </div>
-        <div class="agent-nametag">
-          <span class="agent-badge badge-boss">DIRETOR DE ARTE</span>
-          <span class="agent-name">Otávio</span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- MÁQUINA DE CAFÉ NO CANTO DO ESCRITÓRIO -->
-    <div class="furniture-decoration coffee-machine">
-      <span class="steam-particle">♨</span>
-    </div>
-
-    <!-- PLANTA DECORATIVA -->
-    <div class="furniture-decoration office-plant">🌿</div>
-
-    <!-- PRATELEIRA DE PRÊMIOS / TROFÉUS -->
-    <div class="furniture-decoration trophy-shelf">🏆🏆</div>
-
   </main>
 
-  <!-- PAINEL INFERIOR DE LOGS E FEED DO INSTAGRAM GERADO -->
-  <footer class="habbo-control-deck">
-    
-    <!-- TERMINAL DE CONVERSA DOS AGENTES -->
-    <div class="habbo-chat-log">
-      <div class="chat-header">
-        <span>💬 DIÁLOGO EM TEMPO REAL DA EQUIPE</span>
-        <button id="btn-limpar-chat" class="btn-tiny">Limpar</button>
-      </div>
-      <div id="chat-stream" class="chat-messages">
-        <div class="chat-msg system">
-          <span class="msg-time">[00:00]</span> <strong>Sistema:</strong> Escritório virtual conectado. Pronto para rodar pauta e produção.
-        </div>
+  <!-- Rodapé / Barra de Atividade Estilo Habbo Console -->
+  <footer class="habbo-footer-bar">
+    <div class="habbo-feed-badge">
+      <span class="habbo-pulse-dot"></span>
+      <span>HABBO CONSOLE:</span>
+    </div>
+    <div class="habbo-feed-scroll">
+      <div class="habbo-feed-text" id="feed-ticker">
+        Hotel Kav 2.5D online · Equipe relaxando no café · Clique em '▶️ Dar o Play' para os Habbos correrem para suas estações de trabalho!
       </div>
     </div>
-
-    <!-- PREVIEW DO POST GERADO -->
-    <div class="habbo-post-preview" id="post-preview-panel">
-      <div class="preview-header">
-        <span>📱 ENTREGA FINAL (INSTAGRAM FEED 4:5)</span>
-        <span id="preview-tag-status" class="preview-badge">Aguardando</span>
-      </div>
-      <div class="preview-body">
-        <div class="mockup-phone">
-          <div class="mockup-screen">
-            <div id="preview-image-container" class="preview-image-placeholder">
-              <span>🖼️ A imagem gerada pelos agentes aparecerá aqui</span>
-            </div>
-            <div class="mockup-caption">
-              <p id="preview-headline" class="caption-headline">Headline do Post</p>
-              <p id="preview-caption" class="caption-text">Legenda persuasiva com gancho, história e chamada para ação...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </footer>
 
-  <!-- MODAL DE SUCESSO / APROVAÇÃO HABBO -->
-  <div id="modal-entrega" class="habbo-modal hidden">
-    <div class="modal-box">
-      <div class="modal-header">
-        <span>🎉 POST APROVADO PELO DIRETOR!</span>
-        <button id="btn-fechar-modal" class="btn-close">×</button>
+  <!-- Modal / Crachá Estilo Habbo Passport / Habbo Club -->
+  <div class="modal-overlay" id="agent-modal">
+    <div class="modal-card habbo-modal-card">
+      <button class="btn-close" id="modal-close">&times;</button>
+      <div class="modal-header habbo-modal-header">
+        <div class="modal-avatar-preview habbo-passport-avatar" id="modal-avatar-icon">
+          <canvas id="passport-avatar-canvas" width="64" height="64"></canvas>
+        </div>
+        <div>
+          <h2 id="modal-name">Nome do Agente</h2>
+          <span class="modal-role habbo-gold-text" id="modal-role">Cargo</span>
+          <span class="modal-dept" id="modal-dept">Departamento</span>
+        </div>
       </div>
-      <div class="modal-body" id="modal-conteudo">
-        <!-- Preenchido via JavaScript -->
+
+      <div class="modal-body">
+        <div class="modal-section">
+          <h4>STATUS ATUAL NO HOTEL</h4>
+          <div class="status-indicator-box habbo-status-box">
+            <span class="badge-dot" id="modal-status-dot"></span>
+            <span id="modal-status-text">Online no Hotel</span>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <h4>EM EXECUÇÃO</h4>
+          <p class="task-desc" id="modal-current-task">Aguardando comando na esteira...</p>
+        </div>
+
+        <div class="modal-section">
+          <h4>HUMOR DO HABBO</h4>
+          <div class="quote-box habbo-quote-box" id="modal-speech">☕ Pausa pro café</div>
+        </div>
+
+        <div class="modal-section">
+          <h4>HISTÓRICO NO QUARTO</h4>
+          <ul class="activity-history-list habbo-history-list" id="modal-history">
+            <li>Quarto Kav Hotel carregado com motor 2.5D isométrico.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Entrega do Post Gerado -->
+  <div class="modal-overlay" id="post-delivery-modal">
+    <div class="modal-card modal-post-card habbo-post-modal">
+      <button class="btn-close" id="post-modal-close">&times;</button>
+      <div class="modal-header habbo-modal-header">
+        <div>
+          <h2 id="post-modal-title">🎉 Post Concluído com Sucesso!</h2>
+          <span class="modal-role habbo-gold-text" id="post-modal-subtitle">Esteira de Agentes Autônomos Kav · Habbo Edition</span>
+        </div>
+      </div>
+      <div class="modal-body post-modal-grid">
+        <div class="post-preview-col">
+          <div class="post-image-container habbo-img-frame" id="post-image-box">
+            <img id="post-modal-img" src="" alt="Arte do Post" style="display:none;">
+            <div id="post-modal-img-placeholder" style="color:#8A9BB8; font-size:12px; text-align:center; padding:20px;">
+              Imagem em processamento ou modo teste
+            </div>
+          </div>
+          <a id="post-modal-download-link" href="#" download="post-kav.png" class="btn btn-primary habbo-btn-gold btn-block" style="text-decoration:none; text-align:center;">
+            ⬇️ Baixar Imagem (.png)
+          </a>
+        </div>
+        <div class="post-text-col">
+          <div class="modal-section">
+            <h4>CHAMADA (HEADLINE)</h4>
+            <p class="post-headline-text" id="post-modal-headline">-</p>
+          </div>
+          <div class="modal-section">
+            <h4>SELO</h4>
+            <span class="badge-selo habbo-badge-selo" id="post-modal-selo">-</span>
+          </div>
+          <div class="modal-section">
+            <div class="section-header-flex">
+              <h4>LEGENDA DO POST</h4>
+              <button id="post-modal-copy-btn" class="btn btn-secondary btn-sm habbo-btn-secondary">📋 Copiar Legenda</button>
+            </div>
+            <pre class="post-copy-box habbo-copy-box" id="post-modal-copy"></pre>
+          </div>
+          <div class="modal-section">
+            <h4>CRIAÇÃO</h4>
+            <p class="post-creators-text" id="post-modal-creators">Curadoria: Benedito · Texto: Clarice · Arte: Joaquim</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
