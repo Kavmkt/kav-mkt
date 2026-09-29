@@ -3,8 +3,8 @@
 Gera posts estáticos únicos de altíssimo impacto para o feed da própria agência,
 com foco em Tráfego Pago Local para PMEs e Marketing Descomplicado.
 Alterna dinamicamente entre os 5 arquétipos de layout oficiais da marca com anti-repetição contínua
-e aplica o logotipo oficial da Kav diretamente como referência de imagem única,
-proibindo estritamente a repetição da marca e clichês visuais (como mapas 3D com pins de GPS).
+e aplica o logotipo oficial da Kav por código (Pillow) com nitidez vetorial e transparência perfeita,
+eliminando de vez qualquer distorção de IA (letras trocadas, "WAV", etc.) e blocos desnecessários no topo.
 """
 from __future__ import annotations
 
@@ -29,53 +29,20 @@ AREAS_LOGO = {
 
 ESTILOS_LAYOUT_KAV = [
     {
-        "id": "manifesto_palavra_dourada",
-        "arquivo_referencia": "ref_manifesto_palavra_dourada.png",
-        "nome": "Manifesto com Palavra Dourada",
-        "posicao_logo": "inferior-direito",
-        "diretriz_cena": (
-            "Composição de manifesto editorial de altíssima autoridade. "
-            "A peça é 100% tipográfica e minimalista. Tipografia monumental em Plus Jakarta Sans "
-            "(peso ExtraBold/Black) dominante na metade superior, com 1 a 2 palavras-chave centrais em Dourado Kav "
-            "(#EEB730) sublinhadas com traço fino dourado de destaque. "
-            "Linha de apoio explicativa curta e objetiva logo abaixo. "
-            "No rodapé inferior centralizado, botão pill fino arredondado contendo estritamente '[ →  Leia a legenda ]'. "
-            "Fundo: Azul noturno profundo sólido (#001424 com gradiente radial ultra suave para profundidade). "
-            "PROIBIÇÃO RIGOROSA: TERMINANTEMENTE PROIBIDO ilustrações 3D, mapas de GPS, radares, alfinetes/pins de localização "
-            "ou desenhos literais. Manter design editorial puro, limpo e escuro."
-        ),
-    },
-    {
         "id": "afirmacao_tweet_box",
         "arquivo_referencia": "ref_afirmacao_tweet_box.png",
         "nome": "Card Flutuante / Tweet Box",
         "posicao_logo": "superior-esquerdo",
         "diretriz_cena": (
-            "Composição moderna de 'Card Flutuante' (estilo post/tweet de autoridade). "
-            "No centro do layout, um CARD RETANGULAR ELEGANTE em tom azul noturno (#031E34) com borda fina translúcida "
-            "(#123452) e cantos suavemente arredondados. "
-            "Dentro do card, uma afirmação provocativa e marcante em tipografia limpa, com palavras-chave em Dourado Kav (#EEB730). "
-            "Abaixo do primeiro card, um segundo box explicativo menor com a tese prática. "
-            "No rodapé do card ou da peça, chamada discreta com seta dourada: 'Leia a legenda ↘'. "
-            "Fundo: Fundo azul escuro profundo (#00101C) com desfoque suave de profundidade (bokeh noturno dark mode), "
-            "criando contraste e destaque para o card em primeiro plano. "
-            "PROIBIÇÃO RIGOROSA: PROIBIDO mapas 3D ou pins de localização. Foco total na estrutura do card flutuante."
-        ),
-    },
-    {
-        "id": "impacto_condensado_grid",
-        "arquivo_referencia": "ref_impacto_condensado_grid.png",
-        "nome": "Impacto Condensado com Grade Técnica",
-        "posicao_logo": "superior-direito",
-        "diretriz_cena": (
-            "Composição técnica de performance e inteligência de dados. "
-            "Fundo: Superfície azul-marinho escura com uma MICRO-GRADE TÉCNICA GEOMÉTRICA (linhas vetoriais milimétricas e finas "
-            "em azul técnico #072036 formando um grid de coordenadas ou blueprint de dados). "
-            "No topo, um badge retangular minimalista com ícone de crescimento (ex: '[ 📈 PERFORMANCE LOCAL ]' ou '[ 🎯 ESCALA PME ]'). "
-            "No corpo da peça, HEADLINE MACIÇA EM LARGURA TOTAL (Full-Width Typography em Plus Jakarta Sans 900) em caixa alta imponente, "
-            "ocupando quase toda a largura com peso visual marcante. "
-            "Na base da imagem, uma linha/tarja elegante com termos técnicos de performance (ex: 'Tráfego Local · Conversão · WhatsApp · ROI'). "
-            "PROIBIÇÃO RIGOROSA: PROIBIDO mapas 3D renderizados ou pins de localização. O grid deve ser puramente técnico, sutil e bidimensional."
+            "ARQUÉTIPO: CARD FLUTUANTE CENTRALIZADO (Estilo Tweet de Autoridade / Post em Box). "
+            "No centro exato do layout, crie um CARD RETANGULAR ELEGANTE em tom azul noturno escuro (#031E34) "
+            "com borda fina translúcida ciano/azulada (#123452) e cantos suavemente arredondados. "
+            "Dentro deste card flutuante, a headline provocativa é renderizada em tipografia limpa com palavras em Dourado Kav (#EEB730). "
+            "Abaixo, dentro do mesmo card ou em um segundo card menor de apoio, a frase explicativa curta. "
+            "No rodapé do card, uma chamada elegante: 'Leia a legenda ↘' com a seta em Dourado Solar. "
+            "Fundo da imagem: Azul petróleo muito profundo (#00101C) com suave desfoque dark bokeh para dar destaque total ao card central. "
+            "PROIBIÇÃO RIGOROSA: PROIBIDO bloco ou caixa de texto no topo ('PERFORMANCE LOCAL'). O topo deve ser limpo! "
+            "PROIBIDO mapas 3D ou pins de GPS."
         ),
     },
     {
@@ -84,14 +51,31 @@ ESTILOS_LAYOUT_KAV = [
         "nome": "Destaque Visual de Contraste Dourado",
         "posicao_logo": "inferior-direito",
         "diretriz_cena": (
-            "Composição gráfica minimalista e conceitual com metáfora de destaque no mercado local. "
-            "Na metade superior, frase provocativa em tipografia média cinza ardósia (#94A3B8). "
-            "No CENTRO da arte, uma MATRIZ GEOMÉTRICA MINIMALISTA (grade de pequenos blocos ou pontos translúcidos discretos organizados), "
-            "na qual APENAS O ELEMENTO CENTRAL É DIFERENTE: um ícone brilhante de estrela ou bloco em DOURADO SOLAR "
-            "(#EEB730 com símbolo '★' e leve aura dourada), simbolizando o negócio que se destaca no raio local enquanto todos os outros são comuns. "
-            "Na base inferior, conclusão impactante em tipografia branca forte (ex: 'Domine o raio de 5 km. Seja a referência do seu bairro.'). "
-            "Fundo: Azul petróleo profundo (#00101C) com iluminação sutil concentrada no ponto dourado central. "
-            "PROIBIÇÃO RIGOROSA: PROIBIDO mapa 3D com radar ou pin de GPS. Manter a metáfora geométrica limpa."
+            "ARQUÉTIPO: ELEMENTO GRÁFICO CENTRAL DE DESTAQUE DOURADO (Metáfora de Destaque Local). "
+            "No centro vertical da arte, renderize uma MATRIZ GEOMÉTRICA MINIMALISTA: uma grade simétrica de pequenos quadrados "
+            "ou pontos translúcidos discretos, onde APENAS O ELEMENTO DO CENTRO se destaca brilhando intensamente em Dourado Solar "
+            "(#EEB730 com símbolo de estrela '★' e leve aura luminosa), simbolizando a única empresa que brilha na região. "
+            "Na metade superior, acima do gráfico, frase reflexiva em tipografia cinza metálica (#94A3B8). "
+            "Na base inferior, abaixo do gráfico, conclusão impactante em tipografia branca forte. "
+            "Fundo: Azul petróleo nobre (#00101C) com iluminação sutil e focal concentrada no elemento dourado central. "
+            "PROIBIÇÃO RIGOROSA: PROIBIDO bloco no topo ('PERFORMANCE LOCAL'). Topo totalmente limpo. "
+            "PROIBIDO mapa 3D com radar ou pin de GPS."
+        ),
+    },
+    {
+        "id": "impacto_condensado_grid",
+        "arquivo_referencia": "ref_impacto_condensado_grid.png",
+        "nome": "Impacto Condensado com Grade Técnica",
+        "posicao_logo": "superior-direito",
+        "diretriz_cena": (
+            "ARQUÉTIPO: GRADE TÉCNICA DE DADOS & TIPOGRAFIA FULL-WIDTH MACIÇA. "
+            "Fundo: Superfície azul-marinho profunda com uma MICRO-GRADE TÉCNICA GEOMÉTRICA nítida e sutil (linhas vetoriais "
+            "milimétricas em azul técnico #072036 formando um grid de blueprint ou coordenadas de performance). "
+            "No corpo da peça, a HEADLINE É GIGANTE E MACIÇA (Full-Width Typography em Plus Jakarta Sans 900), "
+            "ocupando de 60% a 70% da área útil em letras maiúsculas monumentais brancas e douradas com peso visual brutal. "
+            "Na base da imagem, uma barra/tarja horizontal limpa com termos técnicos de performance separados por pontos. "
+            "PROIBIÇÃO RIGOROSA: PROIBIDO bloco de texto no topo ('PERFORMANCE LOCAL'). "
+            "PROIBIDO mapas 3D ou pins de GPS. O grid deve ser estritamente técnico e bidimensional."
         ),
     },
     {
@@ -100,14 +84,28 @@ ESTILOS_LAYOUT_KAV = [
         "nome": "Quebra de Objeção com Card de Solução",
         "posicao_logo": "superior-esquerdo",
         "diretriz_cena": (
-            "Composição assimétrica em dois blocos verticais contrastantes. "
-            "Metade superior: Headline afiada atacando um erro clássico do empresário (ex: 'Você não precisa abaixar o seu preço') "
-            "em tipografia branca limpa de alto impacto. "
-            "Metade inferior: Um CARD ELEGANTE DESLOCADO com contorno destacado em Dourado Kav (#EEB730, borda de 2px) e fundo azul escuro "
-            "(#031E34), apresentando a virada de chave do método da agência. "
-            "Abaixo do card, botão pill arredondado com chamada para ação direta: '[ Arrasta pra entender → ]'. "
-            "Fundo: Gradiente institucional noturno sóbrio (#001424 a #000E19), sem elementos gráficos concorrentes. "
-            "PROIBIÇÃO RIGOROSA: PROIBIDO mapas 3D ou pins de GPS."
+            "ARQUÉTIPO: DOIS BLOCOS ASSIMÉTRICOS COM CARD DE BORDA DOURADA. "
+            "A arte é dividida verticalmente em dois blocos contrastantes: "
+            "Metade superior: Frase afiada atacando um mito de marketing (em tipografia branca limpa de alto impacto). "
+            "Metade inferior: Um CARD RETANGULAR DESTACADO com CONTORNO DOURADO KAV (#EEB730, borda nítida de 2px) e fundo escuro (#031E34), "
+            "apresentando a virada de chave do negócio. Abaixo do card, botão pill arredondado: '[ Arrasta pra entender → ]'. "
+            "Fundo: Gradiente escuro noturno profundo e minimalista. "
+            "PROIBIÇÃO RIGOROSA: PROIBIDO bloco no topo ('PERFORMANCE LOCAL'). Topo limpo! PROIBIDO mapas 3D ou pins de GPS."
+        ),
+    },
+    {
+        "id": "manifesto_palavra_dourada",
+        "arquivo_referencia": "ref_manifesto_palavra_dourada.png",
+        "nome": "Manifesto com Palavra Dourada",
+        "posicao_logo": "inferior-direito",
+        "diretriz_cena": (
+            "ARQUÉTIPO: MANIFESTO EDITORIAL MINIMALISTA MONUMENTAL. "
+            "A peça é 100% tipográfica, sóbria e imponente. Tipografia monumental em Plus Jakarta Sans Black na metade superior, "
+            "com 1 a 2 palavras centrais em Dourado Kav (#EEB730) sublinhadas com traço fino dourado de destaque. "
+            "Frase curta de apoio embaixo e botão pill fino arredondado no rodapé inferior contendo estritamente '[ →  Leia a legenda ]'. "
+            "Fundo: Azul noturno escuro puro (#001424 com gradiente radial sutil). "
+            "PROIBIÇÃO RIGOROSA: PROIBIDO qualquer bloco ou caixa de texto no topo ('PERFORMANCE LOCAL' está proibido!). "
+            "PROIBIDO mapas 3D, radares ou pins de localização."
         ),
     },
 ]
@@ -127,10 +125,7 @@ REGRAS RÍGIDAS DE COPYWRITING:
    NUNCA escreva a palavra "Kav", "Cave" ou o nome da agência na headline da imagem — a chamada deve focar no cliente e no negócio dele.
 2. DESTAQUE DOURADO: Indique 1 a 2 palavras da headline que devem receber o Dourado Kav (#EEB730) para quebra de padrão visual.
 3. HEADLINE DE APOIO: 1 frase complementar direta que explica a tese sem jargões desnecessários.
-4. SELO CONCEITUAL: PROIBIDO usar o nome "KAV" ou "CAVE" no selo!
-   O logotipo oficial da agência já é aplicado na arte separadamente. O selo deve ser puramente conceitual.
-   Exemplos: "PERFORMANCE LOCAL", "TRÁFEGO PARA PMES", "MARKETING DESCOMPLICADO", "ESCALA & VENDAS", "AQUISIÇÃO NO WHATSAPP".
-5. LEGENDA DO POST:
+4. LEGENDA DO POST:
    - Gancho provocativo na 1ª linha.
    - 2 a 3 parágrafos objetivos explicando o conceito com analogia simples do comércio/serviço.
    - Chamada para ação (CTA) convidando para enviar um direct.
@@ -141,7 +136,6 @@ Responda APENAS com um objeto JSON:
   "headline_imagem": "HEADLINE FORTE EM CAIXA ALTA (2 A 6 PALAVRAS)",
   "destaque_dourado": "PALAVRA EM DOURADO",
   "headline_apoio": "Frase de apoio complementar de 1 linha com benefício direto",
-  "selo_produto": "PERFORMANCE LOCAL",
   "legenda": "Legenda completa formatada"
 }
 """
@@ -155,27 +149,23 @@ DEFINITIVE BRAND IDENTITY & KEY VISUAL:
    - High-contrast geometric neo-grotesque styling with tight, modern letter spacing.
    - Headline Weight: ExtraBold (800) or Black (900), clean and punchy.
    - Subtitle/Card Weight: Medium (500) to Regular (400), perfectly legible.
-   - UI elements, badges and pills: SemiBold (600).
 2. DEFINITIVE COLOR PALETTE:
    - Background: Deep nocturnal navy (#001D32 and #001424) specific to the chosen archetype.
-   - Accent & Highlight: Exclusively Kav Gold / Solar Amber (#EEB730). Used for highlighted words in the headline, subtle underline accents, CTA arrows (↘, →), and badge outlines. Never use generic orange or red.
+   - Accent & Highlight: Exclusively Kav Gold / Solar Amber (#EEB730). Used for highlighted words in the headline, subtle underline accents, CTA arrows (↘, →).
    - Primary Text: Crisp pure white (#FFFFFF) for absolute contrast and readability on dark screens.
    - Secondary Text: Metallic Slate Gray (#94A3B8).
-   - Card/Pill containers: Dark nocturnal card (#031E34) with thin subtle stroke borders (#123452).
-3. COMPOSITION & SAFE ZONES:
-   - Minimum 6% to 8% breathing room margin from all 4 borders.
-4. BRAND LOGO INTEGRATION & ANTI-DUPLICATION RULE:
-   - The official brand logo in Reference 2 is the ONLY branding mark allowed on the piece.
-   - Position it cleanly in the designated branding area (__AREA_LOGO__) with strong contrast and safe breathing margins (>= 6% from borders).
-   - STRICT PROHIBITION: DO NOT write the word "Kav", "Cave", or "Kav Marketing" anywhere in the headline, support text, badges, or background. DO NOT duplicate or redraw the logo.
+   - Card containers: Dark nocturnal card (#031E34) with thin subtle stroke borders (#123452).
+3. SAFE ZONES & NEGATIVE SPACE:
+   - Leave the __AREA_LOGO__ COMPLETELY CLEAR with empty negative space (NO letters, NO text, NO drawing).
+   - NO TOP BADGE: DO NOT render any box, pill, tag, or label at the top (NO 'PERFORMANCE LOCAL', NO badges). The top area must be completely clean!
+4. STRICT ANTI-HALLUCINATION & ANTI-DUPLICATION MANDATE:
+   - DO NOT ATTEMPT TO DRAW OR REPRODUCE ANY LOGO OR BRAND TEXT BY HAND. The official logo is inserted programmatically after generation.
+   - ABSOLUTELY DO NOT write 'Kav', 'WAV', 'Cave', or 'Kav Marketing' anywhere on the canvas!
+   - ABSOLUTELY NO generic 3D miniature city maps, radar grids, or yellow GPS pins!
 
-LAYOUT ARCHETYPE TO FOLLOW: __NOME_ESTILO__
-ARCHETYPE DIRECTIVE:
+LAYOUT ARCHETYPE TO EMULATE: __NOME_ESTILO__
+ARCHETYPE COMPOSITION:
 __DIRETRIZ_CENA__
-
-Strict rules:
-- ABSOLUTELY NO generic 3D miniature city maps, radars, isometric road navigation grids, or yellow GPS pins!
-- Render the headline, supporting text, and badges exactly as provided, word for word, in Portuguese.
 
 Write ONLY the brief in dense English text (with Portuguese quotes for headlines). No markdown, no bullet lists.
 """
@@ -267,14 +257,12 @@ def gerar_copy_kav(pauta: dict, cliente: dict) -> dict:
     resposta = chamar_ia(system=system, prompt=prompt, max_tokens=750, temperature=0.75, json_mode=True)
     dados = extrair_json(resposta)
 
-    # Higienização de segurança: remove repetição da marca no selo e na headline
-    selo = dados.get("selo_produto", "PERFORMANCE LOCAL")
-    selo_limpo = re.sub(r"\bKAV\s*[·•\-\/]?\s*", "", selo, flags=re.IGNORECASE).strip()
-    selo_limpo = re.sub(r"\bCAVE\s*[·•\-\/]?\s*", "", selo_limpo, flags=re.IGNORECASE).strip()
-    dados["selo_produto"] = selo_limpo or "PERFORMANCE LOCAL"
+    # Remove qualquer selo antigo ou menção à marca
+    dados.pop("selo_produto", None)
 
     headline = dados.get("headline_imagem", "")
-    dados["headline_imagem"] = re.sub(r"\bCAVE\b", "KAV", headline, flags=re.IGNORECASE).strip()
+    headline = re.sub(r"\b(KAV|CAVE|WAV)\b", "", headline, flags=re.IGNORECASE).strip()
+    dados["headline_imagem"] = headline
 
     return dados
 
@@ -286,12 +274,6 @@ def gerar_brief_arte_kav(
     estilo = obter_estilo_kav(referencia)
     posicao_logo = estilo.get("posicao_logo", "inferior-direito")
     area_logo = AREAS_LOGO.get(posicao_logo, "bottom-right corner")
-    logo_arquivo, _ = _logo_kav(cliente, referencia)
-
-    # Garante selo sem 'Kav'
-    selo_texto = copy.get("selo_produto", "PERFORMANCE LOCAL")
-    selo_limpo = re.sub(r"\bKAV\s*[·•\-\/]?\s*", "", selo_texto, flags=re.IGNORECASE).strip()
-    copy["selo_produto"] = selo_limpo or "PERFORMANCE LOCAL"
 
     system = (
         SYSTEM_DESIGN_KAV.replace("__NOME_ESTILO__", estilo["nome"])
@@ -302,20 +284,19 @@ def gerar_brief_arte_kav(
     partes = [
         f"Chosen Layout Archetype: {estilo['nome']} (ID: {estilo['id']})",
         f"Topic: {pauta.get('tema')}",
-        f"Category: {pauta.get('pilar', 'Local Performance Marketing')}",
         f'Headline to render in large bold type: "{copy.get("headline_imagem")}"',
         f'Kav Gold (#EEB730) Highlighted Term: "{copy.get("destaque_dourado", "")}"',
         f'Support text to render in smaller type: "{copy.get("headline_apoio")}"',
-        f'Top/Category Badge (strictly conceptual, NO brand name): "{copy.get("selo_produto")}"',
-        f"MANDATORY ARCHETYPE SCENE DIRECTIVE: {estilo['diretriz_cena']}",
+        f"MANDATORY ARCHETYPE DIRECTIVE: {estilo['diretriz_cena']}",
         (
-            "STRICT ANTI-CLICHE MANDATE: ABSOLUTELY DO NOT RENDER generic 3D miniature city maps, "
-            "radar grids, or glowing yellow GPS location pins! Keep the background and layout strictly faithful "
-            f"to the chosen archetype '{estilo['nome']}'."
+            "STRICT NEGATIVE SPACE & NO BADGE MANDATE: "
+            "1. NO TOP BOX/BADGE: DO NOT render any box or badge at the top (NO 'PERFORMANCE LOCAL', NO badges). "
+            f"2. LOGO AREA: Keep the {area_logo} completely empty and uncluttered (negative space). "
+            "3. DO NOT attempt to draw the logo or the word 'Kav' by hand — the official vector logo is applied automatically by code!"
         ),
         (
-            "BRAND NAME & LOGO RULES: The official brand logo provided in Reference 2 will appear once in the "
-            f"{area_logo}. ZERO other mentions of 'Kav', 'Cave', or 'Kav Marketing' are allowed in any text element."
+            "STRICT ANTI-CLICHE MANDATE: ABSOLUTELY DO NOT RENDER generic 3D miniature city maps, "
+            "radar grids, or glowing yellow GPS location pins! Follow the specific archetype composition."
         ),
     ]
 
@@ -326,7 +307,7 @@ def gerar_brief_arte_kav(
 def gerar_imagem_estatica_kav(
     brief: str, cliente: dict, referencia: Optional[dict], estilo: Optional[dict] = None
 ) -> dict:
-    """Gera a imagem estática 4:5 passando a referência de layout e a referência do logo da Kav."""
+    """Gera a imagem estática 4:5 e aplica o logotipo oficial por código com perfeição pixel a pixel."""
     estilo = estilo or obter_estilo_kav(referencia)
     referencias_imagem = []
 
@@ -341,21 +322,7 @@ def gerar_imagem_estatica_kav(
             ),
         ))
 
-    # 2. Adiciona o logotipo oficial da Kav diretamente como referência de imagem
-    logo_arquivo, _ = _logo_kav(cliente, referencia)
-    posicao_logo = estilo.get("posicao_logo", "inferior-direito")
-    area_logo_desc = AREAS_LOGO.get(posicao_logo, "designated branding area")
-
-    if logo_arquivo and logo_arquivo.exists():
-        referencias_imagem.append((
-            logo_arquivo.read_bytes(),
-            (
-                "the official BRAND LOGO of Kav Marketing & Performance (@kav.mkt). "
-                "You must reproduce this exact logo into the graphic layout in the "
-                f"{area_logo_desc} with strong contrast, breathing margins (~6% from borders), "
-                "and perfect integration. DO NOT repeat the brand name as written text anywhere else on the image."
-            ),
-        ))
+    logo_arquivo, posicao_logo = _logo_kav(cliente, referencia)
 
     try:
         imagens = [dados for dados, _ in referencias_imagem]
@@ -373,7 +340,13 @@ def gerar_imagem_estatica_kav(
     if not bruta or not bruta.get("imagem_b64"):
         raise RuntimeError("A API de imagem não retornou nenhuma imagem.")
 
+    # Redimensiona para 1080x1350
     final_bytes = image_overlay.recortar_formato_final(base64.b64decode(bruta["imagem_b64"]))
+
+    # APLICAÇÃO PERFEITA DO LOGO POR CÓDIGO (PILLOW):
+    # Garante que o logotipo oficial da Kav fique 100% nítido, sem distorções de IA (evita "WAV", letras borradas ou tortas)
+    if logo_arquivo and logo_arquivo.exists():
+        final_bytes = image_overlay.aplicar_logo(final_bytes, logo_arquivo, posicao_logo)
 
     return {
         "imagem_b64": base64.b64encode(final_bytes).decode("ascii"),
@@ -392,8 +365,9 @@ def _montar_prompt_final(brief: str, descricoes: list, estilo: dict) -> str:
         "MANDATORY EXECUTION DIRECTIVES:\n"
         f"- LAYOUT ARCHETYPE: Strictly emulate the visual structure of '{estilo['nome']}'.\n"
         f"- SPECIFIC SCENE REQUIREMENT:\n{estilo['diretriz_cena']}\n"
-        "- STRICT PROHIBITIONS: ABSOLUTELY NO generic 3D miniature city maps, radar grids, or yellow GPS pins! The background must follow the archetype.\n"
-        "- ZERO BRAND REPETITION: The official logo is applied ONCE via Reference 2 in the designated corner. DO NOT write the words 'Kav', 'Cave', or 'Kav Marketing' anywhere else in headlines, badges, or body copy.\n",
+        "- NO TOP BADGES: DO NOT draw any box or tag at the top saying 'PERFORMANCE LOCAL'. Keep the top clean.\n"
+        "- NO DRAWN LOGOS: DO NOT attempt to write or draw 'Kav', 'WAV', or any brand logo by hand. Leave the logo area empty (clean negative space) so the official logo can be placed cleanly.\n"
+        "- STRICT PROHIBITIONS: ABSOLUTELY NO generic 3D miniature city maps, radar grids, or yellow GPS pins!\n",
     ]
     for i, desc in enumerate(descricoes):
         partes.append(f"Reference image {i + 1}: {desc}")

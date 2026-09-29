@@ -110,47 +110,35 @@ def escolher_pauta_sem_repetir(cliente: dict, pautas: list[dict]) -> dict:
 
 
 def escolher_referencia_sem_repetir(cliente: dict) -> Optional[dict]:
-    """Seleciona um layout de referência do cliente realizando rodízio contínuo sem repetições consecutivas."""
+    """Seleciona um layout de referência realizando rodízio contínuo e garantindo que nunca repita
+    o mesmo layout de posts recentes.
+    """
     referencias = cliente.get("referencias", [])
     if not referencias:
         return None
 
     slug = cliente.get("slug", "")
-    config = cliente.get("config", {})
-    dias_limite = int(config.get("dias_sem_repetir_layout", 15))
-    limite_dt = datetime.now() - timedelta(days=dias_limite)
-
     historico_posts = listar_posts_cliente(slug)
-    layouts_usados_recentes = set()
 
-    for p in historico_posts:
-        data_str = p.get("data")
-        ref = p.get("referencia")
-        if data_str and ref:
-            try:
-                dt = datetime.fromisoformat(data_str)
-                if dt >= limite_dt:
-                    layouts_usados_recentes.add(ref)
-            except ValueError:
-                pass
+    # Coleta as últimas referências usadas em ordem reversa (mais recente primeiro)
+    ultimas_usadas = []
+    for p in reversed(historico_posts):
+        ref = p.get("referencia") or p.get("referencia_layout") or p.get("estilo_layout")
+        if ref and ref not in ultimas_usadas:
+            ultimas_usadas.append(ref)
 
-    disponiveis = [r for r in referencias if r["arquivo"].name not in layouts_usados_recentes]
+    # Prioriza as referências que ainda NÃO foram usadas
+    disponiveis = [r for r in referencias if r["arquivo"].name not in ultimas_usadas]
 
-    if disponiveis:
-        return random.choice(disponiveis)
+    # Se todas já foram usadas, bloqueia as últimas (N-1) usadas para forçar rotação round-robin
+    if not disponiveis:
+        bloqueadas = set(ultimas_usadas[: max(1, len(referencias) - 1)])
+        disponiveis = [r for r in referencias if r["arquivo"].name not in bloqueadas]
 
-    # Se todos já foram usados, pega o layout usado há mais tempo (round-robin)
-    ultima_data_por_ref = {}
-    for p in historico_posts:
-        ref = p.get("referencia")
-        if ref and p.get("data"):
-            ultima_data_por_ref[ref] = p["data"]
+    if not disponiveis:
+        disponiveis = referencias
 
-    referencias_ordenadas = sorted(
-        referencias,
-        key=lambda item: ultima_data_por_ref.get(item["arquivo"].name, "1970-01-01"),
-    )
-    return referencias_ordenadas[0]
+    return random.choice(disponiveis)
 
 
 def agora() -> datetime:
