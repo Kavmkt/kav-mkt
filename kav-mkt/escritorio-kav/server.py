@@ -71,7 +71,7 @@ class KavOfficeHandler(SimpleHTTPRequestHandler):
         self.send_error(404, "Endpoint não encontrado")
 
     def _resposta_json(self, dados, status=200):
-        conteudo = json.dumps(dados, ensure_ascii=False, indent=2).encode("utf-8")
+        conteudo = json.dumps(dados, ensure_ascii=False, indent=2, default=str).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(conteudo)))

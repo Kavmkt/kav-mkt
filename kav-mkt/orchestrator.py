@@ -18,7 +18,7 @@ from agents.agente_design_fotos import gerar_brief_foto, gerar_imagem_foto
 from agents.agente_foto import escolher_foto
 from agents.agente_legenda import gerar_legenda
 from agents.agente_legenda_fotos import gerar_copy_foto
-from agents.agente_pauta import escolher_pauta
+from agents.agente_pauta import gerar_pauta_kav
 from utils import historico
 from utils.cliente import CLIENTES_DIR, carregar_cliente
 
@@ -105,7 +105,7 @@ def gerar_carrossel(
     num_paginas = max(1, min(7, num_paginas))
 
     avisar("Escolhendo a pauta do carrossel...")
-    pauta = escolher_pauta(cliente)
+    pauta = gerar_pauta_kav(cliente, forcar_ia=False)
     avisos = list(pauta.pop("avisos", []))
 
     avisar(f"Escrevendo o roteiro ({num_paginas} páginas): {pauta.get('tema')}")
@@ -291,8 +291,8 @@ def gerar_post_estatico_kav(
     avisos = []
 
     avisar("1/4 [Curador & Pauta]: Gerando pauta inédita de Tráfego Pago Local para PMEs...")
-    from agents.agente_pauta import escolher_pauta
-    pauta = escolher_pauta(cliente)
+    from agents.agente_pauta import gerar_pauta_kav
+    pauta = gerar_pauta_kav(cliente)
     avisos.extend(pauta.pop("avisos", []))
 
     avisar(f"2/4 [Copywriter]: Escrevendo headline magnética para: '{pauta.get('tema')}'...")
@@ -340,13 +340,13 @@ def gerar_post_estatico_kav(
     }
 
     try:
-        historico.registrar(slug, {
-            "produto_id": pauta["id"],
-            "produto_nome": pauta.get("tema"),
-            "headline": copy.get("headline_imagem"),
-            "legenda": copy.get("legenda"),
-            "referencia_layout": referencia["arquivo"].name if referencia else None,
-        })
+        historico.registrar_post(
+            slug,
+            pauta,
+            copy,
+            referencia_nome=referencia["arquivo"].name if referencia else None,
+            formato="estatico",
+        )
     except Exception as exc:
         avisos.append(f"Não consegui salvar no histórico ({exc}).")
 

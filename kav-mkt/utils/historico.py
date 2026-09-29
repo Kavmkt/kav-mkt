@@ -63,6 +63,45 @@ def listar_posts_cliente(slug: str) -> list[dict]:
     return carregar_historico(slug).get("posts", [])
 
 
+def agora() -> datetime:
+    return datetime.now()
+
+
+def carregar(slug: str) -> list:
+    return listar_posts_cliente(slug)
+
+
+def usa_github() -> bool:
+    """Compatibilidade com telas antigas: o histórico agora é sempre local (clientes/<slug>/historico.json)."""
+    return False
+
+
+def ultimo_uso_por_produto(slug: str) -> dict:
+    """Retorna {id_do_produto_ou_pauta: data de uso mais recente}, para checar repetição."""
+    ultimo: dict = {}
+    for registro in listar_posts_cliente(slug):
+        produto_id = registro.get("produto_id") or registro.get("pauta_id")
+        data_str = registro.get("data")
+        if not produto_id or not data_str:
+            continue
+        try:
+            quando = datetime.fromisoformat(data_str)
+        except ValueError:
+            continue
+        if quando > ultimo.get(produto_id, datetime.min):
+            ultimo[produto_id] = quando
+    return ultimo
+
+
+def registrar(slug: str, registro: dict) -> dict:
+    """Registra um evento genérico (produto/foto usados) no histórico do cliente."""
+    dados = carregar_historico(slug)
+    novo = {"data": datetime.now().isoformat(), **registro}
+    dados.setdefault("posts", []).append(novo)
+    salvar_historico(slug, dados)
+    return novo
+
+
 def escolher_pauta_sem_repetir(cliente: dict, pautas: list[dict]) -> dict:
     """Seleciona uma pauta da lista excluindo aquelas usadas dentro da janela de anti-repetição."""
     if not pautas:

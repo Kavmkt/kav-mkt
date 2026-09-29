@@ -912,6 +912,19 @@ function configurarEventosUI() {
   }
 }
 
+function formatarPostParaModal(post) {
+  const copy = post.copy || {};
+  const nomeFoto = post.foto && (post.foto.nome || (post.foto.arquivo || "").split("/").pop());
+  return {
+    prato: (post.produto && post.produto.nome) || nomeFoto || (post.pauta && post.pauta.tema) || null,
+    headline: copy.headline_imagem || copy.headline || null,
+    selo: copy.selo_produto || null,
+    legenda: copy.legenda || null,
+    imagem_b64: (post.imagem && post.imagem.imagem_b64) || null,
+    criadores: post.criadores || null,
+  };
+}
+
 async function dispararProducaoReal() {
   const selectCli = document.getElementById("select-cliente");
   const selectModo = document.getElementById("select-modo");
@@ -931,7 +944,7 @@ async function dispararProducaoReal() {
     });
     const dados = await res.json();
     if (dados.sucesso && dados.post) {
-      celebrarEntrega(dados.post);
+      celebrarEntrega(formatarPostParaModal(dados.post));
     } else {
       alert("Erro: " + (dados.erro || "Falha na execução dos agentes"));
       retornarAoModoRelax();
