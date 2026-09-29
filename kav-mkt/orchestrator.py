@@ -186,7 +186,7 @@ def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callabl
             "referencia_layout": post["imagem"].get("referencia_layout"),
         })
     except Exception as exc:
-        avisos.append(f"Não consegui salvar no histórico ({exc}); este prato pode se repetir.")
+        avisos.append(f"Não consegui salvar no histórico ({exc}); esta foto pode se repetir.")
 
     try:
         from utils import estado_agentes
@@ -323,10 +323,12 @@ def gerar_post_estatico_kav(
     if com_imagem:
         from agents.agente_estatico_kav import gerar_brief_arte_kav, gerar_imagem_estatica_kav
         avisar("4/4 [Designer]: Renderizando arte 4:5 (1080x1350) com Key Visual da Kav...")
-        brief = gerar_brief_arte_kav(copy, pauta, cliente, referencia)
-        imagem = gerar_imagem_estatica_kav(brief, cliente, referencia)
+        brief, estilo_usado = gerar_brief_arte_kav(copy, pauta, cliente, referencia)
+        imagem = gerar_imagem_estatica_kav(brief, cliente, referencia, estilo=estilo_usado)
 
         ref_logo = imagem.get("referencia_logo") if imagem else None
+        estilo_l = imagem.get("estilo_layout") if imagem else None
+        estilo_n = imagem.get("estilo_nome") if imagem else None
         try:
             from agents.agente_diretor_arte import revisar_e_aprovar_layout
             imagem = revisar_e_aprovar_layout(
@@ -338,8 +340,13 @@ def gerar_post_estatico_kav(
                 modo="estatico_kav",
                 etapa=avisar,
             )
-            if ref_logo and isinstance(imagem, dict):
-                imagem.setdefault("referencia_logo", ref_logo)
+            if isinstance(imagem, dict):
+                if ref_logo:
+                    imagem.setdefault("referencia_logo", ref_logo)
+                if estilo_l:
+                    imagem.setdefault("estilo_layout", estilo_l)
+                if estilo_n:
+                    imagem.setdefault("estilo_nome", estilo_n)
         except Exception as exc:
             avisos.append(f"Direção de Arte automática ignorada ({exc}).")
     else:

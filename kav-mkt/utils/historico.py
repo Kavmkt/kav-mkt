@@ -6,6 +6,7 @@ respeitando a janela configurada em dias_sem_repetir_pauta e dias_sem_repetir_la
 from datetime import datetime, timedelta
 import json
 from pathlib import Path
+import random
 from typing import Optional
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -63,45 +64,6 @@ def listar_posts_cliente(slug: str) -> list[dict]:
     return carregar_historico(slug).get("posts", [])
 
 
-def agora() -> datetime:
-    return datetime.now()
-
-
-def carregar(slug: str) -> list:
-    return listar_posts_cliente(slug)
-
-
-def usa_github() -> bool:
-    """Compatibilidade com telas antigas: o histórico agora é sempre local (clientes/<slug>/historico.json)."""
-    return False
-
-
-def ultimo_uso_por_produto(slug: str) -> dict:
-    """Retorna {id_do_produto_ou_pauta: data de uso mais recente}, para checar repetição."""
-    ultimo: dict = {}
-    for registro in listar_posts_cliente(slug):
-        produto_id = registro.get("produto_id") or registro.get("pauta_id")
-        data_str = registro.get("data")
-        if not produto_id or not data_str:
-            continue
-        try:
-            quando = datetime.fromisoformat(data_str)
-        except ValueError:
-            continue
-        if quando > ultimo.get(produto_id, datetime.min):
-            ultimo[produto_id] = quando
-    return ultimo
-
-
-def registrar(slug: str, registro: dict) -> dict:
-    """Registra um evento genérico (produto/foto usados) no histórico do cliente."""
-    dados = carregar_historico(slug)
-    novo = {"data": datetime.now().isoformat(), **registro}
-    dados.setdefault("posts", []).append(novo)
-    salvar_historico(slug, dados)
-    return novo
-
-
 def escolher_pauta_sem_repetir(cliente: dict, pautas: list[dict]) -> dict:
     """Seleciona uma pauta da lista excluindo aquelas usadas dentro da janela de anti-repetição."""
     if not pautas:
@@ -131,7 +93,7 @@ def escolher_pauta_sem_repetir(cliente: dict, pautas: list[dict]) -> dict:
     disponiveis = [p for p in pautas if p.get("id") not in pautas_bloqueadas and p.get("tema") not in pautas_bloqueadas]
 
     if disponiveis:
-        return disponiveis[0]
+        return random.choice(disponiveis)
 
     # Se todas as pautas foram usadas no período, pega a usada há mais tempo
     ultima_data_por_id = {}
@@ -175,7 +137,7 @@ def escolher_referencia_sem_repetir(cliente: dict) -> Optional[dict]:
     disponiveis = [r for r in referencias if r["arquivo"].name not in layouts_usados_recentes]
 
     if disponiveis:
-        return disponiveis[0]
+        return random.choice(disponiveis)
 
     # Se todos já foram usados, pega o layout usado há mais tempo (round-robin)
     ultima_data_por_ref = {}
@@ -189,3 +151,42 @@ def escolher_referencia_sem_repetir(cliente: dict) -> Optional[dict]:
         key=lambda item: ultima_data_por_ref.get(item["arquivo"].name, "1970-01-01"),
     )
     return referencias_ordenadas[0]
+
+
+def agora() -> datetime:
+    return datetime.now()
+
+
+def carregar(slug: str) -> list:
+    return listar_posts_cliente(slug)
+
+
+def usa_github() -> bool:
+    """Compatibilidade com telas antigas: o histórico agora é sempre local (clientes/<slug>/historico.json)."""
+    return False
+
+
+def ultimo_uso_por_produto(slug: str) -> dict:
+    """Retorna {id_do_produto_ou_pauta: data de uso mais recente}, para checar repetição."""
+    ultimo: dict = {}
+    for registro in listar_posts_cliente(slug):
+        produto_id = registro.get("produto_id") or registro.get("pauta_id")
+        data_str = registro.get("data")
+        if not produto_id or not data_str:
+            continue
+        try:
+            quando = datetime.fromisoformat(data_str)
+        except ValueError:
+            continue
+        if quando > ultimo.get(produto_id, datetime.min):
+            ultimo[produto_id] = quando
+    return ultimo
+
+
+def registrar(slug: str, registro: dict) -> dict:
+    """Registra um evento genérico (produto/foto usados) no histórico do cliente."""
+    dados = carregar_historico(slug)
+    novo = {"data": datetime.now().isoformat(), **registro}
+    dados.setdefault("posts", []).append(novo)
+    salvar_historico(slug, dados)
+    return novo
