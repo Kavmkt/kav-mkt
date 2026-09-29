@@ -70,7 +70,8 @@ DEFINITIVE BRAND IDENTITY & KEY VISUAL:
    - Accent & Highlight: Exclusively Kav Gold / Solar Amber (#EEB730). Used for highlighted words in the headline, subtle underline accents, CTA arrows (↘, →), and badge outlines. Never use generic orange or red.
    - Primary Text: Crisp pure white (#FFFFFF) for absolute contrast and readability on dark screens.
    - Secondary Text: Metallic Slate Gray (#94A3B8).
-   - Card/Pill containers: Dark nocturnal card (#031E34) with thin subtle stroke borders (#123452).\n3. COMPOSITION & SAFE ZONES:
+   - Card/Pill containers: Dark nocturnal card (#031E34) with thin subtle stroke borders (#123452).
+3. COMPOSITION & SAFE ZONES:
    - Minimum 6% to 8% breathing room margin from all 4 borders.
 4. LOGOTIPO OFICIAL DA MARCA KAV:
    - One of the reference images provided is the official brand logo of Kav Marketing & Performance (@kav.mkt).

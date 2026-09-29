@@ -117,7 +117,10 @@ def _carregar_fotos(pasta: Path) -> list:
         return []
     metadados = _ler_json(pasta / "fotos.json", {})
     arquivos = sorted(p for p in pasta.glob("*") if p.suffix.lower() in EXTENSOES_IMAGEM)[:MAX_FOTOS]
-    return [{**metadados.get(p.name, {}), "arquivo": p} for p in arquivos]\n\ndef _ler_json(caminho: Path, padrao: dict) -> dict:
+    return [{**metadados.get(p.name, {}), "arquivo": p} for p in arquivos]
+
+
+def _ler_json(caminho: Path, padrao: dict) -> dict:
     if not caminho.exists():
         return padrao
     return json.loads(caminho.read_text(encoding="utf-8"))

@@ -70,11 +70,11 @@ def _coletar_historico_pautas(slug: str) -> list[str]:
 
 def _gerar_pauta_dinamica_ia(cliente: dict, pautas_anteriores: list[str]) -> dict:
     """Chama a IA para gerar uma pauta nova respeitando a lista de temas já abordados."""
-    historico_texto = "\\n".join(f"- {t}" for t in pautas_anteriores) if pautas_anteriores else "Nenhum post registrado ainda."
+    historico_texto = "\n".join(f"- {t}" for t in pautas_anteriores) if pautas_anteriores else "Nenhum post registrado ainda."
 
     prompt = (
-        f"HISTÓRICO DE PAUTAS RECENTES (NÃO REPETIR ESTES TEMAS):\\n"
-        f"{historico_texto}\\n\\n"
+        f"HISTÓRICO DE PAUTAS RECENTES (NÃO REPETIR ESTES TEMAS):\n"
+        f"{historico_texto}\n\n"
         f"Instrução: Crie agora uma pauta 100% INÉDITA, provocativa e prática para a Kav. "
         f"Foque em tráfego pago local para PMEs ou marketing descomplicado. "
         f"Gere um slug id único baseado na data e tema."
@@ -91,7 +91,14 @@ def _gerar_pauta_dinamica_ia(cliente: dict, pautas_anteriores: list[str]) -> dic
 
 def _escolher_pauta_fallback(cliente: dict, pautas_anteriores: list[str]) -> dict:
     """Fallback: escolhe uma pauta do arquivo pautas.json que ainda não foi usada recentemente."""
-    pautas_banco = cliente.get("pautas", [])
+    pautas_raw = cliente.get("pautas", [])
+    if isinstance(pautas_raw, dict):
+        pautas_banco = pautas_raw.get("pautas", [])
+    elif isinstance(pautas_raw, list):
+        pautas_banco = pautas_raw
+    else:
+        pautas_banco = []
+
     if not pautas_banco:
         return {
             "id": "pauta-padrao-local",
@@ -106,7 +113,9 @@ def _escolher_pauta_fallback(cliente: dict, pautas_anteriores: list[str]) -> dic
 
     ids_usados = set(pautas_anteriores)
     for p in pautas_banco:
-        if p.get("id") not in ids_usados and p.get("tema") not in ids_usados:
-            return p
+        if isinstance(p, dict):
+            if p.get("id") not in ids_usados and p.get("tema") not in ids_usados:
+                return p
 
-    return pautas_banco[0]
+    primeira = pautas_banco[0]
+    return primeira if isinstance(primeira, dict) else {"id": "pauta-1", "tema": str(primeira)}
