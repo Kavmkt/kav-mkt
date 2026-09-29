@@ -1,74 +1,67 @@
+"""Carrega tudo de um cliente a partir da pasta clientes/<slug>/ (ver clientes/README.md).
+
+Um cliente novo = uma pasta nova; nenhum código precisa mudar.
+"""
+from __future__ import annotations
 import json
 from pathlib import Path
+import re
+from typing import Optional, Tuple
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-CLIENTES_DIR = BASE_DIR / "clientes"
-
-EXTENSOES_IMAGEM = {".jpg", ".jpeg", ".png", ".webp"}
-MAX_FOTOS = 50
-MAX_REFERENCIAS = 10
-
-
-def listar_clientes() -> list:
-    encontrados = set()
-    if CLIENTES_DIR.exists():
-        for p in CLIENTES_DIR.iterdir():
-            if (p / "skill.md").exists():
-                encontrados.add(p.name)
-        for slug in ["nn-restaurante", "kav", "ponto-car"]:
-            if (CLIENTES_DIR / slug / "skill.md").exists():
-                encontrados.add(slug)
-    return sorted(encontrados)
+CLIENTES_DIR = Path(__file__).resolve().parent.parent / "clientes"
+EXTENSOES_IMAGEM = {".png", ".jpg", ".jpeg", ".webp"}
+EXTENSOES_LOGO = {".png", ".jpg", ".jpeg", ".webp", ".svg"}
+MAX_REFERENCIAS = 5
+MAX_FOTOS = 30
 
 
 def carregar_cliente(slug: str) -> dict:
+    """Lê a pasta clientes/<slug>/ e monta o dicionário completo do cliente."""
     pasta = CLIENTES_DIR / slug
-    caminho_skill = pasta / "skill.md"
-    if not caminho_skill.exists():
-        raise FileNotFoundError(
-            f"Cliente '{slug}' não encontrado: falta {caminho_skill}. "
-            "Copie a pasta clientes/ponto-car/ como modelo."
-        )
-    skill = caminho_skill.read_text(encoding="utf-8")
+    if not pasta.is_dir():
+        raise FileNotFoundError(f"Cliente '{slug}' não encontrado em {pasta}")
+
+    skill_path = pasta / "skill.md"
+    skill = skill_path.read_text(encoding="utf-8") if skill_path.exists() else ""
     config = _ler_json(pasta / "config.json", {})
     logos, logo_principal, logo_referencias = _carregar_logos(pasta)
 
     return {
         "slug": slug,
-        "nome": config.get("nome") or slug.replace("-", " ").title(),
+        "nome": config.get("nome", slug),
         "config": config,
         "tipo": config.get("tipo", "estatico"),
         "skill": skill,
-        "legenda_padrao": _ler_texto(pasta / "legenda.md"),
-        "catalogo": _ler_json(pasta / "catalogo.json", {"produtos": []}),
-        "produtos_coringa": _itens_da_secao(skill, "Produtos Coringa"),
+        "catalogo": _ler_json(pasta / "catalogo.json", {}),
         "pautas": _ler_json(pasta / "pautas.json", []),
-        "fotos": _carregar_fotos(pasta / "fotos"),
+        "produtos_coringa": _ler_json(pasta / "produtos_coringa.json", []),
+        "legenda_padrao": _ler_texto(pasta / "legenda.md"),
+        "carrossel_padrao": _ler_texto(pasta / "carrossel.md"),
         "referencias": _carregar_referencias(pasta / "referencias"),
+        "fotos": _carregar_fotos(pasta / "fotos"),
         "logos": logos,
         "logo": logo_principal,
         "logo_referencias": logo_referencias,
     }
 
 
-def _carregar_logos(pasta: Path) -> tuple[dict, Path | None, Path | None]:
-    pasta_logos = pasta / "logos"
-    if not pasta_logos.exists():
-        return {}, None, None
+def _carregar_logos(pasta: Path) -> Tuple[dict, Optional[Path], list]:
+    """Carrega o logotipo do cliente com suporte a arquivos raiz e à pasta logo/."""
+    pasta_logo = pasta / "logo"
+    arquivos_logo = []
+    if pasta_logo.is_dir():
+        arquivos_logo = sorted(
+            p for p in pasta_logo.glob("*") if p.suffix.lower() in EXTENSOES_LOGO
+        )
 
-    logos = {}
-    for p in pasta_logos.iterdir():
-        if p.suffix.lower() in EXTENSOES_IMAGEM:
-            logos[p.stem] = p
+    for ext in EXTENSOES_LOGO:
+        logo_raiz = pasta / f"logo{ext}"
+        if logo_raiz.exists() and logo_raiz not in arquivos_logo:
+            arquivos_logo.append(logo_raiz)
 
-    logo_principal = (
-        logos.get("principal")
-        or logos.get("fundo-escuro")
-        or logos.get("fundo-claro")
-        or next(iter(logos.values()), None)
-    )
-
-    logo_referencias = logos.get("referencias") or logo_principal
+    logos = {p.name: p for p in arquivos_logo}
+    logo_principal = arquivos_logo[0] if arquivos_logo else None
+    logo_referencias = arquivos_logo
 
     return logos, logo_principal, logo_referencias
 
@@ -112,16 +105,24 @@ def _ler_texto(caminho: Path) -> str:
     return caminho.read_text(encoding="utf-8")
 
 
-def _itens_da_secao(texto: str, titulo: str) -> list[str]:
-    linhas = texto.splitlines()
-    coletando = False
-    itens = []
-    for linha in linhas:
-        if linha.startswith("##") and titulo.lower() in linha.lower():
-            coletando = True
-            continue
-        if coletando and linha.startswith("##"):
-            break
-        if coletando and linha.strip().startswith("-"):
-            itens.append(linha.strip().lstrip("-").strip())
-    return itens
+def listar_clientes() -> list:
+    encontrados = set()
+    if CLIENTES_DIR.exists():
+        for p in CLIENTES_DIR.iterdir():
+            if (p / "skill.md").exists():
+                encontrados.add(p.name)
+        for slug in ["nn-restaurante", "kav", "ponto-car"]:
+            if (CLIENTES_DIR / slug / "skill.md").exists():
+                encontrados.add(slug)
+    return sorted(encontrados)
+
+
+def tipo_cliente(cliente: dict) -> str:
+    tipo = cliente.get("config", {}).get("tipo")
+    if tipo:
+        return tipo
+    if cliente.get("fotos"):
+        return "fotos"
+    if cliente.get("referencias"):
+        return "estatico"
+    return "produto"

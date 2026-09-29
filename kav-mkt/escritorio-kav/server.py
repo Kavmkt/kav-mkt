@@ -1,175 +1,157 @@
-#!/usr/bin/env python3
-"""Servidor HTTP simples para o Escritório Virtual Kav.
-
-Serve os arquivos estáticos da pasta escritorio-kav/ e expõe endpoints
-de API para disparar a execução dos agentes no backend.
+"""Servidor Interativo do Escritório Virtual Kav (@kav.mkt).
 """
+from __future__ import annotations
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json
 import os
 from pathlib import Path
 import sys
-import threading
-import urllib.parse
+import traceback
+from typing import Optional
 
-# Adiciona a raiz do projeto ao path para importar orchestrator e utils
-BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(BASE_DIR))
+BASE_DIR = Path(__file__).resolve().parent
+PASTAS_KAV = [
+    BASE_DIR.parent,
+    BASE_DIR.parent / "kav-mkt",
+    BASE_DIR / "kav-mkt",
+    BASE_DIR.parent.parent,
+    Path.cwd(),
+    Path.cwd().parent,
+]
 
-import orchestrator
-from utils import estado_agentes, historico
-from utils.cliente import carregar_cliente, listar_clientes, tipo_cliente
+for p in PASTAS_KAV:
+    if p.exists() and str(p) not in sys.path:
+        sys.path.insert(0, str(p))
 
-PORTA = int(os.environ.get("PORTA_ESCRITORIO", 8080))
-DIRETORIO_STATIC = Path(__file__).resolve().parent
+# Carrega a chave OPENAI_API_KEY do arquivo .env
+env_encontrado = None
+for p in PASTAS_KAV:
+    env_file = p / ".env"
+    if env_file.exists():
+        env_encontrado = env_file
+        try:
+            for linha in env_file.read_text(encoding="utf-8").splitlines():
+                linha = linha.strip()
+                if linha and not linha.startswith("#") and "=" in linha:
+                    k, v = linha.split("=", 1)
+                    os.environ.setdefault(k.strip(), v.strip().strip("'\""))
+        except Exception:
+            pass
+        break
 
 
-class EscritorioHandler(SimpleHTTPRequestHandler):
-    """Handler HTTP customizado para servir static files e rotas de API."""
-
+class KavOfficeHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=str(DIRETORIO_STATIC), **kwargs)
+        super().__init__(*args, directory=str(BASE_DIR), **kwargs)
 
     def do_GET(self):
-        parsed = urllib.parse.urlparse(self.path)
-
-        if parsed.path == "/api/status":
-            self._responder_json(200, {
-                "online": True,
-                "logs": estado_agentes.obter_logs(),
-                "porta": PORTA
-            })
+        caminho = self.path.split("?")[0]
+        if caminho in ("/api/status", "/api/estado"):
+            self._resposta_json({"online": True, "porta": 8080})
             return
-
-        if parsed.path == "/api/clientes":
-            self._responder_json(200, self._listar_clientes())
+        elif caminho == "/api/clientes":
+            self._resposta_json(self._listar_clientes())
             return
-
-        if parsed.path.startswith("/api/historico/"):
-            slug = parsed.path.replace("/api/historico/", "").strip()
-            self._responder_json(200, historico.listar_posts_cliente(slug))
-            return
-
-        # Rota raiz ou arquivos estáticos
-        if parsed.path in ("/", ""):
-            self.path = "/index.html"
-
         return super().do_GET()
 
     def do_POST(self):
-        parsed = urllib.parse.urlparse(self.path)
+        caminho = self.path.split("?")[0]
+        if caminho == "/api/executar":
+            length = int(self.headers.get("Content-Length", 0))
+            corpo = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
+            params = json.loads(corpo) if corpo else {}
+            slug = params.get("slug", "nn-restaurante")
+            com_imagem = params.get("com_imagem", True)
+            modo = params.get("modo", "campanha")
 
-        if parsed.path == "/api/executar":
-            tamanho = int(self.headers.get("Content-Length", 0))
-            corpo = self.rfile.read(tamanho) if tamanho > 0 else b"{}"
-
-            try:
-                dados = json.loads(corpo.decode("utf-8"))
-            except Exception:
-                dados = {}
-
-            slug = dados.get("slug", "nn-restaurante")
-            com_imagem = bool(dados.get("com_imagem", True))
-            modo = dados.get("modo", "organico")
-
-            try:
-                resultado = self._executar_agentes(slug, com_imagem, modo)
-                self._responder_json(200, {
-                    "sucesso": True,
-                    "post": resultado
-                })
-            except Exception as exc:
-                self._responder_json(400, {
-                    "sucesso": False,
-                    "erro": str(exc),
-                    "logs": estado_agentes.obter_logs()
-                })
+            resultado = self._executar_agentes(slug, com_imagem=com_imagem, modo=modo)
+            self._resposta_json(resultado, status=200 if resultado.get("sucesso") else 400)
             return
 
-        self._responder_json(404, {"erro": "Rota não encontrada"})
+        self.send_error(404, "Endpoint não encontrado")
 
-    def _responder_json(self, status: int, payload: dict | list):
+    def _resposta_json(self, dados, status=200):
+        conteudo = json.dumps(dados, ensure_ascii=False, indent=2).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(conteudo)))
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
-        self.wfile.write(json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8"))
+        self.wfile.write(conteudo)
 
-    def _listar_clientes(self) -> list:
-        slugs = listar_clientes()
-        clientes = []
-        for s in slugs:
+    def _listar_clientes(self):
+        try:
+            from utils.cliente import listar_clientes, carregar_cliente
+            slugs = listar_clientes()
+            lista = []
+            for s in slugs:
+                try:
+                    c = carregar_cliente(s)
+                    tipo = c.get("config", {}).get("tipo", "produto")
+                    icone = "🍽️" if tipo == "fotos" else ("🚀" if tipo == "estatico" else ("🧠" if tipo == "carrossel" else "🚗"))
+                    lista.append({"slug": s, "nome": c.get("nome", s), "tipo": tipo, "icone": icone})
+                except Exception:
+                    lista.append({"slug": s, "nome": s.replace("-", " ").title(), "tipo": "produto", "icone": "💼"})
+            return lista
+        except Exception:
+            return [
+                {"slug": "nn-restaurante", "nome": "NN Restaurante", "tipo": "fotos", "icone": "🍽️"},
+                {"slug": "ponto-car", "nome": "Ponto Car", "tipo": "produto", "icone": "🚗"},
+                {"slug": "kav", "nome": "Kav (@kav.mkt)", "tipo": "estatico", "icone": "🚀"},
+            ]
+
+    def _executar_agentes(self, slug, com_imagem=True, modo="campanha"):
+        print(f"\n🚀 [Execução Iniciada] Disparando esteira de agentes ({modo.upper()}) para o cliente '{slug}'...")
+        try:
+            import orchestrator
+            from utils.cliente import carregar_cliente
+            from utils import estado_agentes
+            cliente = carregar_cliente(slug)
+            tipo = cliente.get("config", {}).get("tipo", "produto")
+
+            if slug == "kav" or tipo == "estatico":
+                post = orchestrator.gerar_post_estatico_kav(slug, com_imagem=com_imagem)
+            elif modo == "campanha" and tipo == "fotos":
+                post = orchestrator.gerar_campanha(slug, com_imagem=com_imagem)
+            elif tipo == "fotos":
+                post = orchestrator.gerar_post_fotos(slug, com_imagem=com_imagem)
+            elif tipo == "carrossel":
+                num_paginas = cliente.get("config", {}).get("paginas_padrao", 5)
+                post = orchestrator.gerar_carrossel(slug, num_paginas=num_paginas, com_imagem=com_imagem)
+            else:
+                post = orchestrator.gerar_post(slug, com_imagem=com_imagem)
+
             try:
-                c = carregar_cliente(s)
-                tipo = tipo_cliente(c)
-                icone = "🍽️" if tipo == "fotos" else ("🚀" if tipo == "estatico" else ("🧠" if tipo == "carrossel" else "🚗"))
-                clientes.append({
-                    "slug": s,
-                    "nome": c.get("nome", s),
-                    "tipo": tipo,
-                    "icone": icone
-                })
+                estado_agentes.registrar_post_produzido(post, slug)
             except Exception:
-                continue
-        return clientes
+                pass
 
-    def _executar_agentes(self, slug: str, com_imagem: bool, modo: str) -> dict:
-        cliente = carregar_cliente(slug)
-        tipo = tipo_cliente(cliente)
-
-        if slug == "kav" or tipo == "estatico":
-            post = orchestrator.gerar_post_estatico_kav(slug, com_imagem=com_imagem)
-            return {
-                "cliente": slug,
-                "prato": post.get("pauta", {}).get("tema"),
-                "headline": post.get("copy", {}).get("headline_imagem"),
-                "selo": post.get("copy", {}).get("selo_produto"),
-                "legenda": post.get("copy", {}).get("legenda"),
-                "imagem_b64": post.get("imagem", {}).get("imagem_b64") if post.get("imagem") else None,
-                "criadores": "Pauta IA: Benedito · Texto: Clarice · Arte: Joaquim · Direção: Otávio",
-                "referencia": post.get("referencia"),
-                "aprovacao": post.get("aprovacao"),
-                "logs": post.get("logs", [])
-            }
-        elif tipo == "fotos":
-            post = orchestrator.gerar_post_fotos(slug, com_imagem=com_imagem)
-            return {
-                "cliente": slug,
-                "prato": post.get("foto", {}).get("prato"),
-                "headline": post.get("copy", {}).get("headline_imagem"),
-                "selo": post.get("copy", {}).get("selo_produto"),
-                "legenda": post.get("copy", {}).get("legenda"),
-                "imagem_b64": post.get("imagem", {}).get("imagem_b64") if post.get("imagem") else None,
-                "criadores": "Curadoria: Benedito · Texto: Clarice · Arte: Joaquim · Direção: Otávio",
-                "referencia": post.get("referencia"),
-                "aprovacao": post.get("aprovacao"),
-                "logs": post.get("logs", [])
-            }
-        else:
-            post = orchestrator.gerar_post_campanha(slug, com_imagem=com_imagem)
-            return {
-                "cliente": slug,
-                "prato": post.get("estrategia", {}).get("angulo"),
-                "headline": post.get("copy", {}).get("headline"),
-                "selo": "CAMPANHA META ADS",
-                "legenda": post.get("copy", {}).get("texto_principal"),
-                "imagem_b64": None,
-                "criadores": "Estratégia: Benedito · Texto: Clarice · Arte: Joaquim · Direção: Otávio",
-                "referencia": post.get("referencia"),
-                "logs": post.get("logs", [])
-            }
+            print(f"🎉 Entrega concluída para {cliente['nome']}!\n")
+            return {"sucesso": True, "post": post}
+        except Exception as exc:
+            print("\n❌ ERRO NA EXECUÇÃO DOS AGENTES:")
+            traceback.print_exc()
+            return {"sucesso": False, "erro": str(exc)}
 
 
-def iniciar_servidor():
-    print(f"🚀 Iniciando Escritório Virtual Kav em http://localhost:{PORTA}")
-    print(f"📁 Servindo estáticos de: {DIRETORIO_STATIC}")
-    httpd = HTTPServer(("0.0.0.0", PORTA), EscritorioHandler)
+def main():
+    porta = 8080
+    servidor = HTTPServer(("0.0.0.0", porta), KavOfficeHandler)
+    key = os.environ.get("OPENAI_API_KEY")
+    status_key = f"✅ Ativa ({key[:6]}...{key[-4:]})" if key else "⚠️ NÃO ENCONTRADA (Verifique o arquivo .env)"
+
+    print("\n=======================================================")
+    print(f"🏢 Escritório Virtual da Kav ativo em: http://localhost:{porta}")
+    print(f"🔑 Chave OpenAI: {status_key}")
+    if env_encontrado:
+        print(f"📄 Arquivo .env carregado de: {env_encontrado}")
+    print(f"👉 Abra http://localhost:{porta} no seu navegador!")
+    print("=======================================================\n")
     try:
-        httpd.serve_forever()
+        servidor.serve_forever()
     except KeyboardInterrupt:
-        print("\n🛑 Servidor encerrado.")
-        httpd.server_close()
+        print("\nServidor finalizado.")
 
 
 if __name__ == "__main__":
-    iniciar_servidor()
+    main()
