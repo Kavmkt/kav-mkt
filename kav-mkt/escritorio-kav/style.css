@@ -55,28 +55,28 @@ body.habbo-theme {
 
 .habbo-badge-logo {
   font-family: 'Press Start 2P', monospace;
-  font-size: 13px;
-  background: linear-gradient(180deg, #FDE68A 0%, var(--habbo-gold) 100%);
-  color: #001222;
-  padding: 6px 12px;
-  border-radius: 4px;
-  border: 2px solid #78350F;
-  box-shadow: 0 3px 0 #451A03, 0 4px 8px rgba(0, 0, 0, 0.4);
-  letter-spacing: 0.5px;
+  font-size: 11px;
+  background: #B45309;
+  color: #FEF08A;
+  padding: 6px 10px;
+  border: 2px solid #FEF08A;
+  box-shadow: 2px 2px 0 #000;
+  letter-spacing: -0.5px;
 }
 
 .brand-meta h1 {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
-  color: var(--habbo-light);
+  color: #FFF;
+  letter-spacing: 0.5px;
 }
 
 .brand-meta .sub {
   font-size: 10px;
   color: #94A3B8;
-  font-family: 'JetBrains Mono', monospace;
 }
 
+/* Pills no topo */
 .status-center {
   display: flex;
   align-items: center;
@@ -84,124 +84,108 @@ body.habbo-theme {
 }
 
 .habbo-pill {
+  background: #021220;
+  border: 1px solid #1E3A5F;
+  box-shadow: var(--border-bevel);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 11px;
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--bg-surface-elevated);
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 11px;
-  border: 1px solid rgba(238, 183, 48, 0.3);
-  box-shadow: var(--border-bevel);
+}
+
+.habbo-pill strong {
+  color: var(--habbo-gold);
+}
+
+.habbo-pill.time-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: #38BDF8;
 }
 
 .dot.live {
-  width: 7px;
-  height: 7px;
-  background: var(--habbo-green);
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  box-shadow: 0 0 6px var(--habbo-green);
-  animation: pulse 1.5s infinite;
+  background: #10B981;
+  box-shadow: 0 0 8px #10B981;
 }
 
+/* Ações / Botões Habbo */
 .actions {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 8px;
 }
 
 .habbo-select {
-  background: var(--bg-surface-elevated);
-  color: var(--habbo-light);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
+  background: #061B2E;
+  color: #F8FAFC;
+  border: 2px solid #1E3A5F;
+  border-radius: 4px;
   padding: 6px 10px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: var(--border-bevel);
+  font-weight: 600;
   outline: none;
-}
-
-.habbo-select:focus {
-  border-color: var(--habbo-gold);
-}
-
-/* Habbo Buttons */
-.btn {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 7px 14px;
-  border-radius: 6px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.15s ease;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .habbo-btn-green {
-  background: linear-gradient(180deg, #34D399 0%, #059669 100%);
-  color: #FFFFFF;
-  border: 2px solid #064E3B;
-  box-shadow: 0 3px 0 #064E3B, 0 4px 10px rgba(5, 150, 105, 0.4);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-.habbo-btn-green:hover {
-  background: linear-gradient(180deg, #10B981 0%, #047857 100%);
-  transform: translateY(-1px);
+  background: #10B981;
+  color: #064E3B;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  border: 2px solid #34D399;
+  box-shadow: 2px 2px 0 #000, var(--border-bevel);
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform 0.05s ease;
 }
 
 .habbo-btn-green:active {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 #064E3B;
-}
-
-.habbo-btn-green:disabled {
-  background: #4B5563;
-  border-color: #1F2937;
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.habbo-btn-gold {
-  background: linear-gradient(180deg, #FDE68A 0%, #D97706 100%);
-  color: #111827;
-  border: 2px solid #78350F;
-  box-shadow: 0 3px 0 #78350F;
-}
-
-.habbo-btn-gold:hover {
-  background: linear-gradient(180deg, #FEF08A 0%, #B45309 100%);
-  transform: translateY(-1px);
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 #000;
 }
 
 .habbo-btn-secondary {
-  background: var(--bg-surface-elevated);
-  color: var(--habbo-light);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
+  background: #0F2942;
+  color: #E2E8F0;
+  border: 2px solid #1E3A5F;
+  box-shadow: 2px 2px 0 #000;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.habbo-btn-secondary:hover {
-  background: #06345d;
+.habbo-btn-gold {
+  background: #D97706;
+  color: #FEF3C7;
+  border: 2px solid #FDE68A;
+  box-shadow: 2px 2px 0 #000;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-/* Habbo Metrics Strip at Top */
+/* Faixa de Métricas */
 .habbo-metrics-strip {
   height: 38px;
-  background: rgba(0, 15, 28, 0.95);
-  border-bottom: 1px solid rgba(238, 183, 48, 0.25);
+  background: #031422;
+  border-bottom: 1px solid #0F2942;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  font-family: 'JetBrains Mono', monospace;
+  gap: 20px;
   font-size: 11px;
+  z-index: 50;
 }
 
 .metric-item {
@@ -211,80 +195,80 @@ body.habbo-theme {
 }
 
 .m-label {
-  color: #8A9BB8;
+  color: #64748B;
   font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
-.m-val.gold { color: var(--habbo-gold); font-weight: 700; }
-.m-val.green { color: #34D399; font-weight: 700; }
-.m-val.status { color: #FDE047; font-weight: 700; }
+.m-val {
+  font-weight: 800;
+}
+
+.m-val.gold { color: var(--habbo-gold); }
+.m-val.green { color: var(--habbo-green); }
+.m-val.status { color: #38BDF8; }
 
 .metric-divider {
   width: 1px;
   height: 16px;
-  background: rgba(255, 255, 255, 0.12);
+  background: #0F2942;
 }
 
-/* Habbo Office Viewport & Stage */
+/* Palco Isométrico (Viewport Habbo) */
 .habbo-office-container {
   flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: radial-gradient(circle at 50% 30%, #031a2e 0%, var(--bg-dark) 85%);
-  overflow: auto;
   position: relative;
-  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 40%, #082138 0%, #000A14 85%);
+  overflow: hidden;
 }
 
 .habbo-viewport {
   position: relative;
   width: 1180px;
   height: 690px;
-  border-radius: 8px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
-  background: #020f1c;
-  overflow: hidden;
 }
 
 #habbo-canvas {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 1180px;
+  height: 690px;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   z-index: 10;
 }
 
-/* Camada DOM de Balões de Fala com Emojis (Habbo Chat Bubbles) */
+/* Camada de Balões de Fala com Emojis (Habbo Style) */
 .habbo-chat-layer {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 1180px;
+  height: 690px;
   pointer-events: none;
-  z-index: 50;
+  z-index: 20;
 }
 
 .habbo-bubble {
   position: absolute;
-  transform: translate(-50%, -100%);
-  background: #FFFFFF;
-  color: #111827;
-  border: 1px solid #1E293B;
-  border-radius: 12px;
-  padding: 3px 8px;
-  font-size: 18px;
-  line-height: 1.1;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   pointer-events: auto;
   cursor: pointer;
-  white-space: nowrap;
-  animation: habboPop 0.25s ease-out;
-  transition: top 0.15s ease, left 0.15s ease;
+  background: #FFFFFF;
+  color: #000000;
+  border: 2px solid #000000;
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: 16px;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
+  transform: translate(-50%, -100%);
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.15s ease;
+  user-select: none;
+  animation: floatBubble 2s infinite ease-in-out;
 }
 
 .habbo-bubble::after {
@@ -293,111 +277,100 @@ body.habbo-theme {
   bottom: -6px;
   left: 50%;
   transform: translateX(-50%);
-  border-width: 6px 6px 0;
-  border-style: solid;
-  border-color: #FFFFFF transparent transparent;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #FFFFFF;
 }
 
-.habbo-bubble::before {
-  content: '';
-  position: absolute;
-  bottom: -7px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 7px 7px 0;
-  border-style: solid;
-  border-color: #1E293B transparent transparent;
-  z-index: -1;
+.habbo-bubble:hover {
+  transform: translate(-50%, -115%) scale(1.15);
+  background: #FEF08A;
 }
 
-@keyframes habboPop {
-  0% { transform: translate(-50%, -85%) scale(0.6); opacity: 0; }
-  70% { transform: translate(-50%, -105%) scale(1.1); }
-  100% { transform: translate(-50%, -100%) scale(1); opacity: 1; }
+@keyframes floatBubble {
+  0%, 100% { margin-top: 0px; }
+  50% { margin-top: -4px; }
 }
 
-/* Zone Tags at Corner */
+/* Indicadores de Zonas no Quarto */
 .habbo-room-tags {
   position: absolute;
   bottom: 12px;
-  left: 16px;
+  left: 20px;
+  right: 20px;
   display: flex;
-  gap: 10px;
-  z-index: 20;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 15;
 }
 
 .room-tag-zone {
   font-family: 'Press Start 2P', monospace;
-  font-size: 9px;
-  background: rgba(0, 18, 34, 0.85);
-  color: var(--habbo-gold);
-  border: 1px solid rgba(238, 183, 48, 0.4);
-  padding: 4px 8px;
-  border-radius: 4px;
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.3);
   letter-spacing: 0.5px;
 }
 
-/* Footer / Habbo Console Bar */
+/* Rodapé / Console Habbo */
 .habbo-footer-bar {
-  height: 38px;
-  background: #000810;
-  border-top: 1px solid rgba(238, 183, 48, 0.3);
+  height: 34px;
+  background: #001220;
+  border-top: 1px solid #0D263E;
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  padding: 0 16px;
+  gap: 12px;
+  z-index: 100;
 }
 
 .habbo-feed-badge {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
   color: var(--habbo-gold);
-  font-weight: 700;
-  margin-right: 14px;
 }
 
 .habbo-pulse-dot {
-  width: 7px;
-  height: 7px;
-  background: var(--habbo-gold);
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  animation: pulse 1.2s infinite;
+  background: var(--habbo-gold);
+  animation: pulseGold 1.5s infinite;
+}
+
+@keyframes pulseGold {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 
 .habbo-feed-scroll {
   flex: 1;
   overflow: hidden;
-  white-space: nowrap;
 }
 
 .habbo-feed-text {
+  font-size: 11px;
   color: #94A3B8;
-  animation: tickerScroll 24s linear infinite;
+  white-space: nowrap;
 }
 
-@keyframes tickerScroll {
-  from { transform: translateX(100%); }
-  to { transform: translateX(-100%); }
-}
-
-@keyframes pulse {
-  0% { opacity: 0.5; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.15); }
-  100% { opacity: 0.5; transform: scale(0.9); }
-}
-
-/* Modais Estilo Habbo Hotel */
+/* Modais Habbo */
 .modal-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 8, 16, 0.8);
-  backdrop-filter: blur(5px);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 8, 16, 0.75);
+  backdrop-filter: blur(4px);
   display: none;
-  justify-content: center;
   align-items: center;
-  z-index: 1000;
+  justify-content: center;
+  z-index: 999;
 }
 
 .modal-overlay.open {
@@ -405,174 +378,119 @@ body.habbo-theme {
 }
 
 .habbo-modal-card {
+  background: #041B30;
+  border: 3px solid #1E3A5F;
+  border-top-color: #38BDF8;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), var(--border-bevel);
+  border-radius: 8px;
   width: 440px;
-  background: #021a30;
-  border: 3px solid var(--habbo-gold);
-  border-radius: 10px;
+  max-width: 90vw;
   padding: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), var(--border-bevel);
   position: relative;
 }
 
-.btn-close {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  background: none;
-  border: none;
-  color: #94A3B8;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-.btn-close:hover {
-  color: #FFFFFF;
+.habbo-post-modal {
+  width: 780px;
 }
 
 .habbo-modal-header {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+  border-bottom: 2px solid #0D2B48;
+  padding-bottom: 12px;
   margin-bottom: 16px;
-  padding-bottom: 14px;
-  border-bottom: 2px dashed rgba(238, 183, 48, 0.3);
-}
-
-.habbo-passport-avatar {
-  width: 64px;
-  height: 64px;
-  background: #072a4d;
-  border: 2px solid var(--habbo-gold);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .habbo-gold-text {
   color: var(--habbo-gold);
   font-weight: 700;
-  font-size: 13px;
-}
-
-.habbo-status-box {
-  background: #072a4d;
-  border: 1px solid rgba(238, 183, 48, 0.4);
-  padding: 4px 10px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   font-size: 11px;
 }
 
-.habbo-quote-box {
-  background: rgba(238, 183, 48, 0.1);
-  border-left: 3px solid var(--habbo-gold);
+.habbo-status-box {
+  background: #020F1C;
+  border: 1px solid #0D2E50;
   padding: 8px 12px;
-  border-radius: 0 4px 4px 0;
-  font-size: 13px;
-  color: #FEF08A;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.habbo-quote-box {
+  background: #061B2E;
+  border-left: 3px solid var(--habbo-gold);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #F8FAFC;
+  font-style: italic;
+  margin-top: 6px;
 }
 
 .habbo-history-list {
   list-style: none;
   font-size: 11px;
-  font-family: 'JetBrains Mono', monospace;
   color: #94A3B8;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  max-height: 110px;
-  overflow-y: auto;
+  line-height: 1.6;
+  margin-top: 6px;
 }
 
-.habbo-history-list li {
-  padding-left: 10px;
-  position: relative;
-}
-
-.habbo-history-list li::before {
-  content: '▸';
+.btn-close {
   position: absolute;
-  left: 0;
-  color: var(--habbo-gold);
+  top: 12px;
+  right: 14px;
+  background: #991B1B;
+  color: #FFF;
+  border: 2px solid #EF4444;
+  font-weight: 900;
+  font-size: 12px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 3px;
 }
 
-/* Modal de Entrega do Post Gerado */
-.habbo-post-modal {
-  max-width: 860px !important;
-  width: 92% !important;
-  background: #021a30;
-  border: 3px solid var(--habbo-gold);
-  box-shadow: 0 12px 50px rgba(0, 0, 0, 0.85);
-}
-
+/* Post modal grid */
 .post-modal-grid {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 280px 1fr;
   gap: 20px;
 }
 
 .habbo-img-frame {
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  background: #000c18;
-  border: 2px solid var(--habbo-gold);
+  background: #020C17;
+  border: 2px solid #1E3A5F;
   border-radius: 6px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
+  min-height: 350px;
+  margin-bottom: 12px;
 }
 
 .habbo-img-frame img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.post-headline-text {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--habbo-gold);
-}
-
-.habbo-badge-selo {
-  display: inline-block;
-  background: rgba(238, 183, 48, 0.15);
-  color: var(--habbo-gold);
-  border: 1px solid var(--habbo-gold);
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.section-header-flex {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
+  height: auto;
+  display: block;
 }
 
 .habbo-copy-box {
-  background: #042542;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: 10px;
+  background: #020F1C;
+  border: 1px solid #0D2E50;
+  padding: 12px;
+  border-radius: 4px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: #E2E8F0;
   white-space: pre-wrap;
   max-height: 180px;
   overflow-y: auto;
-}
-
-.btn-block {
-  width: 100%;
-  justify-content: center;
 }
 
 .btn-sm {
