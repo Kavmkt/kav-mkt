@@ -1,11 +1,10 @@
 """Orquestrador da Kav (@kav.mkt).
 
 Coordena a esteira multi-agente para os clientes da agência:
-- gerar_post: produtos de catálogo (ex: ponto-car) ou estático (ex: kav)
-- gerar_carrossel: pautas de conteúdo educativo/carrossel
+- gerar_post: produtos de catálogo (ex: ponto-car)
+- gerar_carrossel: pautas de conteúdo educativo/carrossel (ex: kav)
 - gerar_post_fotos: fotos reais com tratamento diagramado (ex: nn-restaurante)
 - gerar_campanha: campanhas de performance com análise de concorrência e layout de anúncios
-- gerar_post_estatico_kav: artes estáticas verticais 4:5 da própria Kav
 """
 from __future__ import annotations
 import json
@@ -68,7 +67,7 @@ def gerar_post(slug: str, com_imagem: bool = True, etapa: Optional[Callable[[str
             post["imagem"] = revisar_e_aprovar_layout(
                 post["imagem"],
                 copy=copy,
-                foto=None,
+                foto=foto,
                 cliente=cliente,
                 referencia=post["referencia"],
                 modo="organico",
@@ -105,7 +104,7 @@ def gerar_carrossel(
     num_paginas = max(1, min(7, num_paginas))
 
     avisar("Escolhendo a pauta do carrossel...")
-    pauta = gerar_pauta_kav(cliente, forcar_ia=False)
+    pauta = gerar_pauta_kav(cliente)
     avisos = list(pauta.pop("avisos", []))
 
     avisar(f"Escrevendo o roteiro ({num_paginas} páginas): {pauta.get('tema')}")
@@ -187,7 +186,7 @@ def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callabl
             "referencia_layout": post["imagem"].get("referencia_layout"),
         })
     except Exception as exc:
-        avisos.append(f"Não consegui salvar no histórico ({exc}); esta foto pode se repetir.")
+        avisos.append(f"Não consegui salvar no histórico ({exc}); este prato pode se repetir.")
 
     try:
         from utils import estado_agentes
@@ -201,26 +200,33 @@ def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callabl
 def gerar_campanha(
     slug: str, com_imagem: bool = True, etapa: Optional[Callable[[str], None]] = None
 ) -> dict:
+    """Cria uma peça completa de campanha de tráfego pago (Meta Ads) com pesquisa
+    aprofundada de concorrência, inteligência de performance e layout com forte
+    hierarquia tipográfica."""
     avisar = etapa or (lambda _texto: None)
     cliente = carregar_cliente(slug)
     tipo = cliente.get("config", {}).get("tipo", "produto")
     if slug == "kav" or tipo == "estatico":
         return gerar_post_estatico_kav(slug, com_imagem=com_imagem, etapa=etapa)
-
     avisos = []
+
+    # 1. Escolha da foto real
     avisar("1/4 [Curador]: Selecionando foto real de prato do cliente...")
     foto = escolher_foto(cliente)
     avisos.extend(foto.pop("avisos", []))
 
+    # 2. Estrategista de Performance (Gestor de Tráfego)
     from agents.agente_estrategia_campanha import criar_estrategia_campanha
     avisar(f"2/4 [Estrategista]: Analisando concorrência e desenhando estratégia para '{foto.get('nome')}'...")
     estrategia = criar_estrategia_campanha(cliente, foto_escolhida=foto)
 
+    # 3. Designer de Performance & Layout de Campanha
     from agents.agente_layout_campanha import montar_brief_layout, gerar_arte_campanha
     h_destaque = estrategia.get("hierarquia_visual", {}).get("headline_destaque", "ALMOÇO DE QUALIDADE")
     avisar(f"3/4 [Diretor de Arte]: Projetando layout com hierarquia visual e headline '{h_destaque}'...")
     brief = montar_brief_layout(estrategia, foto, cliente)
 
+    # 4. Geração de Arte
     imagem = None
     if com_imagem:
         avisar("4/4 [Designer]: Renderizando arte 1080x1440 com foto real e logo da N&N...")
@@ -286,24 +292,32 @@ def gerar_campanha(
 def gerar_post_estatico_kav(
     slug: str = "kav", com_imagem: bool = True, etapa: Optional[Callable[[str], None]] = None
 ) -> dict:
+    """Cria uma peça estática de alto impacto para a Kav (@kav.mkt).
+    Foco em Tráfego Pago Local para PMEs e Marketing Descomplicado,
+    com geração dinâmica de pauta via IA sem repetição e rotação contínua de layouts.
+    """
     avisar = etapa or (lambda _texto: None)
     cliente = carregar_cliente(slug)
     avisos = []
 
+    # 1. Pauta Inédita Dinâmica com IA (anti-repetição)
     avisar("1/4 [Curador & Pauta]: Gerando pauta inédita de Tráfego Pago Local para PMEs...")
     from agents.agente_pauta import gerar_pauta_kav
     pauta = gerar_pauta_kav(cliente)
     avisos.extend(pauta.pop("avisos", []))
 
+    # 2. Copywriter de Autoridade & Marketing Descomplicado (Clarice)
     avisar(f"2/4 [Copywriter]: Escrevendo headline magnética para: '{pauta.get('tema')}'...")
     from agents.agente_estatico_kav import gerar_copy_kav
     copy = gerar_copy_kav(pauta, cliente)
 
+    # 3. Sorteio de Layout sem repetição (round-robin)
     avisar("3/4 [Designer]: Sorteando layout de referência sem repetição...")
     referencia = historico.escolher_referencia_sem_repetir(cliente)
     if referencia:
         avisar(f"3/4 [Designer]: Usando referência de layout '{referencia['arquivo'].name}'")
 
+    # 4. Geração de Arte Estática 4:5
     imagem = None
     brief = None
     if com_imagem:
@@ -312,6 +326,7 @@ def gerar_post_estatico_kav(
         brief = gerar_brief_arte_kav(copy, pauta, cliente, referencia)
         imagem = gerar_imagem_estatica_kav(brief, cliente, referencia)
 
+        ref_logo = imagem.get("referencia_logo") if imagem else None
         try:
             from agents.agente_diretor_arte import revisar_e_aprovar_layout
             imagem = revisar_e_aprovar_layout(
@@ -323,6 +338,8 @@ def gerar_post_estatico_kav(
                 modo="estatico_kav",
                 etapa=avisar,
             )
+            if ref_logo and isinstance(imagem, dict):
+                imagem.setdefault("referencia_logo", ref_logo)
         except Exception as exc:
             avisos.append(f"Direção de Arte automática ignorada ({exc}).")
     else:
@@ -335,6 +352,7 @@ def gerar_post_estatico_kav(
         "copy": copy,
         "brief": brief,
         "referencia": referencia["arquivo"].name if referencia else None,
+        "referencia_logo": imagem.get("referencia_logo") if isinstance(imagem, dict) else None,
         "imagem": imagem,
         "avisos": avisos,
     }

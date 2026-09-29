@@ -1,8 +1,10 @@
-"""Gerador automático dos templates de referência oficiais da Kav em 1080x1350.
+"""Gerador automático dos templates de referência oficiais e do logo da Kav.
 
-Gera os 5 layouts oficiais da Kav caso ainda não existam no disco,
+Gera os 5 layouts oficiais da Kav e o logotipo oficial caso ainda não existam no disco,
 garantindo que qualquer máquina que clone ou dê git pull tenha as referências prontas.
 """
+from __future__ import annotations
+
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
@@ -30,6 +32,46 @@ def garantir_referencias_kav(pasta_referencias: Path) -> None:
         return
 
     _gerar_todas(pasta_referencias)
+
+
+def garantir_logo_kav(pasta_cliente: Path) -> Path:
+    """Garante a existência do arquivo de logotipo da Kav caso não exista fisicamente."""
+    pasta_logo = pasta_cliente / "logo"
+    pasta_logo.mkdir(parents=True, exist_ok=True)
+
+    candidatos = [
+        pasta_logo / "logo_kav.png",
+        pasta_logo / "logo.png",
+        pasta_logo / "logo-fundo-escuro.png",
+        pasta_cliente / "logos" / "logo-fundo-escuro.png",
+        pasta_cliente / "logos" / "logo.png",
+        pasta_cliente / "logo-fundo-escuro.png",
+        pasta_cliente / "logo.png",
+        pasta_cliente / "logo-fundo-claro.png",
+    ]
+    for c in candidatos:
+        if c.exists():
+            return c
+
+    # Procura qualquer arquivo com 'logo' no nome
+    for p_busca in [pasta_cliente / "logo", pasta_cliente / "logos", pasta_cliente]:
+        if p_busca.is_dir():
+            for arq in sorted(p_busca.glob("*")):
+                if arq.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".svg"} and "logo" in arq.name.lower():
+                    return arq
+
+    # Se não existir nenhum logo, gera o logotipo oficial KAV em PNG transparente
+    destino = pasta_logo / "logo_kav.png"
+    w, h = 800, 220
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(im)
+
+    f_huge, _, _, f_bold, _, _, _ = _obter_fontes()
+    draw.text((w / 2, 70), "KAV", fill=(238, 183, 48, 255), font=f_huge, anchor="mm")
+    draw.text((w / 2, 145), "MARKETING & PERFORMANCE", fill=(255, 255, 255, 220), font=f_bold, anchor="mm")
+
+    im.save(destino)
+    return destino
 
 
 def _obter_fontes():
