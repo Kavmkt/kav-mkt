@@ -1,4 +1,4 @@
-"""Gerador automático dos templates de referência oficiais e do logo da Kav.
+"""Gerador automático dos templates de referência oficiais da Kav.
 
 Gera layouts com alternância entre temas escuros e claros invertidos:
 - Fundo Escuro: Azul Marinho Noturno Profundo (#001424);
@@ -12,6 +12,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
+from typing import Optional, Tuple
 
 W, H = 1080, 1350
 
@@ -35,7 +36,7 @@ C_LIGHT_CARD = (255, 255, 255)     # #FFFFFF (Card branco puro)
 C_GOLD = (238, 183, 48)            # #EEB730 (Dourado Kav Oficial)
 C_GOLD_DARKER = (217, 155, 0)      # #D99B00 (Dourado com alto contraste no fundo claro)
 
-VERSAO_REFERENCIAS = "v6_minimalismo_total_focus"
+VERSAO_REFERENCIAS = "v7_metaforas_originais_kav"
 
 
 def garantir_referencias_kav(pasta_referencias: Path) -> None:
@@ -61,28 +62,6 @@ def garantir_referencias_kav(pasta_referencias: Path) -> None:
             arquivo_versao.write_text(VERSAO_REFERENCIAS, encoding="utf-8")
         except Exception:
             pass
-
-
-def garantir_logo_kav(pasta_cliente: Path) -> tuple[Optional[Path], Optional[Path]]:
-    """Retorna os arquivos de logotipo oficial autênticos da Kav para fundos escuros e claros.
-    NUNCA sobrepõe nem gera logos falsos com texto simples se os arquivos oficiais existirem.
-    """
-    pasta_logo_antiga = pasta_cliente / "logo"
-    if pasta_logo_antiga.exists():
-        for arq_antigo in pasta_logo_antiga.glob("*.png"):
-            if arq_antigo.stat().st_size < 25000:
-                try:
-                    arq_antigo.unlink()
-                except Exception:
-                    pass
-
-    dest_escuro = pasta_cliente / "logo-fundo-escuro.png"
-    dest_claro = pasta_cliente / "logo-fundo-claro.png"
-
-    if dest_escuro.exists() and dest_claro.exists() and dest_escuro.stat().st_size > 25000 and dest_claro.stat().st_size > 25000:
-        return dest_escuro, dest_claro
-
-    return (dest_escuro if dest_escuro.exists() else None, dest_claro if dest_claro.exists() else None)
 
 
 def _obter_fontes():
@@ -111,16 +90,16 @@ def _obter_fontes():
             break
 
     if font_bold_path:
-        f_huge = ImageFont.truetype(font_bold_path, 52)
-        f_big = ImageFont.truetype(font_bold_path, 36)
-        f_med = ImageFont.truetype(font_bold_path, 24)
+        f_huge = ImageFont.truetype(font_bold_path, 50)
+        f_big = ImageFont.truetype(font_bold_path, 34)
+        f_med = ImageFont.truetype(font_bold_path, 23)
         f_bold = ImageFont.truetype(font_bold_path, 19)
         f_small_b = ImageFont.truetype(font_bold_path, 15)
     else:
         f_huge = f_big = f_med = f_bold = f_small_b = ImageFont.load_default()
 
     if font_reg_path:
-        f_reg = ImageFont.truetype(font_reg_path, 20)
+        f_reg = ImageFont.truetype(font_reg_path, 19)
         f_small = ImageFont.truetype(font_reg_path, 15)
     else:
         f_reg = f_small = ImageFont.load_default()
@@ -154,29 +133,31 @@ def _criar_base_claro():
 def _gerar_todas(pasta: Path):
     f_huge, f_big, f_med, f_bold, f_reg, f_small, f_small_b = _obter_fontes()
 
-    # 1. Manifesto Editorial Focus - TEMA ESCURO (Fiel à imagem anexada)
+    # 1. Manifesto Editorial Focus - TEMA ESCURO
     im1, d1 = _criar_base_escuro()
     d1.text((540, 150), "KAV", fill=C_GOLD, font=f_big, anchor="mm")
     d1.text((540, 480), "Improviso", fill=C_GOLD, font=f_huge, anchor="mm")
-    d1.text((540, 560), "não constrói", fill=C_WHITE, font=f_huge, anchor="mm")
-    d1.line([(360, 595), (720, 595)], fill=C_GOLD, width=3)
-    d1.text((540, 640), "empresa.", fill=C_WHITE, font=f_huge, anchor="mm")
+    d1.text((540, 550), "não constrói", fill=C_WHITE, font=f_huge, anchor="mm")
+    d1.line([(360, 585), (720, 585)], fill=C_GOLD, width=3)
+    d1.text((540, 620), "empresa.", fill=C_WHITE, font=f_huge, anchor="mm")
+    d1.text((540, 710), "Postar sem estratégia de tráfego local é depender da sorte.", fill=C_SLATE, font=f_reg, anchor="mm")
     d1.rounded_rectangle([(370, 1100), (710, 1160)], radius=30, outline=C_DARK_BORDER, width=2, fill=C_DARK_CARD)
     d1.text((540, 1130), "→   Leia a legenda", fill=C_WHITE, font=f_small, anchor="mm")
     im1.save(pasta / "ref_manifesto_palavra_dourada.png")
 
-    # 2. Manifesto Editorial Focus - TEMA CLARO INVERTIDO (Branco p/ cinza azulado super claro)
+    # 2. Manifesto Editorial Focus - TEMA CLARO INVERTIDO
     im2, d2 = _criar_base_claro()
     d2.text((540, 150), "KAV", fill=C_LIGHT_NAVY, font=f_big, anchor="mm")
     d2.text((540, 480), "Improviso", fill=C_GOLD_DARKER, font=f_huge, anchor="mm")
-    d2.text((540, 560), "não constrói", fill=C_LIGHT_NAVY, font=f_huge, anchor="mm")
-    d2.line([(360, 595), (720, 595)], fill=C_GOLD_DARKER, width=3)
-    d2.text((540, 640), "empresa.", fill=C_LIGHT_NAVY, font=f_huge, anchor="mm")
+    d2.text((540, 550), "não constrói", fill=C_LIGHT_NAVY, font=f_huge, anchor="mm")
+    d2.line([(360, 585), (720, 585)], fill=C_GOLD_DARKER, width=3)
+    d2.text((540, 620), "empresa.", fill=C_LIGHT_NAVY, font=f_huge, anchor="mm")
+    d2.text((540, 710), "Postar sem estratégia de tráfego local é depender da sorte.", fill=C_LIGHT_SLATE, font=f_reg, anchor="mm")
     d2.rounded_rectangle([(370, 1100), (710, 1160)], radius=30, outline=C_LIGHT_BORDER, width=2, fill=C_LIGHT_CARD)
     d2.text((540, 1130), "→   Leia a legenda", fill=C_LIGHT_NAVY, font=f_small, anchor="mm")
     im2.save(pasta / "ref_manifesto_claro.png")
 
-    # 3. Tweet Box Samuel Reis - TEMA ESCURO (Minimalista, sem textão)
+    # 3. Tweet Box Samuel Reis - TEMA ESCURO (Headline + Subtítulo de contexto)
     im3, d3 = _criar_base_escuro()
     d3.text((100, 150), "Kav", fill=C_SLATE, font=f_small)
     d3.rounded_rectangle([(100, 240), (280, 290)], radius=20, fill=C_DARK_CARD, outline=C_DARK_BORDER)
@@ -184,11 +165,11 @@ def _gerar_todas(pasta: Path):
     d3.text((127, 267), "K", fill=C_DARK_BG, font=f_small_b, anchor="mm")
     d3.text((215, 267), "@kav.mkt", fill=C_WHITE, font=f_small_b, anchor="mm")
     d3.text((100, 380), "Não é trabalho\\ndo seu cliente se\\nlembrar de você.", fill=C_WHITE, font=f_huge, spacing=14)
-    d3.text((100, 580), "É obrigação da sua empresa aparecer todos os dias.", fill=C_SLATE, font=f_med)
+    d3.text((100, 580), "É obrigação da sua empresa aparecer todos os dias no feed dele.", fill=C_SLATE, font=f_med)
     d3.text((100, 1000), "Leia a legenda completa  ↘", fill=C_GOLD, font=f_med)
     im3.save(pasta / "ref_afirmacao_tweet_box.png")
 
-    # 4. Tweet Box - TEMA CLARO INVERTIDO (Minimalista, sem textão)
+    # 4. Tweet Box - TEMA CLARO INVERTIDO
     im4, d4 = _criar_base_claro()
     d4.text((100, 150), "Kav", fill=C_LIGHT_SLATE, font=f_small)
     d4.rounded_rectangle([(100, 240), (280, 290)], radius=20, fill=C_LIGHT_CARD, outline=C_LIGHT_BORDER)
@@ -196,14 +177,14 @@ def _gerar_todas(pasta: Path):
     d4.text((127, 267), "K", fill=C_WHITE, font=f_small_b, anchor="mm")
     d4.text((215, 267), "@kav.mkt", fill=C_LIGHT_NAVY, font=f_small_b, anchor="mm")
     d4.text((100, 380), "Não é trabalho\\ndo seu cliente se\\nlembrar de você.", fill=C_LIGHT_NAVY, font=f_huge, spacing=14)
-    d4.text((100, 580), "É obrigação da sua empresa aparecer todos os dias.", fill=C_LIGHT_SLATE, font=f_med)
+    d4.text((100, 580), "É obrigação da sua empresa aparecer todos os dias no feed dele.", fill=C_LIGHT_SLATE, font=f_med)
     d4.text((100, 1000), "Leia a legenda completa  ↘", fill=C_GOLD_DARKER, font=f_med)
     im4.save(pasta / "ref_afirmacao_tweet_box_claro.png")
 
-    # 5. Metáfora Visual 3D Cadeira - TEMA ESCURO
+    # 5. Metáfora Visual 3D Conceitual - TEMA ESCURO
     im5, d5 = _criar_base_escuro()
     d5.text((540, 180), "Você não precisa fazer igual.", fill=C_WHITE, font=f_big, anchor="mm")
-    d5.text((540, 235), "Nem pensar igual.", fill=C_WHITE, font=f_big, anchor="mm")
+    d5.text((540, 230), "Nem pensar igual aos concorrentes.", fill=C_SLATE, font=f_reg, anchor="mm")
     cx, cy = 540, 610
     for row in range(-2, 3):
         for col in range(-3, 4):
@@ -215,18 +196,18 @@ def _gerar_todas(pasta: Path):
             else:
                 d5.rounded_rectangle([(px - 22, py - 22), (px + 22, py + 22)], radius=8, fill=C_DARK_BORDER)
     d5.text((540, 930), "Faça diferente. Seja estratégico.", fill=C_WHITE, font=f_big, anchor="mm")
-    d5.text((540, 990), "O marketing que copia, some.", fill=C_SLATE, font=f_med, anchor="mm")
+    d5.text((540, 980), "O marketing que copia a concorrência, desaparece.", fill=C_SLATE, font=f_reg, anchor="mm")
     d5.line([(100, 1180), (980, 1180)], fill=C_DARK_BORDER, width=1)
     d5.text((100, 1220), "@kav.mkt", fill=C_MUTED, font=f_small)
     d5.text((980, 1220), "2026", fill=C_MUTED, font=f_small, anchor="ra")
     im5.save(pasta / "ref_destaque_dourado.png")
 
-    # 6. Quebra de Objeção - TEMA CLARO INVERTIDO (Sem textão)
+    # 6. Quebra de Objeção - TEMA CLARO INVERTIDO
     im6, d6 = _criar_base_claro()
     d6.rounded_rectangle([(100, 150), (320, 200)], radius=20, outline=C_LIGHT_BORDER, fill=C_LIGHT_CARD)
     d6.text((210, 175), "@kav.mkt", fill=C_LIGHT_SLATE, font=f_small, anchor="mm")
     d6.text((100, 360), "Você não precisa\\nabaixar o seu preço.", fill=C_LIGHT_NAVY, font=f_huge, spacing=14)
-    d6.text((100, 560), "Preço baixo atrai cliente difícil. Posicionamento atrai valor.", fill=C_GOLD_DARKER, font=f_med)
+    d6.text((100, 560), "Preço baixo atrai cliente difícil. O tráfego certo atrai quem valoriza.", fill=C_GOLD_DARKER, font=f_med)
     d6.rounded_rectangle([(370, 1100), (710, 1160)], radius=30, outline=C_LIGHT_BORDER, fill=C_LIGHT_CARD)
     d6.text((540, 1130), "→   Leia a legenda", fill=C_LIGHT_NAVY, font=f_bold, anchor="mm")
     im6.save(pasta / "ref_quebra_objecao_claro.png")
