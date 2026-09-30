@@ -35,7 +35,7 @@ C_LIGHT_CARD = (255, 255, 255)     # #FFFFFF (Card branco puro)
 C_GOLD = (238, 183, 48)            # #EEB730 (Dourado Kav Oficial)
 C_GOLD_DARKER = (217, 155, 0)      # #D99B00 (Dourado com alto contraste no fundo claro)
 
-VERSAO_REFERENCIAS = "v5_claro_escuro_gotham_focus"
+VERSAO_REFERENCIAS = "v6_minimalismo_total_focus"
 
 
 def garantir_referencias_kav(pasta_referencias: Path) -> None:
@@ -48,7 +48,6 @@ def garantir_referencias_kav(pasta_referencias: Path) -> None:
         "ref_afirmacao_tweet_box_claro.png",
         "ref_destaque_dourado.png",
         "ref_quebra_objecao_claro.png",
-        "ref_impacto_condensado_grid.png",
     ]
     precisa_gerar = False
     if not arquivo_versao.exists() or arquivo_versao.read_text(encoding="utf-8").strip() != VERSAO_REFERENCIAS:
@@ -64,35 +63,26 @@ def garantir_referencias_kav(pasta_referencias: Path) -> None:
             pass
 
 
-def garantir_logo_kav(pasta_cliente: Path) -> tuple[Path, Path]:
-    """Garante os arquivos de logotipo oficial da Kav para fundos escuros e claros."""
-    pasta_logo = pasta_cliente / "logo"
-    pasta_logo.mkdir(parents=True, exist_ok=True)
+def garantir_logo_kav(pasta_cliente: Path) -> tuple[Optional[Path], Optional[Path]]:
+    """Retorna os arquivos de logotipo oficial autênticos da Kav para fundos escuros e claros.
+    NUNCA sobrepõe nem gera logos falsos com texto simples se os arquivos oficiais existirem.
+    """
+    pasta_logo_antiga = pasta_cliente / "logo"
+    if pasta_logo_antiga.exists():
+        for arq_antigo in pasta_logo_antiga.glob("*.png"):
+            if arq_antigo.stat().st_size < 25000:
+                try:
+                    arq_antigo.unlink()
+                except Exception:
+                    pass
 
-    dest_escuro = pasta_logo / "logo-fundo-escuro.png"
-    dest_claro = pasta_logo / "logo-fundo-claro.png"
+    dest_escuro = pasta_cliente / "logo-fundo-escuro.png"
+    dest_claro = pasta_cliente / "logo-fundo-claro.png"
 
-    f_huge, _, _, f_bold, _, _, _ = _obter_fontes()
-    w, h = 800, 220
+    if dest_escuro.exists() and dest_claro.exists() and dest_escuro.stat().st_size > 25000 and dest_claro.stat().st_size > 25000:
+        return dest_escuro, dest_claro
 
-    # 1. Logo Fundo Escuro (Dourado + Branco)
-    im_esc = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    d_esc = ImageDraw.Draw(im_esc)
-    d_esc.text((w / 2, 70), "KAV", fill=(238, 183, 48, 255), font=f_huge, anchor="mm")
-    d_esc.text((w / 2, 145), "MARKETING & PERFORMANCE", fill=(255, 255, 255, 220), font=f_bold, anchor="mm")
-    im_esc.save(dest_escuro)
-    im_esc.save(pasta_cliente / "logo-fundo-escuro.png")
-    im_esc.save(pasta_logo / "logo_kav.png")
-
-    # 2. Logo Fundo Claro (Azul Marinho + Dourado)
-    im_cla = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    d_cla = ImageDraw.Draw(im_cla)
-    d_cla.text((w / 2, 70), "KAV", fill=(0, 20, 36, 255), font=f_huge, anchor="mm")
-    d_cla.text((w / 2, 145), "MARKETING & PERFORMANCE", fill=(217, 155, 0, 230), font=f_bold, anchor="mm")
-    im_cla.save(dest_claro)
-    im_cla.save(pasta_cliente / "logo-fundo-claro.png")
-
-    return dest_escuro, dest_claro
+    return (dest_escuro if dest_escuro.exists() else None, dest_claro if dest_claro.exists() else None)
 
 
 def _obter_fontes():
@@ -120,7 +110,6 @@ def _obter_fontes():
             font_reg_path = p
             break
 
-    # Proporções cautelosas e contidas (estilo Focus / sem exagero de tamanho)
     if font_bold_path:
         f_huge = ImageFont.truetype(font_bold_path, 52)
         f_big = ImageFont.truetype(font_bold_path, 36)
@@ -165,7 +154,7 @@ def _criar_base_claro():
 def _gerar_todas(pasta: Path):
     f_huge, f_big, f_med, f_bold, f_reg, f_small, f_small_b = _obter_fontes()
 
-    # 1. Manifesto Editorial Focus - TEMA ESCURO (Fiel à imagem de referência anexada)
+    # 1. Manifesto Editorial Focus - TEMA ESCURO (Fiel à imagem anexada)
     im1, d1 = _criar_base_escuro()
     d1.text((540, 150), "KAV", fill=C_GOLD, font=f_big, anchor="mm")
     d1.text((540, 480), "Improviso", fill=C_GOLD, font=f_huge, anchor="mm")
@@ -187,35 +176,31 @@ def _gerar_todas(pasta: Path):
     d2.text((540, 1130), "→   Leia a legenda", fill=C_LIGHT_NAVY, font=f_small, anchor="mm")
     im2.save(pasta / "ref_manifesto_claro.png")
 
-    # 3. Tweet Box Samuel Reis - TEMA ESCURO
+    # 3. Tweet Box Samuel Reis - TEMA ESCURO (Minimalista, sem textão)
     im3, d3 = _criar_base_escuro()
     d3.text((100, 150), "Kav", fill=C_SLATE, font=f_small)
     d3.rounded_rectangle([(100, 240), (280, 290)], radius=20, fill=C_DARK_CARD, outline=C_DARK_BORDER)
     d3.ellipse([(110, 250), (145, 285)], fill=C_GOLD)
     d3.text((127, 267), "K", fill=C_DARK_BG, font=f_small_b, anchor="mm")
     d3.text((215, 267), "@kav.mkt", fill=C_WHITE, font=f_small_b, anchor="mm")
-    d3.text((100, 360), "Não é trabalho\\ndo seu cliente se\\nlembrar de você.", fill=C_WHITE, font=f_huge, spacing=14)
-    d3.rounded_rectangle([(95, 740), (985, 890)], radius=20, outline=C_DARK_BORDER, fill=C_DARK_CARD)
-    d3.text((135, 785), "É sua obrigação ter a certeza de que ele não vai te esquecer.", fill=C_WHITE, font=f_med)
-    d3.text((135, 835), "Com tráfego local no raio certo, sua marca aparece todos os dias.", fill=C_SLATE, font=f_small)
+    d3.text((100, 380), "Não é trabalho\\ndo seu cliente se\\nlembrar de você.", fill=C_WHITE, font=f_huge, spacing=14)
+    d3.text((100, 580), "É obrigação da sua empresa aparecer todos os dias.", fill=C_SLATE, font=f_med)
     d3.text((100, 1000), "Leia a legenda completa  ↘", fill=C_GOLD, font=f_med)
     im3.save(pasta / "ref_afirmacao_tweet_box.png")
 
-    # 4. Tweet Box - TEMA CLARO INVERTIDO
+    # 4. Tweet Box - TEMA CLARO INVERTIDO (Minimalista, sem textão)
     im4, d4 = _criar_base_claro()
     d4.text((100, 150), "Kav", fill=C_LIGHT_SLATE, font=f_small)
     d4.rounded_rectangle([(100, 240), (280, 290)], radius=20, fill=C_LIGHT_CARD, outline=C_LIGHT_BORDER)
     d4.ellipse([(110, 250), (145, 285)], fill=C_GOLD_DARKER)
     d4.text((127, 267), "K", fill=C_WHITE, font=f_small_b, anchor="mm")
     d4.text((215, 267), "@kav.mkt", fill=C_LIGHT_NAVY, font=f_small_b, anchor="mm")
-    d4.text((100, 360), "Não é trabalho\\ndo seu cliente se\\nlembrar de você.", fill=C_LIGHT_NAVY, font=f_huge, spacing=14)
-    d4.rounded_rectangle([(95, 740), (985, 890)], radius=20, outline=C_LIGHT_BORDER, fill=C_LIGHT_CARD)
-    d4.text((135, 785), "É sua obrigação ter a certeza de que ele não vai te esquecer.", fill=C_LIGHT_NAVY, font=f_med)
-    d4.text((135, 835), "Com tráfego local no raio certo, sua marca aparece todos os dias.", fill=C_LIGHT_SLATE, font=f_small)
+    d4.text((100, 380), "Não é trabalho\\ndo seu cliente se\\nlembrar de você.", fill=C_LIGHT_NAVY, font=f_huge, spacing=14)
+    d4.text((100, 580), "É obrigação da sua empresa aparecer todos os dias.", fill=C_LIGHT_SLATE, font=f_med)
     d4.text((100, 1000), "Leia a legenda completa  ↘", fill=C_GOLD_DARKER, font=f_med)
     im4.save(pasta / "ref_afirmacao_tweet_box_claro.png")
 
-    # 5. Metáfora Visual 3D / Cadeira Well.dsg & ORB - TEMA ESCURO
+    # 5. Metáfora Visual 3D Cadeira - TEMA ESCURO
     im5, d5 = _criar_base_escuro()
     d5.text((540, 180), "Você não precisa fazer igual.", fill=C_WHITE, font=f_big, anchor="mm")
     d5.text((540, 235), "Nem pensar igual.", fill=C_WHITE, font=f_big, anchor="mm")
@@ -236,30 +221,12 @@ def _gerar_todas(pasta: Path):
     d5.text((980, 1220), "2026", fill=C_MUTED, font=f_small, anchor="ra")
     im5.save(pasta / "ref_destaque_dourado.png")
 
-    # 6. Quebra de Objeção - TEMA CLARO INVERTIDO
+    # 6. Quebra de Objeção - TEMA CLARO INVERTIDO (Sem textão)
     im6, d6 = _criar_base_claro()
     d6.rounded_rectangle([(100, 150), (320, 200)], radius=20, outline=C_LIGHT_BORDER, fill=C_LIGHT_CARD)
     d6.text((210, 175), "@kav.mkt", fill=C_LIGHT_SLATE, font=f_small, anchor="mm")
-    d6.text((100, 340), "Você não precisa\\nabaixar o seu preço.", fill=C_LIGHT_NAVY, font=f_huge, spacing=14)
-    d6.rounded_rectangle([(95, 640), (985, 830)], radius=20, outline=C_GOLD_DARKER, fill=C_LIGHT_CARD, width=2)
-    d6.text((135, 695), "Preço baixo atrai cliente difícil.", fill=C_GOLD_DARKER, font=f_med)
-    d6.text((135, 755), "Posicionamento e tráfego certo atraem quem valoriza seu serviço.", fill=C_LIGHT_NAVY, font=f_reg)
+    d6.text((100, 360), "Você não precisa\\nabaixar o seu preço.", fill=C_LIGHT_NAVY, font=f_huge, spacing=14)
+    d6.text((100, 560), "Preço baixo atrai cliente difícil. Posicionamento atrai valor.", fill=C_GOLD_DARKER, font=f_med)
     d6.rounded_rectangle([(370, 1100), (710, 1160)], radius=30, outline=C_LIGHT_BORDER, fill=C_LIGHT_CARD)
     d6.text((540, 1130), "→   Leia a legenda", fill=C_LIGHT_NAVY, font=f_bold, anchor="mm")
     im6.save(pasta / "ref_quebra_objecao_claro.png")
-
-    # 7. Blueprint Grid Técnico Workspace - TEMA ESCURO
-    im7, d7 = _criar_base_escuro()
-    step = 80
-    for x in range(0, W, step):
-        d7.line([(x, 0), (x, H)], fill=(7, 32, 54), width=1)
-    for y in range(0, H, step):
-        d7.line([(0, y), (W, y)], fill=(7, 32, 54), width=1)
-    d7.text((100, 140), "kavmarketing", fill=C_SLATE, font=f_small)
-    d7.text((980, 140), "performance", fill=C_SLATE, font=f_small, anchor="ra")
-    d7.rounded_rectangle([(100, 260), (370, 310)], radius=20, fill=C_DARK_CARD, outline=C_GOLD, width=2)
-    d7.text((235, 285), "📈  Quer crescer?", fill=C_GOLD, font=f_small, anchor="mm")
-    d7.text((100, 440), "Então pare de\\ntratar marketing\\ncomo um gasto! ↘", fill=C_WHITE, font=f_huge, spacing=16)
-    termos = "Tráfego Local · Performance · PMEs · Geofencing · Conversão · WhatsApp · ROI · Escala"
-    d7.text((100, 1140), termos, fill=C_MUTED, font=f_small)
-    im7.save(pasta / "ref_impacto_condensado_grid.png")

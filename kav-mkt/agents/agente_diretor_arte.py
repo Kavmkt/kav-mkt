@@ -7,8 +7,8 @@ designer para:
 2. Posts de restaurantes/fotos reais (N&N Restaurante) - preservação de comida real autêntica;
 3. Peças de anúncio (campanha).
 
-Se o layout tiver nota baixa (< 8) ou falhas críticas (ex: logo distorcido/sobrepondo texto,
-fonte estrondosa sem respiro, "Arrasta pra entender", comida artificial), o Diretor de Arte
+Se o layout tiver nota baixa (< 8) ou falhas críticas (ex: excesso de texto/parágrafos,
+logo não oficial/com slogan, distorção, "Arrasta pra entender"), o Diretor de Arte
 solicita melhorias cirúrgicas e devolve à API da OpenAI para refino imediato.
 """
 from __future__ import annotations
@@ -27,27 +27,35 @@ DIRETRIZES DA MARCA DA KAV:
 __SKILL__
 
 CHECKLIST CRÍTICO DE AVALIAÇÃO DA KAV:
-1. INTEGRIDADE MATEMÁTICA E ZERO DISTORÇÃO DO LOGOTIPO KAV:
-   - O logo oficial da Kav ('KAV') DEVE estar com proporção 1:1 rigorosa, nítido e perfeitamente nivelado.
-   - REPROVE IMEDIATAMENTE (pontuação <= 4, precisa_refino=true) se o logotipo estiver DISTORCIDO, esticado horizontalmente, achatado verticalmente, inclinado, com letras deformadas ou com erro de digitação ('WAV', 'CAV').
-   - REPROVE se o logo estiver sobrepondo o título, colidindo com qualquer texto ou sem margem de respiro (mínimo 60-80px de respiro).
-2. CONTENÇÃO E ELEGÂNCIA DO TAMANHO DA FONTE (BENCHMARK FOCUS):
+1. RIGOR ABSOLUTO CONTRA EXCESSO DE TEXTO NA IMAGEM (ZERO POLUIÇÃO VISUAL):
+   - REPROVE IMEDIATAMENTE (pontuação <= 3, precisa_refino=true) se a imagem tiver MUITO TEXTO: parágrafos, blocos explicativos de mais de 1 ou 2 linhas, caixas com historinhas (ex: 'Você sabia que...', 'Imagine um garçom...') ou qualquer texto corrido.
+   - A arte DEVE ser estritamente minimalista (estilo Focus):
+     * Logotipo oficial KAV no topo;
+     * Headline curta e potente (3 a 6 palavras em Sentence Case);
+     * Botão pill '[ → Leia a legenda ]' na base;
+     * Área limpa e negativa generosa (75% a 85% de respiro).
+   - Se houver caixas de texto com explicações, ordene a remoção total desse bloco de texto, mantendo apenas a headline e o botão de CTA. Toda a explicação deve ir na legenda do post!
+2. USO OBRIGATÓRIO DO LOGOTIPO OFICIAL KAV (SEM TEXTO GENÉRICO / SEM SLOGANS):
+   - REPROVE IMEDIATAMENTE (pontuação <= 3, precisa_refino=true) se a imagem estiver usando apenas o nome digitado 'KAV' com o slogan 'Marketing & Performance' embaixo em fonte comum (Arial/Helvetica).
+   - O logo DEVE ser o logotipo oficial estilizado e geométrico da Kav (as letras geométricas cortadas em ângulo K, A e V, conforme a Referência 2).
+   - O logo NÃO deve conter slogans em Arial embaixo, não pode estar distorcido, achatado ou esticado (deve manter proporção 1:1 rigorosa).
+3. CONTENÇÃO E ELEGÂNCIA DO TAMANHO DA FONTE (BENCHMARK FOCUS):
    - A tipografia DEVE seguir as proporções refinadas e contidas do layout Focus: NUNCA use fontes gigantescas, monstruosas ou estrondosas que tomam a tela inteira.
    - A headline deve ocupar cerca de 50% a 65% da largura da tela, com pelo menos 20% a 25% de margem de respiro nas laterais e espaçamento vertical aberto.
    - REPROVE se o texto estiver em CAIXA ALTA / ALL CAPS (gritando) ou sufocando o espaço em branco da peça.
-3. CORES OFICIAIS DA KAV (TEMAS ESCURO E CLARO INVERTIDO):
+4. CORES OFICIAIS DA KAV (TEMAS ESCURO E CLARO INVERTIDO):
    - Se tema escuro: O fundo DEVE ser Azul Marinho Noturno Profundo (#001424 ou #001D32) com textos em branco puro e destaque em dourado. REPROVE se o fundo for preto puro (#000000).
    - Se tema claro invertido: O fundo DEVE ser Branco Puro (#FFFFFF) no topo em degradê suave para cinza-azulado super claro (#EBF1F6) na base, com textos em Azul Marinho Noturno (#001424) e destaque em Dourado Kav (#EEB730).
-4. PROIBIÇÃO ABSOLUTA DE 'ARRASTA PRA ENTENDER' E CARROSSEL:
+5. PROIBIÇÃO ABSOLUTA DE 'ARRASTA PRA ENTENDER' E CARROSSEL:
    - REPROVE IMEDIATAMENTE (pontuação <= 4, precisa_refino=true) se a imagem contiver 'Arrasta pra entender', 'Arraste para o lado', 'Passe para o lado' ou setas duplas (>>).
-5. TOPO LIMPO:
+6. TOPO LIMPO:
    - REPROVE se o topo tiver caixa, tag ou selo escrito 'PERFORMANCE LOCAL'. O cabeçalho deve ser limpo e elegante.
-6. ESTRUTURA DO ARQUÉTIPO VISUAL:
+7. ESTRUTURA DO ARQUÉTIPO VISUAL:
    - Se for Manifesto Focus: 100% tipográfico, equilibrado, com palavra de destaque em dourado sublinhada e botão pill 'Leia a legenda' na base.
    - Se for Tweet Box: card flutuante centralizado com avatar e @kav.mkt.
    - Se for Metáfora 3D: objeto herói central realista em dourado.
    - Se for Blueprint: micro-grade milimétrica técnica.
-7. PROIBIÇÃO DE CLICHÊS GENÉRICOS DE IA:
+8. PROIBIÇÃO DE CLICHÊS GENÉRICOS DE IA:
    - REPROVE se houver miniaturas de cidades 3D, radares, ou pins amarelos de GPS.
 
 Responda EXCLUSIVAMENTE com um objeto JSON, sem markdown ou texto antes/depois:
@@ -56,7 +64,7 @@ Responda EXCLUSIVAMENTE com um objeto JSON, sem markdown ou texto antes/depois:
   "pontuacao": 8,
   "diagnostico": "Resumo crítico e direto da avaliação em 1 ou 2 frases em português",
   "precisa_refino": false,
-  "instrucoes_de_correcao": "Instruções cirúrgicas em inglês para a IA de edição caso precisa_refino seja true. Especifique com clareza: (1) O que PRESERVAR e (2) O que CORRIGIR (ex: ajustar proporção do logo KAV para 1:1 sem distorção, reduzir tamanho da headline para deixar 25% de margem lateral, etc.). Se aprovado, deixe string vazia."
+  "instrucoes_de_correcao": "Instruções cirúrgicas em inglês para a IA de edição caso precisa_refino seja true. Especifique com clareza: (1) O que PRESERVAR e (2) O que CORRIGIR (ex: remover a caixa de texto explicativa/parágrafo deixando apenas a headline de 4 palavras e o botão pill; substituir o logo de texto genérico pelo logotipo geométrico estilizado oficial KAV sem slogan, etc.). Se aprovado, deixe string vazia."
 }
 """
 
@@ -119,23 +127,23 @@ def revisar_e_aprovar_layout(
     slug = cliente.get("slug", "")
     eh_kav = (slug == "kav" or modo == "estatico_kav")
 
-    avisar("🎨 [Diretor de Arte]: Inspecionando proporção do logo, contenção de fonte e paleta...")
+    avisar("🎨 [Diretor de Arte]: Inspecionando limite de texto, logo oficial e contenção...")
 
     if eh_kav:
         system = SYSTEM_PROMPT_DIRETOR_KAV.replace("__SKILL__", cliente.get("skill", ""))
         tema = imagem_dict.get("tema_fundo", "escuro")
         prompt = (
-            f"Avalie esta peça criada para a agência 'Kav Marketing & Performance' (@kav.mkt).\\n"
-            f"Modo de produção: {modo}\\n"
-            f"Tema esperado: {tema.upper()}\\n"
-            f"Headline esperada: \\\"{copy.get('headline_imagem')}\\\"\\n"
-            f"Arquétipo de layout aplicado: {imagem_dict.get('estilo_nome', 'Padrão Kav')}\\n\\n"
-            f"CHECKLIST DE INSPEÇÃO VISUAL:\\n"
-            f"1. O logo oficial KAV está 100% RETO e SEM DISTORÇÃO (sem esticar, sem achatar) e com pelo menos 60px de respiro?\\n"
-            f"2. A tipografia está em tamanho MODERADO e CONTIDO (estilo Focus), com ampla margem de respiro lateral (20-25%), SEM letras monstruosas e SEM CAIXA ALTA?\\n"
-            f"3. O fundo é Azul Marinho Noturno (#001424) para tema escuro OU Branco com degradê cinza-azulado super claro para tema claro invertido?\\n"
-            f"4. Há ausência total de 'Arrasta pra entender' e setas de deslizar?\\n"
-            f"5. O cabeçalho está limpo sem badges de 'PERFORMANCE LOCAL'?\\n\\n"
+            f"Avalie esta peça criada para a agência 'Kav Marketing & Performance' (@kav.mkt).\n"
+            f"Modo de produção: {modo}\n"
+            f"Tema esperado: {tema.upper()}\n"
+            f"Headline esperada: \"{copy.get('headline_imagem')}\"\n"
+            f"Arquétipo de layout aplicado: {imagem_dict.get('estilo_nome', 'Padrão Kav')}\n\n"
+            f"CHECKLIST DE INSPEÇÃO VISUAL:\n"
+            f"1. QUANTIDADE DE TEXTO: Há excesso de texto, parágrafos, caixas explicativas ou textão na imagem? Se houver qualquer parágrafo explicativo além da headline, REPROVE IMEDIATAMENTE!\n"
+            f"2. LOGOTIPO OFICIAL: Está usando o logotipo geométrico oficial da Kav (letras estilizadas e chanfradas conforme Referência 2) ou está usando apenas texto genérico 'KAV' com slogan 'Marketing & Performance' embaixo em Arial? Se for texto genérico com slogan, REPROVE IMEDIATAMENTE!\n"
+            f"3. A tipografia da headline está em tamanho MODERADO e CONTIDO em Gotham Sentence Case (SEM CAIXA ALTA), com respiro de 20-25% nas laterais?\n"
+            f"4. O fundo é Azul Marinho Noturno (#001424) para tema escuro OU Branco com degradê cinza-azulado super claro para tema claro invertido?\n"
+            f"5. Há ausência total de 'Arrasta pra entender' e setas de deslizar?\n\n"
             f"Inspecione com olhar crítico e devolva o JSON de avaliação."
         )
     else:
@@ -145,10 +153,10 @@ def revisar_e_aprovar_layout(
             .replace("__MODO__", modo)
         )
         prompt = (
-            f"Avalie esta peça criada para o cliente '{cliente.get('nome')}'.\\n"
-            f"Modo de produção: {modo}\\n"
-            f"Headline esperada na peça: \\\"{copy.get('headline_imagem')}\\\"\\n"
-            f"Prato/Foto base: {nome_prato}\\n\\n"
+            f"Avalie esta peça criada para o cliente '{cliente.get('nome')}'.\n"
+            f"Modo de produção: {modo}\n"
+            f"Headline esperada na peça: \"{copy.get('headline_imagem')}\"\n"
+            f"Prato/Foto base: {nome_prato}\n\n"
             f"Inspecione a imagem fornecida com olhar crítico e devolva o JSON de avaliação."
         )
 
@@ -199,14 +207,16 @@ def revisar_e_aprovar_layout(
             if logo_arquivo and logo_arquivo.exists():
                 referencias_refino.append((
                     logo_arquivo.read_bytes(),
-                    f"the official BRAND LOGO of Kav Marketing & Performance ('KAV'). Correctly position this exact logo in the {area_logo} with strict 1:1 aspect ratio lock (ZERO DISTORTION) and generous margins.",
+                    f"the official BRAND LOGO MARK of Kav Marketing & Performance ('KAV'). Correctly position this exact geometric mark in the {area_logo} without any slogan beneath it, with strict 1:1 aspect ratio lock (ZERO DISTORTION) and generous margins.",
                 ))
             prompt_refino = (
                 "You are executing an art direction revision on this post design for Kav Marketing & Performance. Apply ONLY the following corrections:\n"
                 f"{instrucoes}\n\n"
                 "STRICT KAV BRAND DIRECTIVES:\n"
-                "- ZERO LOGO DISTORTION: Ensure the official Kav logo ('KAV') is mathematically level with strict 1:1 aspect ratio lock. Never stretch or flatten it!\n"
-                "- FONT SIZE RESTRAINT: Scale down headlines to restrained, refined proportions (~55% width with 20-25% breathing margins on the sides, following the FOCUS benchmark). NO SCREEN-FILLING LETTERS!\n"
+                "- ELIMINATE ALL EXCESS TEXT: Remove any paragraph boxes, body text cards, or story explanations! Keep ONLY the headline (3 to 6 words) and the '[ → Leia a legenda ]' pill button. The canvas must be 80% clean, airy negative space.\n"
+                "- OFFICIAL LOGO MARK ONLY: Use ONLY the official geometric 'KAV' mark from Reference 2. Remove any plain Arial text or 'Marketing & Performance' slogans underneath!\n"
+                "- ZERO LOGO DISTORTION: Ensure the official Kav logo mark is mathematically level with strict 1:1 aspect ratio lock. Never stretch or flatten it!\n"
+                "- FONT SIZE RESTRAINT: Scale down headlines to restrained, refined proportions (~55% width with 20-25% breathing margins on the sides, following the FOCUS benchmark).\n"
                 "- TYPOGRAPHY: STRICTLY Gotham font in Sentence Case (NO ALL CAPS!).\n"
                 "- COLOR PALETTE: Respect the theme. If dark: deep nocturnal navy (#001424). If light: white with soft bluish-gray (#EBF1F6) gradient and navy text.\n"
                 "- ELIMINATE all swipe/carousel text ('Arrasta pra entender'). This is a single static feed post (1080x1350)."
