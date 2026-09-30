@@ -7,7 +7,8 @@ import random
 from utils.openai_client import chamar_ia, extrair_json
 
 # Sorteado a cada post só para variar o gancho — a estrutura da legenda vem do padrão.
-ANGULOS_GANCHO = [\n    "um perrengue comum de quem tem carro popular",
+ANGULOS_GANCHO = [
+    "um perrengue comum de quem tem carro popular",
     "economia: resolver sem gastar muito",
     "antes e depois: peça gasta vs. peça nova",
     "segurança no dia a dia (chuva, noite, estrada)",
@@ -51,7 +52,7 @@ def gerar_legenda(produto: dict, cliente: dict) -> dict:
         "__PADRAO__", cliente["legenda_padrao"] or PADRAO_AUSENTE
     )
     prompt = (
-        f"Dados do produto:\\n{_descrever(produto, cliente)}\\n\\n"
+        f"Dados do produto:\n{_descrever(produto, cliente)}\n\n"
         f"Ângulo sugerido para o gancho: {random.choice(ANGULOS_GANCHO)}"
     )
     resposta = chamar_ia(system=system, prompt=prompt, max_tokens=900, temperature=0.9, json_mode=True)
@@ -69,4 +70,4 @@ def _descrever(produto: dict, cliente: dict) -> str:
         ("Avaliação", produto.get("avaliacao")),
         ("Descrição do anúncio", (produto.get("descricao") or "")[:1500]),
     ]
-    return "\\n".join(f"- {rotulo}: {valor}" for rotulo, valor in campos if valor)
+    return "\n".join(f"- {rotulo}: {valor}" for rotulo, valor in campos if valor)
