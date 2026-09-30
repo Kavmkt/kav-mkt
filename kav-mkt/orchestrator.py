@@ -183,7 +183,7 @@ def gerar_post_fotos(slug: str, com_imagem: bool = True, etapa: Optional[Callabl
             "produto_nome": foto.get("nome") or foto["arquivo"].name,
             "headline": copy.get("headline_imagem"),
             "legenda": copy.get("legenda"),
-            "referencia_layout": post["imagem"].get("referencia_layout"),
+            "referencia_layout": post.get("imagem", {}).get("referencia_layout") if isinstance(post.get("imagem"), dict) else None,
         })
     except Exception as exc:
         avisos.append(f"Não consegui salvar no histórico ({exc}); esta foto pode se repetir.")
@@ -241,7 +241,7 @@ def gerar_campanha(
                     "selo_produto": estrategia["hierarquia_visual"]["selo"],
                     "cta_local": estrategia["hierarquia_visual"]["cta_visual"],
                 },
-                foto=foto,
+                foto=None,
                 cliente=cliente,
                 referencia=None,
                 modo="campanha",
@@ -254,15 +254,15 @@ def gerar_campanha(
 
     copy_anuncio = estrategia.get("copy_anuncio", {})
     legenda_formatada = (
-        f"{copy_anuncio.get('gancho_linha_1', '')}\\n\\n"
-        f"{copy_anuncio.get('corpo', '')}\\n\\n"
-        f"📍 Av. Ten. Marques, 4131 - Vila Poupança, Santana de Parnaíba / Cajamar - SP\\n"
-        f"⏰ Almoço de Segunda a Sábado, das 11h às 15h\\n"
-        f"🚗 Estacionamento fácil no entorno · Salão aconchegante\\n\\n"
-        f"{copy_anuncio.get('cta_final', '👉 Venha almoçar hoje ou toque no link para ver a localização exata!')}\\n\\n"
+        f"{copy_anuncio.get('gancho_linha_1', '')}\n\n"
+        f"{copy_anuncio.get('corpo', '')}\n\n"
+        f"📍 Av. Ten. Marques, 4131 - Vila Poupança, Santana de Parnaíba / Cajamar - SP\n"
+        f"⏰ Almoço de Segunda a Sábado, das 11h às 15h\n"
+        f"🚗 Estacionamento fácil no entorno · Salão aconchegante\n\n"
+        f"{copy_anuncio.get('cta_final', '👉 Venha almoçar hoje ou toque no link para ver a localização exata!')}\n\n"
         f"#SantanaDeParnaiba #AlmocoExecutivo #ComidaCaseira #BuffetDeAlmoco #NNRestaurante"
     )
-
+    
     resultado = {
         "cliente": cliente["nome"],
         "tipo_producao": "campanha_performance",
