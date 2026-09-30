@@ -371,6 +371,13 @@ def gerar_post_estatico_kav(
             copy,
             referencia_nome=referencia["arquivo"].name if referencia else None,
             formato="estatico",
+            estilo_layout=estilo.get("id"),
+            estilo_nome=estilo.get("nome"),
+            descricao_layout=estilo.get("descricao_layout"),
+            cor_fundo=estilo.get("cor_fundo"),
+            cor_destaque=estilo.get("cor_destaque"),
+            cor_texto=estilo.get("cor_texto"),
+            posicao_logo=estilo.get("posicao_logo"),
         )
     except Exception as exc:
         avisos.append(f"Não consegui salvar no histórico ({exc}).")

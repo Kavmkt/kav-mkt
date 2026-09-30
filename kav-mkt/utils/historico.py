@@ -39,8 +39,15 @@ def registrar_post(
     copy: dict,
     referencia_nome: Optional[str] = None,
     formato: str = "estatico",
+    estilo_layout: Optional[str] = None,
+    estilo_nome: Optional[str] = None,
+    descricao_layout: Optional[str] = None,
+    cor_fundo: Optional[str] = None,
+    cor_destaque: Optional[str] = None,
+    cor_texto: Optional[str] = None,
+    posicao_logo: Optional[str] = None,
 ) -> dict:
-    """Registra uma publicação no histórico do cliente para alimentar o filtro anti-repetição."""
+    """Registra uma publicação no histórico do cliente com backup inteligente de metadados visuais."""
     dados = carregar_historico(slug)
     agora_iso = datetime.now().isoformat()
 
@@ -53,11 +60,59 @@ def registrar_post(
         "headline": copy.get("headline_imagem") or copy.get("headline"),
         "referencia": referencia_nome,
         "formato": formato,
+        "estilo_layout": estilo_layout,
+        "estilo_nome": estilo_nome,
+        "descricao_layout": descricao_layout or copy.get("descricao_layout"),
+        "cor_fundo": cor_fundo or "Azul Marinho Noturno Profundo (#001424)",
+        "cor_destaque": cor_destaque or "Dourado Kav (#EEB730)",
+        "cor_texto": cor_texto or "Branco Puro (#FFFFFF) e Cinza Slate (#94A3B8)",
+        "posicao_logo": posicao_logo or "superior-centro",
     }
 
     dados["posts"].append(registro)
     salvar_historico(slug, dados)
     return registro
+
+
+def obter_backup_historico_layouts(slug: str, limite: int = 5) -> str:
+    """Gera o backup inteligente descritivo dos últimos layouts gerados para alimentar a IA,
+    informando cores de fundo, cores de texto, estrutura e composição para garantir que a IA
+    não repita o mesmo layout e mantenha o feed do Instagram versátil e dinâmico.
+    """
+    posts = listar_posts_cliente(slug)
+    if not posts:
+        return "Nenhum layout anterior registrado. Esta é a primeira publicação da marca."
+
+    ultimos = list(reversed(posts))[:limite]
+    linhas = [
+        "LISTA DE BACKUP INTELIGENTE DE LAYOUTS RECENTES (PROIBIDO REPETIR O MESMO ESTILO, ESTRUTURA OU PALETA):"
+    ]
+    for i, p in enumerate(ultimos, 1):
+        ref = p.get("referencia") or "ref_padrao.png"
+        nome = p.get("estilo_nome") or ref.replace("ref_", "").replace(".png", "").replace("_", " ").title()
+        headline = p.get("headline") or "Sem headline"
+        desc = p.get("descricao_layout") or "Composição tipográfica sóbria com elementos da marca"
+        fundo = p.get("cor_fundo") or "Azul Marinho Noturno (#001424)"
+        destaque = p.get("cor_destaque") or "Dourado Kav (#EEB730)"
+        texto = p.get("cor_texto") or "Branco Puro (#FFFFFF) e Cinza Slate (#94A3B8)"
+        pos_logo = p.get("posicao_logo") or "Área de cabeçalho"
+
+        linhas.append(
+            f"{i}. Peça anterior: Arquétipo '{nome}' ({ref})\n"
+            f"   - Headline usada: \"{headline}\"\n"
+            f"   - Estrutura visual: {desc}\n"
+            f"   - Cores aplicadas: Fundo [{fundo}] | Acento [{destaque}] | Textos [{texto}]\n"
+            f"   - Posição do Logo: {pos_logo}"
+        )
+
+    linhas.append(
+        "\nDIRETRIZ OBRIGATÓRIA DE VARIAÇÃO CONTÍNUA NO FEED:\n"
+        "- A IA DEVE criar uma peça com composição espacial, disposição de blocos e foco visual TOTALMENTE DIFERENTES das peças listadas acima.\n"
+        "- Fonte: STRICTLY Gotham em Sentence Case (sem caixa alta/NO ALL CAPS).\n"
+        "- Cores: Usar estritamente as cores nobres da Kav (Azul Marinho #001424 / #001D32 e Dourado #EEB730). PROIBIDO PRETO PURO (#000000).\n"
+        "- Alternar elementos de destaque (se o anterior usou card flutuante, use objeto 3D de destaque ou manifesto editorial ou blueprint grid)."
+    )
+    return "\n".join(linhas)
 
 
 def listar_posts_cliente(slug: str) -> list[dict]:

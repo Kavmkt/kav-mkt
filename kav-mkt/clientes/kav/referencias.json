@@ -2,8 +2,8 @@
   {
     "arquivo": "ref_afirmacao_tweet_box.png",
     "estilo": "afirmacao_tweet_box",
-    "nome": "Card Flutuante / Tweet Box",
-    "descricao": "Card retangular escuro flutuante estilo Tweet/Post com avatar, @kav.mkt e tese provocativa.",
+    "nome": "Tweet Box de Autoridade (Estilo Samuel Reis)",
+    "descricao": "Inspirado em @osamuelreis_: Card flutuante escuro (#031E34) no centro com perfil @kav.mkt, tese afiada em Gotham Sentence Case e suporte em card.",
     "posicao_logo": "superior-esquerdo",
     "paleta": {
       "fundo": "#001424",
@@ -13,52 +13,52 @@
     }
   },
   {
-    "arquivo": "ref_quebra_objecao_card.png",
-    "estilo": "quebra_objecao_card",
-    "nome": "Comparativo Duplo (Erro vs Método Kav)",
-    "descricao": "Dois blocos/cards contrastantes: Caixa de cima (O Erro Comum) vs Caixa de baixo com contorno Dourado Kav (O Método Kav).",
-    "posicao_logo": "superior-esquerdo",
-    "paleta": {
-      "fundo": "#001424",
-      "card_erro": "#1E1216",
-      "card_solucao": "#031E34",
-      "destaque": "#EEB730"
-    }
-  },
-  {
     "arquivo": "ref_destaque_dourado.png",
     "estilo": "destaque_dourado",
-    "nome": "Notificação de WhatsApp / Smartphone Alert",
-    "descricao": "Card simulando push notification de celular/WhatsApp Business com novo cliente chamando, provando a eficácia do tráfego local.",
-    "posicao_logo": "inferior-direito",
+    "nome": "Metáfora Visual 3D (Estilo Well.dsg & ORB)",
+    "descricao": "Inspirado em @well.dsg e ORB: Objeto físico 3D central realista em Dourado Kav (#EEB730) como metáfora de destaque, textos no topo e rodapé em Gotham Sentence Case.",
+    "posicao_logo": "superior-centro",
     "paleta": {
       "fundo": "#001424",
-      "card": "#031E34",
       "destaque": "#EEB730",
-      "alerta": "#25D366"
-    }
-  },
-  {
-    "arquivo": "ref_impacto_condensado_grid.png",
-    "estilo": "impacto_condensado_grid",
-    "nome": "Dashboard de Métricas & Performance",
-    "descricao": "Micro-grid técnico de fundo com card de analytics exibindo métrica gigante em dourado (+340%, ROAS 5.4x) e gráfico em linha ascendente.",
-    "posicao_logo": "superior-direito",
-    "paleta": {
-      "fundo": "#001424",
-      "grid": "#072036",
-      "card": "#031E34",
-      "destaque": "#EEB730"
+      "texto": "#FFFFFF",
+      "texto_secundario": "#94A3B8"
     }
   },
   {
     "arquivo": "ref_manifesto_palavra_dourada.png",
     "estilo": "manifesto_palavra_dourada",
-    "nome": "Manifesto Editorial Monumental",
-    "descricao": "100% tipográfico e imponente. Letras monumentais em caixa alta com termo central em Dourado Kav e sublinhado de destaque.",
-    "posicao_logo": "inferior-direito",
+    "nome": "Manifesto Editorial (Estilo Focus)",
+    "descricao": "Inspirado em FOCUS: 100% tipográfico, imponente e sóbrio em Gotham Sentence Case, palavra central em Dourado Kav sublinhada e botão pill 'Leia a legenda'.",
+    "posicao_logo": "topo-centro",
     "paleta": {
       "fundo": "#001424",
+      "destaque": "#EEB730",
+      "texto": "#FFFFFF"
+    }
+  },
+  {
+    "arquivo": "ref_impacto_condensado_grid.png",
+    "estilo": "impacto_condensado_grid",
+    "nome": "Grid Técnico Blueprint (Estilo Agencia Workspace)",
+    "descricao": "Inspirado em agenciaworkspace: Micro-grade técnica blueprint (#072036), tag '📈 Quer crescer?', headline maciça em Gotham e nuvem de dados de performance da Kav.",
+    "posicao_logo": "superior-direito",
+    "paleta": {
+      "fundo": "#001424",
+      "grid": "#072036",
+      "destaque": "#EEB730",
+      "texto": "#FFFFFF"
+    }
+  },
+  {
+    "arquivo": "ref_quebra_objecao_card.png",
+    "estilo": "quebra_objecao_card",
+    "nome": "Quebra de Objeção / Tensão de Valor (Estilo Geovane Rocha)",
+    "descricao": "Inspirado em @geovanerdsgn: Avatar @kav.mkt, headline afiada 'Você não precisa abaixar o seu preço' em Gotham Sentence Case e card contrastante com a virada do Método Kav.",
+    "posicao_logo": "superior-esquerdo",
+    "paleta": {
+      "fundo": "#001424",
+      "card": "#031E34",
       "destaque": "#EEB730",
       "texto": "#FFFFFF"
     }

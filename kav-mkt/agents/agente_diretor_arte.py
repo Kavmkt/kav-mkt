@@ -34,9 +34,13 @@ CHECKLIST CRÍTICO DE AVALIAÇÃO DA KAV:
    - REPROVE IMEDIATAMENTE (pontuação <= 4, precisa_refino=true) se a imagem contiver 'Arrasta pra entender', 'Arraste para o lado', 'Passe para o lado' ou botões com setas de arrastar. Os posts da Kav são 100% estáticos de feed único!
 3. PROIBIÇÃO DE BLOCO / BADGE NO TOPO ('PERFORMANCE LOCAL'):
    - REPROVE se o topo tiver caixa, tag ou selo escrito 'PERFORMANCE LOCAL'. O cabeçalho deve ser limpo e elegante.
-4. HIERARQUIA TIPOGRÁFICA E LEGIBILIDADE:
-   - A headline deve estar em destaque imponente (Plus Jakarta Sans 900 / ExtraBold), perfeitamente legível sobre o fundo escuro azul noturno (#001424).
+4. HIERARQUIA TIPOGRÁFICA E REGRA DE GOTHAM EM SENTENCE CASE:
+   - A tipografia DEVE usar estritamente a fonte Gotham em Sentence Case (primeira letra maiúscula e o resto em minúsculas normais, ex: 'Você não precisa abaixar o seu preço', 'Improviso não constrói empresa').
+   - REPROVE IMEDIATAMENTE (pontuação <= 5, precisa_refino=true) se o texto estiver em CAIXA ALTA / ALL CAPS (gritando em maiúsculas).
    - REPROVE se textos estiverem embolados, com letras truncadas, ou sobrepondo caixas/cards.
+7. CORES OFICIAIS DA KAV (FUNDO NÃO PODE SER PRETO PURO):
+   - O background da peça DEVE ser em tons nobres de Azul Marinho Noturno Profundo da Kav (#001424 ou #001D32).
+   - REPROVE (pontuação <= 5, precisa_refino=true) se o fundo for preto puro (#000000). A marca Kav exige o azul petróleo/marinho com destaques em Dourado Kav (#EEB730).
 5. ESTRUTURA DO ARQUÉTIPO VISUAL:
    - Se for Comparativo: deve haver dois blocos distintos (O Erro em card escuro/carmesim com ✕ vs A Solução Kav em card dourado com ✓).
    - Se for Notificação WhatsApp: deve haver um card nítido simulando notificação de mensagem de celular.
@@ -127,16 +131,17 @@ def revisar_e_aprovar_layout(
     if eh_kav:
         system = SYSTEM_PROMPT_DIRETOR_KAV.replace("__SKILL__", cliente.get("skill", ""))
         prompt = (
-            f"Avalie esta peça criada para a agência 'Kav Marketing & Performance' (@kav.mkt).\\n"
-            f"Modo de produção: {modo}\\n"
-            f"Headline esperada na peça: \\\"{copy.get('headline_imagem')}\\\"\\n"
-            f"Frase de apoio / dados esperados: \\\"{copy.get('headline_apoio') or copy.get('texto_card') or ''}\\\"\\n"
-            f"Arquétipo de layout aplicado: {imagem_dict.get('estilo_nome', 'Padrão Kav')}\\n\\n"
-            f"CHECKLIST DE INSPEÇÃO VISUAL:\\n"
-            f"1. O logo oficial KAV está visível e com RESPIRO? Ele NUNCA pode sobrepor o título ou colidir com textos!\\n"
-            f"2. Há algum botão ou texto 'Arrasta pra entender'? Se houver, REPROVE IMEDIATAMENTE (é post estático individual)!\\n"
-            f"3. O topo está limpo, sem caixas de 'PERFORMANCE LOCAL'?\\n"
-            f"4. A hierarquia tipográfica está nítida e profissional?\\n\\n"
+            f"Avalie esta peça criada para a agência 'Kav Marketing & Performance' (@kav.mkt).\n"
+            f"Modo de produção: {modo}\n"
+            f"Headline esperada na peça: \"{copy.get('headline_imagem')}\"\n"
+            f"Frase de apoio / dados esperados: \"{copy.get('headline_apoio') or copy.get('texto_card') or ''}\"\n"
+            f"Arquétipo de layout aplicado: {imagem_dict.get('estilo_nome', 'Padrão Kav')}\n\n"
+            f"CHECKLIST DE INSPEÇÃO VISUAL:\n"
+            f"1. O logo oficial KAV está visível e com RESPIRO? Ele NUNCA pode sobrepor o título ou colidir com textos!\n"
+            f"2. Há algum botão ou texto 'Arrasta pra entender'? Se houver, REPROVE IMEDIATAMENTE (é post estático individual)!\n"
+            f"3. O topo está limpo, sem caixas de 'PERFORMANCE LOCAL'?\n"
+            f"4. A hierarquia tipográfica está nítida e profissional em Gotham Sentence Case (SEM CAIXA ALTA)?\n"
+            f"5. O fundo respeita as cores da Kav (Azul Marinho Noturno #001424) e NÃO é preto puro (#000000)?\n\n"
             f"Inspecione a imagem fornecida com olhar crítico e devolva o JSON de avaliação."
         )
     else:
@@ -146,15 +151,15 @@ def revisar_e_aprovar_layout(
             .replace("__MODO__", modo)
         )
         prompt = (
-            f"Avalie esta peça criada para o cliente '{cliente.get('nome')}'.\\n"
-            f"Modo de produção: {modo}\\n"
-            f"Headline esperada na peça: \\\"{copy.get('headline_imagem')}\\\"\\n"
-            f"Selo/tag esperado (se houver): \\\"{copy.get('selo_produto') or 'nenhum'}\\\"\\n"
-            f"Prato/Foto base: {nome_prato}\\n"
-            f"Estilo de layout aplicado: {imagem_dict.get('estilo_nome', 'Padrão Editorial')}\\n\\n"
-            f"DIRETRIZES DO ESTILO:\\n"
-            f"- Se for estilo Marmita Delivery: A comida deve estar em marmita redonda de isopor de entrega e NÃO pode ter talheres em volta (sem garfos/facas).\\n"
-            f"- Se for estilo Minimalista: Foco na fotografia da comida com texto enxuto e logo discreto. Não reprove por concisão.\\n\\n"
+            f"Avalie esta peça criada para o cliente '{cliente.get('nome')}'.\n"
+            f"Modo de produção: {modo}\n"
+            f"Headline esperada na peça: \"{copy.get('headline_imagem')}\"\n"
+            f"Selo/tag esperado (se houver): \"{copy.get('selo_produto') or 'nenhum'}\"\n"
+            f"Prato/Foto base: {nome_prato}\n"
+            f"Estilo de layout aplicado: {imagem_dict.get('estilo_nome', 'Padrão Editorial')}\n\n"
+            f"DIRETRIZES DO ESTILO:\n"
+            f"- Se for estilo Marmita Delivery: A comida deve estar em marmita redonda de isopor de entrega e NÃO pode ter talheres em volta (sem garfos/facas).\n"
+            f"- Se for estilo Minimalista: Foco na fotografia da comida com texto enxuto e logo discreto. Não reprove por concisão.\n\n"
             f"Inspecione a imagem fornecida com olhar crítico e devolva o JSON de avaliação."
         )
 
@@ -210,12 +215,14 @@ def revisar_e_aprovar_layout(
                     f"the official BRAND LOGO of Kav Marketing & Performance ('KAV'). Correctly position this exact logo in the {area_logo} with generous margins and breathing room, without overlapping any text.",
                 ))
             prompt_refino = (
-                "You are executing an art direction revision on this post design for Kav Marketing & Performance. Apply ONLY the following corrections:\\n"
-                f"{instrucoes}\\n\\n"
-                "STRICT KAV BRAND DIRECTIVES:\\n"
-                "- Ensure the official Kav logo ('KAV') is seamlessly integrated with generous breathing room and safe padding. NEVER collide with, touch, or overlap any headline or text box!\\n"
-                "- ABSOLUTELY ELIMINATE and DO NOT write 'Arrasta pra entender', 'Arraste para o lado', or any carousel/swipe instruction. This is a single static feed post (1080x1350).\\n"
-                "- Keep the top area clean: NO 'PERFORMANCE LOCAL' boxes or badges.\\n"
+                "You are executing an art direction revision on this post design for Kav Marketing & Performance. Apply ONLY the following corrections:\n"
+                f"{instrucoes}\n\n"
+                "STRICT KAV BRAND DIRECTIVES:\n"
+                "- Ensure the official Kav logo ('KAV') is seamlessly integrated with generous breathing room and safe padding. NEVER collide with, touch, or overlap any headline or text box!\n"
+                "- ABSOLUTELY ELIMINATE and DO NOT write 'Arrasta pra entender', 'Arraste para o lado', or any carousel/swipe instruction. This is a single static feed post (1080x1350).\n"
+                "- TYPOGRAPHY: STRICTLY use Gotham font in Sentence Case (NO ALL CAPS!).\n"
+                "- COLOR PALETTE: Deep nocturnal navy background (#001424). PROHIBITED PURE BLACK (#000000). Highlights in Kav Gold (#EEB730).\n"
+                "- Keep the top area clean: NO 'PERFORMANCE LOCAL' boxes or badges.\n"
                 "- Deliver a polished, high-contrast, razor-sharp masterpiece in 1080x1350 vertical format."
             )
         else:
@@ -249,22 +256,22 @@ def revisar_e_aprovar_layout(
                     pass
 
             prompt_refino = (
-                "You are executing an art direction revision on this post design. Apply ONLY the following corrections:\\n"
-                f"{instrucoes}\\n\\n"
-                "STRICT RULES:\\n"
-                "- Restore and keep the authentic real food textures from the real camera photo, eliminating any artificial 3D CGI gloss, waxy skin, or silicone sheen.\\n"
-                "- Ensure the official client logo is clearly and cleanly reproduced from the logo guide template in the header.\\n"
-                "- Never use the word 'EXECUTIVO' or 'ALMOÇO EXECUTIVO'; replace with 'ALMOÇO DO DIA' or 'COMIDA CASEIRA'.\\n"
-                "- NEVER add white glow, blurry white outlines, or diffuse halos around text letters.\\n"
-                "- Do NOT add circular stamp badges, fork/knife ellipses, or amateur clutter.\\n"
+                "You are executing an art direction revision on this post design. Apply ONLY the following corrections:\n"
+                f"{instrucoes}\n\n"
+                "STRICT RULES:\n"
+                "- Restore and keep the authentic real food textures from the real camera photo, eliminating any artificial 3D CGI gloss, waxy skin, or silicone sheen.\n"
+                "- Ensure the official client logo is clearly and cleanly reproduced from the logo guide template in the header.\n"
+                "- Never use the word 'EXECUTIVO' or 'ALMOÇO EXECUTIVO'; replace with 'ALMOÇO DO DIA' or 'COMIDA CASEIRA'.\n"
+                "- NEVER add white glow, blurry white outlines, or diffuse halos around text letters.\n"
+                "- Do NOT add circular stamp badges, fork/knife ellipses, or amateur clutter.\n"
                 "- Deliver a polished, crisp, photographic piece in 1080x1440 portrait format."
             )
 
         imagens_input = [d for d, _ in referencias_refino]
         descricoes_input = [desc for _, desc in referencias_refino]
         prompt_final = (
-            "\\n\\n".join(f"Reference image {i + 1} is {desc}" for i, desc in enumerate(descricoes_input))
-            + "\\n\\nTask:\\n" + prompt_refino
+            "\n\n".join(f"Reference image {i + 1} is {desc}" for i, desc in enumerate(descricoes_input))
+            + "\n\nTask:\n" + prompt_refino
         )
 
         bruta = openai_client.gerar_imagem_com_referencias(prompt_final, imagens_input, size="auto")
