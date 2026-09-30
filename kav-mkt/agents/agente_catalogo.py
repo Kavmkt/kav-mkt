@@ -1,4 +1,3 @@
-from __future__ import annotations
 """Agente de Catálogo: escolhe sozinho o produto do post a partir do catálogo da loja do
 cliente (clientes/<slug>/catalogo.json), priorizando os mais vendidos e sem repetir
 produtos usados nos últimos N dias (padrão 30, em config.json).
@@ -13,8 +12,6 @@ from datetime import datetime, timedelta
 
 from utils import historico
 
-# Sorteio entre os N mais vendidos ainda disponíveis, com peso maior para quem vende mais:
-# prioriza os campeões de venda sem virar sempre o mesmo produto.
 TOP_VENDIDOS = 15
 CATALOGO_VELHO_DIAS = 30
 
@@ -24,9 +21,18 @@ def id_produto(produto: dict) -> str:
 
 
 def escolher_produto(cliente: dict) -> dict:
-    catalogo = cliente["catalogo"]
+    slug = cliente.get("slug", "ponto-car")
+    catalogo = cliente.get("catalogo")
+    if not isinstance(catalogo, dict):
+        try:
+            from utils.cliente import CLIENTES_DIR, _ler_json
+            catalogo = _ler_json(CLIENTES_DIR / slug / "catalogo.json", {"produtos": []})
+        except Exception:
+            catalogo = {"produtos": []}
+
     produtos = catalogo.get("produtos") or []
-    dias = cliente["config"].get("dias_sem_repetir_produto", 30)
+    config = cliente.get("config") or {}
+    dias = config.get("dias_sem_repetir_produto", 30)
     avisos = []
 
     if produtos:
@@ -39,15 +45,30 @@ def escolher_produto(cliente: dict) -> dict:
             "O catálogo deste cliente está vazio — usei um produto coringa (sem foto real). "
             "Peça ao Claude para sincronizar o catálogo (ver clientes/README.md)."
         )
+        coringas = cliente.get("produtos_coringa")
+        if not coringas:
+            skill = cliente.get("skill", "")
+            if skill:
+                try:
+                    from utils.cliente import _itens_da_secao
+                    coringas = _itens_da_secao(skill, "Produtos Coringa")
+                except Exception:
+                    pass
+        if not coringas:
+            coringas = [
+                "Capa de banco automotiva universal",
+                "Tapete de borracha para assoalho",
+                "Borracha de vedação de porta/porta-malas",
+                "Kit palheta limpador de para-brisa",
+                "Borracha do para-choque / friso lateral",
+            ]
         candidatos = [
             {"id": f"coringa:{nome}", "nome": nome, "fallback_usado": True}
-            for nome in cliente["produtos_coringa"]
+            for nome in coringas
         ]
-        if not candidatos:
-            raise RuntimeError("Catálogo vazio e nenhum produto coringa na skill do cliente.")
 
     try:
-        ultimo_uso = historico.ultimo_uso_por_produto(cliente["slug"])
+        ultimo_uso = historico.ultimo_uso_por_produto(slug)
     except Exception as exc:  # sem histórico, escolhe mesmo assim — com aviso
         ultimo_uso = {}
         avisos.append(f"Não consegui ler o histórico ({exc}); escolhi sem checar repetições.")
@@ -71,7 +92,7 @@ def escolher_produto(cliente: dict) -> dict:
 def _aviso_catalogo_velho(atualizado_em) -> str:
     try:
         data = datetime.fromisoformat(str(atualizado_em))
-    except ValueError:
+    except (ValueError, TypeError):
         return "O catálogo não tem data de atualização — confira se está em dia."
     idade = (historico.agora() - data).days
     if idade > CATALOGO_VELHO_DIAS:

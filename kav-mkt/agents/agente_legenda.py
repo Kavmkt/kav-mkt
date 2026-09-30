@@ -1,4 +1,3 @@
-from __future__ import annotations
 """Agente de Legenda: a partir do produto escolhido pelo Agente de Catálogo, escreve a
 chamada da imagem, o selo do produto e a legenda completa do post, seguindo à risca o
 padrão de legenda do cliente (clientes/<slug>/legenda.md) e as diretrizes da skill.
@@ -8,8 +7,7 @@ import random
 from utils.openai_client import chamar_ia, extrair_json
 
 # Sorteado a cada post só para variar o gancho — a estrutura da legenda vem do padrão.
-ANGULOS_GANCHO = [
-    "um perrengue comum de quem tem carro popular",
+ANGULOS_GANCHO = [\n    "um perrengue comum de quem tem carro popular",
     "economia: resolver sem gastar muito",
     "antes e depois: peça gasta vs. peça nova",
     "segurança no dia a dia (chuva, noite, estrada)",
@@ -39,8 +37,8 @@ Regras:
 
 Responda APENAS com um objeto JSON, sem texto antes ou depois:
 {
-  "headline_imagem": "chamada principal da imagem: 2 a 6 palavras, em português, sem emoji, de preferência citando o carro (ex: 'Seu Gol G2 de cara nova!', 'Sua Fiorino merece o melhor!')",
-  "selo_produto": "nome curto do produto + aplicação para o selo da imagem, até ~40 caracteres (ex: 'Retrovisor Gol / Parati G2 (95 a 99)'), ou null se não fizer sentido",
+  "headline_imagem": "chamada principal da imagem: 2 a 5 palavras, em português, sem emoji",
+  "selo_produto": "identificação curta do produto para o selo da imagem (até ~40 caracteres, ex: 'Palheta 18\\" · Corsa 94/02 · PAR'), ou null se não fizer sentido",
   "legenda": "legenda completa, pronta pra colar no Instagram, seguindo o padrão"
 }
 """
@@ -53,7 +51,7 @@ def gerar_legenda(produto: dict, cliente: dict) -> dict:
         "__PADRAO__", cliente["legenda_padrao"] or PADRAO_AUSENTE
     )
     prompt = (
-        f"Dados do produto:\n{_descrever(produto, cliente)}\n\n"
+        f"Dados do produto:\\n{_descrever(produto, cliente)}\\n\\n"
         f"Ângulo sugerido para o gancho: {random.choice(ANGULOS_GANCHO)}"
     )
     resposta = chamar_ia(system=system, prompt=prompt, max_tokens=900, temperature=0.9, json_mode=True)
@@ -61,7 +59,8 @@ def gerar_legenda(produto: dict, cliente: dict) -> dict:
 
 
 def _descrever(produto: dict, cliente: dict) -> str:
-    atualizado_em = cliente["catalogo"].get("atualizado_em")
+    catalogo = cliente.get("catalogo") if isinstance(cliente.get("catalogo"), dict) else {}
+    atualizado_em = catalogo.get("atualizado_em")
     campos = [
         ("Nome", produto.get("nome")),
         ("Categoria", produto.get("categoria")),
@@ -70,4 +69,4 @@ def _descrever(produto: dict, cliente: dict) -> str:
         ("Avaliação", produto.get("avaliacao")),
         ("Descrição do anúncio", (produto.get("descricao") or "")[:1500]),
     ]
-    return "\n".join(f"- {rotulo}: {valor}" for rotulo, valor in campos if valor)
+    return "\\n".join(f"- {rotulo}: {valor}" for rotulo, valor in campos if valor)
