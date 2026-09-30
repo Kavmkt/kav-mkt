@@ -9,8 +9,8 @@ Alterna dinamicamente entre os 5 arquétipos de layout oficiais da marca com ant
 4. Dashboard de Métricas & Performance (Grid técnico, métrica gigante e gráfico ascendente)
 5. Manifesto Editorial Monumental (100% tipográfico com palavra dourada sublinhada)
 
-Aplica o logotipo oficial da Kav por código (Pillow) com nitidez vetorial e transparência perfeita,
-eliminando de vez qualquer distorção de IA (letras trocadas, "WAV", etc.) e blocos desnecessários no topo.
+Envia o logotipo oficial da Kav como referência de imagem para a IA renderizá-lo organicamente
+com proporções e respiro perfeitos, sem sobreposições e sem termos de carrossel.
 """
 from __future__ import annotations
 
@@ -56,6 +56,7 @@ ESTILOS_LAYOUT_KAV = [
             "No rodapé interno do card: linha divisória fina e a chamada 'Leia a legenda completa ↘' com seta dourada. "
             "Fora do card: fundo profundo (#001424) com leve desfoque dark bokeh. "
             "PROIBIÇÃO RIGOROSA: PROIBIDO bloco no topo ('PERFORMANCE LOCAL'). Topo limpo! "
+            "PROIBIÇÃO RIGOROSA: NUNCA escreva 'Arrasta pra entender' ou termos de carrossel. "
             "PROIBIDO mapas 3D ou pins de GPS."
         ),
     },
@@ -70,7 +71,7 @@ ESTILOS_LAYOUT_KAV = [
             "- headline_imagem: O grande contraste da tese (ex: 'O ERRO vs A VIRADA').",
             "- bloco_erro: '✕ COMO A MAIORIA FAZ: [Descrever o erro amador, ex: apertar impulsionar e esperar milagre]'",
             "- bloco_solucao: '✓ COM O MÉTODO KAV: [Descrever a estratégia lucrativa, ex: tráfego geolocalizado raio 5km direto no WhatsApp]'",
-            "- cta_pill: 'Arrasta pra entender →'",
+            "- cta_pill: '→ Leia a legenda'",
         ]),
         "diretriz_cena": (
             "ARQUÉTIPO VISUAL: COMPARATIVO EM DOIS BLOCOS VERTICAIS CONTRASTANTES (ERRO vs MÉTODO KAV). "
@@ -79,7 +80,8 @@ ESTILOS_LAYOUT_KAV = [
             "mostrando o erro amador da concorrência em tipografia branca/cinza. "
             "2. Card Inferior (O Método Kav): Card em destaque premium com contorno Dourado Kav (#EEB730, borda nítida de 3px) "
             "e fundo marinho escuro (#031E34), encabeçado por ícone dourado '✓', destacando a solução da Kav em tipografia branca. "
-            "Abaixo dos cards, botão pill arredondado centralizado: '[ Arrasta pra entender → ]'. "
+            "Abaixo dos cards, botão pill fino centralizado: '[ →  Leia a legenda ]'. "
+            "PROIBIÇÃO RIGOROSA: NUNCA escreva 'Arrasta pra entender' ou 'Arraste para o lado'. É uma peça estática única de feed! "
             "PROIBIÇÃO RIGOROSA: PROIBIDO bloco no topo ('PERFORMANCE LOCAL'). Topo limpo! "
             "PROIBIDO mapas 3D ou pins de GPS. O layout deve ser inconfundivelmente um comparativo de dois blocos!"
         ),
@@ -104,6 +106,7 @@ ESTILOS_LAYOUT_KAV = [
             "Dentro do card: texto destacado simulando a mensagem de um cliente real: 'Novo Cliente Local: Olá! Vi seu anúncio na região e quero agendar...'. "
             "Acima da notificação: frase provocativa em tipografia cinza e branca. "
             "Abaixo da notificação: conclusão de autoridade em Dourado Kav (#EEB730) sobre anúncios no raio do negócio. "
+            "PROIBIÇÃO RIGOROSA: NUNCA escreva 'Arrasta pra entender'. "
             "PROIBIÇÃO RIGOROSA: PROIBIDO bloco no topo ('PERFORMANCE LOCAL'). Topo limpo! "
             "PROIBIDO mapas 3D ou pins de GPS. O foco é a notificação realista de mensagem de celular!"
         ),
@@ -129,6 +132,7 @@ ESTILOS_LAYOUT_KAV = [
             "GRÁFICO LINEAR ASCENDENTE VETORIAL EM DOURADO com pontos de dados brilhantes mostrando curva de crescimento. "
             "Na base do card: indicadores técnicos de performance separados por pontos ('ROAS 5.4x · Custo Lead: R$ 2,10 · Raio: 5 km'). "
             "Abaixo do card: frase de impacto em tipografia branca limpa. "
+            "PROIBIÇÃO RIGOROSA: NUNCA escreva 'Arrasta pra entender'. "
             "PROIBIÇÃO RIGOROSA: PROIBIDO bloco no topo ('PERFORMANCE LOCAL'). Topo limpo! "
             "PROIBIDO mapas 3D ou pins de GPS. O foco é analytics, números e gráfico de crescimento!"
         ),
@@ -153,6 +157,7 @@ ESTILOS_LAYOUT_KAV = [
             "Abaixo da headline: frase curta de apoio reflexivo em cinza ardósia (#94A3B8). "
             "No rodapé: botão pill fino arredondado minimalista contendo estritamente '[ →  Leia a legenda ]'. "
             "Fundo: Gradiente sutil azul noturno puro (#001424). "
+            "PROIBIÇÃO RIGOROSA: NUNCA escreva 'Arrasta pra entender'. "
             "PROIBIÇÃO RIGOROSA: PROIBIDO caixas no topo ('PERFORMANCE LOCAL'), mapas 3D ou pins de GPS."
         ),
     },
@@ -172,6 +177,7 @@ ARQUÉTIPO DE LAYOUT ESCOLHIDO: __NOME_ESTILO__
 __INSTRUCAO_COPY__
 
 REGRAS RÍGIDAS DE COPYWRITING:
+0. NUNCA use termos de carrossel como "Arrasta pra entender", "Arraste para o lado" ou setas duplas (>>). Todos os posts da Kav são peças estáticas individuais de feed.
 1. HEADLINE DA IMAGEM: Curta, magnética, de 2 a 7 palavras. Deve parar imediatamente o scroll do empresário de PME.
    Foque na dor real do negócio local (atrair clientes na região, mensagens no WhatsApp, parar de queimar verba no botão impulsionar).
    NUNCA escreva a palavra "Kav", "Cave" ou o nome da agência na headline da imagem — a chamada deve focar no cliente e no negócio dele.
@@ -213,12 +219,12 @@ DEFINITIVE BRAND IDENTITY & KEY VISUAL:
    - Primary Text: Crisp pure white (#FFFFFF) for absolute contrast and readability on dark screens.
    - Secondary Text: Metallic Slate Gray (#94A3B8).
    - Card containers: Dark nocturnal card (#031E34) with thin subtle stroke borders (#123452).
-3. SAFE ZONES & NEGATIVE SPACE:
-   - Leave the __AREA_LOGO__ COMPLETELY CLEAR with empty negative space (NO letters, NO text, NO drawing).
+3. LOGO INTEGRATION & SAFE ZONES:
+   - Faithfully incorporate the official Kav logo from the logo reference image into the __AREA_LOGO__.
+   - Ensure generous padding and negative space around the logo so it NEVER touches, collides with, or overlaps any headline, text box, or border.
    - NO TOP BADGE: DO NOT render any box, pill, tag, or label at the top (NO 'PERFORMANCE LOCAL', NO badges). The top area must be completely clean!
-4. STRICT ANTI-HALLUCINATION & ANTI-DUPLICATION MANDATE:
-   - DO NOT ATTEMPT TO DRAW OR REPRODUCE ANY LOGO OR BRAND TEXT BY HAND. The official logo is inserted programmatically after generation.
-   - ABSOLUTELY DO NOT write 'Kav', 'WAV', 'Cave', or 'Kav Marketing' anywhere on the canvas!
+4. STRICT PROHIBITIONS:
+   - ABSOLUTELY NO CAROUSEL / SWIPE TEXT: NEVER write 'Arrasta pra entender', 'Arraste para o lado', or draw swipe buttons. This is a single static feed post!
    - ABSOLUTELY NO generic 3D miniature city maps, radar grids, or yellow GPS pins!
 
 LAYOUT ARCHETYPE TO EMULATE: __NOME_ESTILO__
@@ -376,10 +382,15 @@ def gerar_brief_arte_kav(
 
     partes.extend([
         (
-            "STRICT NEGATIVE SPACE & NO BADGE MANDATE: "
-            "1. NO TOP BOX/BADGE: DO NOT render any box or badge at the top (NO 'PERFORMANCE LOCAL', NO badges). "
-            f"2. LOGO AREA: Keep the {area_logo} completely empty and uncluttered (negative space). "
-            "3. DO NOT attempt to draw the logo or the word 'Kav' by hand — the official vector logo is applied automatically by code!"
+            "STRICT LOGO INTEGRATION MANDATE: "
+            f"Reproduce the official Kav logo faithfully into the {area_logo}. "
+            "Ensure ample breathing room and safe margins around the logo. "
+            "DO NOT allow the logo to collide with or touch any text elements!"
+        ),
+        (
+            "STRICT ANTI-CAROUSEL MANDATE: "
+            "NEVER write 'Arrasta pra entender', 'Arraste para o lado' or draw swipe buttons. "
+            "This is a single static feed post (1080x1350)!"
         ),
         (
             "STRICT ANTI-CLICHE MANDATE: ABSOLUTELY DO NOT RENDER generic 3D miniature city maps, "
@@ -394,7 +405,7 @@ def gerar_brief_arte_kav(
 def gerar_imagem_estatica_kav(
     brief: str, cliente: dict, referencia: Optional[dict], estilo: Optional[dict] = None
 ) -> dict:
-    """Gera a imagem estática 4:5 e aplica o logotipo oficial por código com perfeição pixel a pixel."""
+    """Gera a imagem estática 4:5 usando a referência de layout e o logotipo oficial como imagens de referência para a IA."""
     estilo = estilo or obter_estilo_kav(referencia)
     referencias_imagem = []
 
@@ -409,6 +420,19 @@ def gerar_imagem_estatica_kav(
         ))
 
     logo_arquivo, posicao_logo = _logo_kav(cliente, referencia)
+    area_logo = AREAS_LOGO.get(posicao_logo, "header or corner area")
+
+    # Envia o logotipo oficial da Kav como referência de imagem para a IA renderizar perfeitamente
+    if logo_arquivo and logo_arquivo.exists():
+        referencias_imagem.append((
+            logo_arquivo.read_bytes(),
+            (
+                "the official BRAND LOGO of Kav Marketing & Performance ('KAV'). "
+                "You MUST faithfully reproduce this exact logo (precise geometric typography 'KAV') into the layout. "
+                f"Position it cleanly in the {area_logo} with generous margins and breathing room. "
+                "ABSOLUTE PROHIBITION: The logo MUST NEVER collide with, touch, or overlap any headlines, text boxes, or cards!"
+            ),
+        ))
 
     try:
         imagens = [dados for dados, _ in referencias_imagem]
@@ -426,10 +450,8 @@ def gerar_imagem_estatica_kav(
     if not bruta or not bruta.get("imagem_b64"):
         raise RuntimeError("A API de imagem não retornou nenhuma imagem.")
 
+    # A imagem já vem com o logo da Kav organicamente integrado pela IA a partir da referência oficial (sem sobreposição cega via Pillow)
     final_bytes = image_overlay.recortar_formato_final(base64.b64decode(bruta["imagem_b64"]))
-
-    if logo_arquivo and logo_arquivo.exists():
-        final_bytes = image_overlay.aplicar_logo(final_bytes, logo_arquivo, posicao_logo)
 
     return {
         "imagem_b64": base64.b64encode(final_bytes).decode("ascii"),
@@ -447,9 +469,10 @@ def _montar_prompt_final(brief: str, descricoes: list, estilo: dict) -> str:
         f"TASK: High-authority static social media post design (1080x1350 vertical 4:5 ratio) for Kav Marketing & Performance in archetype '{estilo['nome']}'.",
         "MANDATORY EXECUTION DIRECTIVES:\n"
         f"- LAYOUT ARCHETYPE: Strictly emulate the visual structure of '{estilo['nome']}'.\n"
-        f"- SPECIFIC SCENE REQUIREMENT:\n{estilo['diretriz_cena']}\n"
-        "- NO TOP BADGES: DO NOT draw any box or tag at the top saying 'PERFORMANCE LOCAL'. Keep the top clean.\n"
-        "- NO DRAWN LOGOS: DO NOT attempt to write or draw 'Kav', 'WAV', or any brand logo by hand. Leave the logo area empty (clean negative space) so the official logo can be placed cleanly.\n"
+        f"- SPECIFIC SCENE REQUIREMENT:\n{estilo['diretriz_cena']}\n",
+        "- LOGO INTEGRATION: Reproduce the official Kav logo from the logo reference image cleanly in its designated branding zone. Ensure generous margins around the logo so it NEVER touches, collides with, or overlaps any headline, text box, or card.\n",
+        "- NO TOP BADGES: DO NOT draw any box or tag at the top saying 'PERFORMANCE LOCAL'. Keep the top clean.\n",
+        "- NO CAROUSEL / SWIPE TEXT: ABSOLUTELY DO NOT write 'Arrasta pra entender', 'Arraste para o lado', or draw swipe buttons. This is a single static feed post (1080x1350).\n",
         "- STRICT PROHIBITIONS: ABSOLUTELY NO generic 3D miniature city maps, radar grids, or yellow GPS pins!\n",
     ]
     for i, desc in enumerate(descricoes):

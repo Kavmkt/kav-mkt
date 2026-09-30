@@ -21,7 +21,7 @@ C_BORDER = (18, 52, 82)       # #123452
 C_GREEN = (37, 211, 102)      # Verde WhatsApp
 
 
-VERSAO_REFERENCIAS = "v2_contrastes_radicais"
+VERSAO_REFERENCIAS = "v3_sem_arrasta_com_logo_ref"
 
 def garantir_referencias_kav(pasta_referencias: Path) -> None:
     pasta_referencias.mkdir(parents=True, exist_ok=True)
@@ -172,7 +172,7 @@ def _gerar_todas(pasta: Path):
     d2.text((140, 680), "✓  COM O MÉTODO KAV:", fill=C_GOLD, font=f_bold)
     d2.text((140, 750), "Anúncios ultra-segmentados em\num raio de 5 km direto para o seu\nWhatsApp com oferta irresistível.", fill=C_WHITE, font=f_med)
     d2.rounded_rectangle([(320, 1120), (760, 1190)], radius=35, fill=C_CARD, outline=C_BORDER)
-    d2.text((540, 1155), "Arrasta pra entender  →", fill=C_WHITE, font=f_bold, anchor="mm")
+    d2.text((540, 1155), "→  Leia a legenda", fill=C_WHITE, font=f_bold, anchor="mm")
     im2.save(pasta / "ref_quebra_objecao_card.png")
 
     # 3. Notificação WhatsApp / Alerta de Venda
@@ -204,7 +204,7 @@ def _gerar_todas(pasta: Path):
     d4.line([(140, 840), (940, 840)], fill=C_BORDER, width=1)
     d4.text((140, 880), "ROAS: 5.4x  ·  Custo por Conversão: R$ 2,10  ·  Raio: 5 km", fill=C_SLATE, font=f_small)
     d4.text((540, 1100), "TRÁFEGO NÃO É GASTO. É MÁQUINA DE CLIENTES.", fill=C_WHITE, font=f_med, anchor="mm")
-    im4.save(pasta / "ref_impacto_condensado_grid.png")
+    im3.save(pasta / "ref_impacto_condensado_grid.png")
 
     # 5. Manifesto Editorial Tipográfico
     im5, d5 = _criar_base()

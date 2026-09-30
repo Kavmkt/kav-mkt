@@ -1,65 +1,66 @@
 [
   {
-    "arquivo": "ref_manifesto_palavra_dourada.png",
-    "estilo": "manifesto_palavra_dourada",
-    "descricao": "Inspirado no estilo Focus/Izaque: Headline imponente com 1 a 2 palavras-chave destacadas em Dourado Kav (#EEB730) com sublinhado de acento, badge superior KAV e botão pill inferior 'Leia a legenda ->'.",
-    "posicao_logo": "superior_centro",
-    "paleta": {
-      "fundo": "#001424",
-      "destaque": "#EEB730",
-      "texto_principal": "#FFFFFF",
-      "texto_secundario": "#94A3B8"
-    }
-  },
-  {
     "arquivo": "ref_afirmacao_tweet_box.png",
     "estilo": "afirmacao_tweet_box",
-    "descricao": "Inspirado no estilo Samuel Reis: Topo com badge @kav.mkt, grande headline afiada, tese central envolta em card/box escuro translúcido com borda sutil e CTA com seta dourada 'Leia a legenda ↘'.",
-    "posicao_logo": "superior_esquerda",
+    "nome": "Card Flutuante / Tweet Box",
+    "descricao": "Card retangular escuro flutuante estilo Tweet/Post com avatar, @kav.mkt e tese provocativa.",
+    "posicao_logo": "superior-esquerdo",
     "paleta": {
       "fundo": "#001424",
       "card": "#031E34",
       "destaque": "#EEB730",
-      "texto_principal": "#FFFFFF",
-      "texto_secundario": "#94A3B8"
-    }
-  },
-  {
-    "arquivo": "ref_impacto_condensado_grid.png",
-    "estilo": "impacto_condensado_grid",
-    "descricao": "Inspirado no estilo Agência Workspace: Micro-grid técnico escuro de fundo, badge de tendência com ícone 📈, headline maciça em caixa alta e nuvem tonal de palavras-chave da agência no rodapé.",
-    "posicao_logo": "inferior_esquerda",
-    "paleta": {
-      "fundo": "#001424",
-      "grid": "#072036",
-      "destaque": "#EEB730",
-      "texto_principal": "#FFFFFF",
-      "texto_secundario": "#94A3B8"
-    }
-  },
-  {
-    "arquivo": "ref_destaque_dourado.png",
-    "estilo": "destaque_dourado_contraste",
-    "descricao": "Inspirado no estilo Cadeira Laranja/Well.dsg/ORB: Composição de quebra de padrão visual. Frase superior de reflexão, elemento gráfico central em destaque absoluto Dourado Kav e conclusão direta inferior.",
-    "posicao_logo": "inferior_direita",
-    "paleta": {
-      "fundo": "#001424",
-      "destaque": "#EEB730",
-      "texto_principal": "#FFFFFF",
-      "texto_secundario": "#94A3B8"
+      "texto": "#FFFFFF"
     }
   },
   {
     "arquivo": "ref_quebra_objecao_card.png",
     "estilo": "quebra_objecao_card",
-    "descricao": "Inspirado no estilo Geovane Rocha/Izaque Araujo: Headline de choque sobre posicionamento e preços, card de sustentação com borda dourada e botão pill 'Arrasta pra entender ->'.",
-    "posicao_logo": "superior_esquerda",
+    "nome": "Comparativo Duplo (Erro vs Método Kav)",
+    "descricao": "Dois blocos/cards contrastantes: Caixa de cima (O Erro Comum) vs Caixa de baixo com contorno Dourado Kav (O Método Kav).",
+    "posicao_logo": "superior-esquerdo",
+    "paleta": {
+      "fundo": "#001424",
+      "card_erro": "#1E1216",
+      "card_solucao": "#031E34",
+      "destaque": "#EEB730"
+    }
+  },
+  {
+    "arquivo": "ref_destaque_dourado.png",
+    "estilo": "destaque_dourado",
+    "nome": "Notificação de WhatsApp / Smartphone Alert",
+    "descricao": "Card simulando push notification de celular/WhatsApp Business com novo cliente chamando, provando a eficácia do tráfego local.",
+    "posicao_logo": "inferior-direito",
     "paleta": {
       "fundo": "#001424",
       "card": "#031E34",
       "destaque": "#EEB730",
-      "texto_principal": "#FFFFFF",
-      "texto_secundario": "#94A3B8"
+      "alerta": "#25D366"
+    }
+  },
+  {
+    "arquivo": "ref_impacto_condensado_grid.png",
+    "estilo": "impacto_condensado_grid",
+    "nome": "Dashboard de Métricas & Performance",
+    "descricao": "Micro-grid técnico de fundo com card de analytics exibindo métrica gigante em dourado (+340%, ROAS 5.4x) e gráfico em linha ascendente.",
+    "posicao_logo": "superior-direito",
+    "paleta": {
+      "fundo": "#001424",
+      "grid": "#072036",
+      "card": "#031E34",
+      "destaque": "#EEB730"
+    }
+  },
+  {
+    "arquivo": "ref_manifesto_palavra_dourada.png",
+    "estilo": "manifesto_palavra_dourada",
+    "nome": "Manifesto Editorial Monumental",
+    "descricao": "100% tipográfico e imponente. Letras monumentais em caixa alta com termo central em Dourado Kav e sublinhado de destaque.",
+    "posicao_logo": "inferior-direito",
+    "paleta": {
+      "fundo": "#001424",
+      "destaque": "#EEB730",
+      "texto": "#FFFFFF"
     }
   }
 ]
