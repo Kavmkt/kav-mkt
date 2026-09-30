@@ -1,9 +1,38 @@
 [
   {
+    "arquivo": "ref_manifesto_palavra_dourada.png",
+    "estilo": "manifesto_palavra_dourada",
+    "tema": "escuro",
+    "nome": "Manifesto Editorial (Estilo Focus - Tema Escuro)",
+    "descricao": "Inspirado em FOCUS: 100% tipográfico, fundo Azul Marinho Noturno Profundo (#001424), fontes Gotham em Sentence Case contidas e elegantes (proporção idêntica ao layout Focus), palavra central em Dourado Kav sublinhada e botão pill 'Leia a legenda'.",
+    "posicao_logo": "topo-centro",
+    "paleta": {
+      "fundo": "#001424",
+      "destaque": "#EEB730",
+      "texto": "#FFFFFF",
+      "texto_secundario": "#94A3B8"
+    }
+  },
+  {
+    "arquivo": "ref_manifesto_claro.png",
+    "estilo": "manifesto_claro",
+    "tema": "claro",
+    "nome": "Manifesto Editorial (Estilo Focus - Tema Claro Invertido)",
+    "descricao": "Cores invertidas no padrão Focus: Fundo Branco (#FFFFFF) com degradê suave para cinza-azulado super claro (#EBF1F6), tipografia Gotham contida em Azul Marinho Profundo (#001424), palavra de destaque em Dourado Kav (#EEB730 / #D99B00) sublinhada e botão pill fino.",
+    "posicao_logo": "topo-centro",
+    "paleta": {
+      "fundo": "Degradê #FFFFFF para #EBF1F6",
+      "destaque": "#EEB730",
+      "texto": "#001424",
+      "texto_secundario": "#475569"
+    }
+  },
+  {
     "arquivo": "ref_afirmacao_tweet_box.png",
     "estilo": "afirmacao_tweet_box",
-    "nome": "Tweet Box de Autoridade (Estilo Samuel Reis)",
-    "descricao": "Inspirado em @osamuelreis_: Card flutuante escuro (#031E34) no centro com perfil @kav.mkt, tese afiada em Gotham Sentence Case e suporte em card.",
+    "tema": "escuro",
+    "nome": "Tweet Box de Autoridade (Estilo Samuel Reis - Tema Escuro)",
+    "descricao": "Card flutuante escuro (#031E34) no centro com perfil @kav.mkt sobre fundo Azul Marinho Noturno (#001424), tese afiada em Gotham Sentence Case com tamanho moderado e respiro.",
     "posicao_logo": "superior-esquerdo",
     "paleta": {
       "fundo": "#001424",
@@ -13,10 +42,25 @@
     }
   },
   {
+    "arquivo": "ref_afirmacao_tweet_box_claro.png",
+    "estilo": "afirmacao_tweet_box_claro",
+    "tema": "claro",
+    "nome": "Tweet Box de Autoridade (Tema Claro Invertido)",
+    "descricao": "Fundo Branco com degradê suave para cinza-azulado super claro (#FFFFFF para #EBF1F6), card flutuante branco com sombra discreta e borda suave (#CBD5E1), textos em Azul Marinho (#001424) e avatar @kav.mkt.",
+    "posicao_logo": "superior-esquerdo",
+    "paleta": {
+      "fundo": "Degradê #FFFFFF para #EBF1F6",
+      "card": "#FFFFFF",
+      "destaque": "#EEB730",
+      "texto": "#001424"
+    }
+  },
+  {
     "arquivo": "ref_destaque_dourado.png",
     "estilo": "destaque_dourado",
-    "nome": "Metáfora Visual 3D (Estilo Well.dsg & ORB)",
-    "descricao": "Inspirado em @well.dsg e ORB: Objeto físico 3D central realista em Dourado Kav (#EEB730) como metáfora de destaque, textos no topo e rodapé em Gotham Sentence Case.",
+    "tema": "escuro",
+    "nome": "Metáfora Visual 3D (Estilo Well.dsg & ORB - Tema Escuro)",
+    "descricao": "Objeto físico 3D central realista em Dourado Kav (#EEB730) como metáfora de destaque, fundo Azul Marinho Noturno (#001424), textos no topo e rodapé com tipografia Gotham contida.",
     "posicao_logo": "superior-centro",
     "paleta": {
       "fundo": "#001424",
@@ -26,39 +70,29 @@
     }
   },
   {
-    "arquivo": "ref_manifesto_palavra_dourada.png",
-    "estilo": "manifesto_palavra_dourada",
-    "nome": "Manifesto Editorial (Estilo Focus)",
-    "descricao": "Inspirado em FOCUS: 100% tipográfico, imponente e sóbrio em Gotham Sentence Case, palavra central em Dourado Kav sublinhada e botão pill 'Leia a legenda'.",
-    "posicao_logo": "topo-centro",
+    "arquivo": "ref_quebra_objecao_claro.png",
+    "estilo": "quebra_objecao_claro",
+    "tema": "claro",
+    "nome": "Quebra de Objeção / Tensão de Valor (Tema Claro Invertido)",
+    "descricao": "Fundo em degradê branco para cinza azulado super claro, badge @kav.mkt, headline afiada 'Você não precisa abaixar o seu preço' em Azul Marinho (#001424) com tamanho contido e card com a virada do Método Kav.",
+    "posicao_logo": "superior-esquerdo",
     "paleta": {
-      "fundo": "#001424",
+      "fundo": "Degradê #FFFFFF para #EBF1F6",
+      "card": "#FFFFFF",
       "destaque": "#EEB730",
-      "texto": "#FFFFFF"
+      "texto": "#001424"
     }
   },
   {
     "arquivo": "ref_impacto_condensado_grid.png",
     "estilo": "impacto_condensado_grid",
-    "nome": "Grid Técnico Blueprint (Estilo Agencia Workspace)",
-    "descricao": "Inspirado em agenciaworkspace: Micro-grade técnica blueprint (#072036), tag '📈 Quer crescer?', headline maciça em Gotham e nuvem de dados de performance da Kav.",
+    "tema": "escuro",
+    "nome": "Grid Técnico Blueprint (Estilo Workspace - Tema Escuro)",
+    "descricao": "Micro-grade técnica blueprint (#072036) sobre fundo Azul Marinho (#001424), tag '📈 Quer crescer?', headline contida em Gotham e nuvem de dados de performance da Kav.",
     "posicao_logo": "superior-direito",
     "paleta": {
       "fundo": "#001424",
       "grid": "#072036",
-      "destaque": "#EEB730",
-      "texto": "#FFFFFF"
-    }
-  },
-  {
-    "arquivo": "ref_quebra_objecao_card.png",
-    "estilo": "quebra_objecao_card",
-    "nome": "Quebra de Objeção / Tensão de Valor (Estilo Geovane Rocha)",
-    "descricao": "Inspirado em @geovanerdsgn: Avatar @kav.mkt, headline afiada 'Você não precisa abaixar o seu preço' em Gotham Sentence Case e card contrastante com a virada do Método Kav.",
-    "posicao_logo": "superior-esquerdo",
-    "paleta": {
-      "fundo": "#001424",
-      "card": "#031E34",
       "destaque": "#EEB730",
       "texto": "#FFFFFF"
     }

@@ -7,8 +7,8 @@ designer para:
 2. Posts de restaurantes/fotos reais (N&N Restaurante) - preservação de comida real autêntica;
 3. Peças de anúncio (campanha).
 
-Se o layout tiver nota baixa (< 8) ou falhas críticas (ex: logo sobrepondo texto,
-"Arrasta pra entender" em post estático, comida com aspecto 3D/plástico), o Diretor de Arte
+Se o layout tiver nota baixa (< 8) ou falhas críticas (ex: logo distorcido/sobrepondo texto,
+fonte estrondosa sem respiro, "Arrasta pra entender", comida artificial), o Diretor de Arte
 solicita melhorias cirúrgicas e devolve à API da OpenAI para refino imediato.
 """
 from __future__ import annotations
@@ -27,27 +27,27 @@ DIRETRIZES DA MARCA DA KAV:
 __SKILL__
 
 CHECKLIST CRÍTICO DE AVALIAÇÃO DA KAV:
-1. INTEGRIDADE E POSIÇÃO DO LOGOTIPO KAV:
-   - O logo oficial da Kav ('KAV') DEVE estar presente, perfeitamente nítido, proporcional e posicionado com área de respiro generosa no topo ou no canto designado.
-   - REPROVE IMEDIATAMENTE (pontuação <= 5, precisa_refino=true) se o logotipo estiver sobrepondo o título, colidindo com qualquer texto, cortado, distorcido (letras trocadas, "WAV") ou gigante ocupando espaço indevido.
-2. PROIBIÇÃO ABSOLUTA DE 'ARRASTA PRA ENTENDER' E CARROSSEL:
-   - REPROVE IMEDIATAMENTE (pontuação <= 4, precisa_refino=true) se a imagem contiver 'Arrasta pra entender', 'Arraste para o lado', 'Passe para o lado' ou botões com setas de arrastar. Os posts da Kav são 100% estáticos de feed único!
-3. PROIBIÇÃO DE BLOCO / BADGE NO TOPO ('PERFORMANCE LOCAL'):
+1. INTEGRIDADE MATEMÁTICA E ZERO DISTORÇÃO DO LOGOTIPO KAV:
+   - O logo oficial da Kav ('KAV') DEVE estar com proporção 1:1 rigorosa, nítido e perfeitamente nivelado.
+   - REPROVE IMEDIATAMENTE (pontuação <= 4, precisa_refino=true) se o logotipo estiver DISTORCIDO, esticado horizontalmente, achatado verticalmente, inclinado, com letras deformadas ou com erro de digitação ('WAV', 'CAV').
+   - REPROVE se o logo estiver sobrepondo o título, colidindo com qualquer texto ou sem margem de respiro (mínimo 60-80px de respiro).
+2. CONTENÇÃO E ELEGÂNCIA DO TAMANHO DA FONTE (BENCHMARK FOCUS):
+   - A tipografia DEVE seguir as proporções refinadas e contidas do layout Focus: NUNCA use fontes gigantescas, monstruosas ou estrondosas que tomam a tela inteira.
+   - A headline deve ocupar cerca de 50% a 65% da largura da tela, com pelo menos 20% a 25% de margem de respiro nas laterais e espaçamento vertical aberto.
+   - REPROVE se o texto estiver em CAIXA ALTA / ALL CAPS (gritando) ou sufocando o espaço em branco da peça.
+3. CORES OFICIAIS DA KAV (TEMAS ESCURO E CLARO INVERTIDO):
+   - Se tema escuro: O fundo DEVE ser Azul Marinho Noturno Profundo (#001424 ou #001D32) com textos em branco puro e destaque em dourado. REPROVE se o fundo for preto puro (#000000).
+   - Se tema claro invertido: O fundo DEVE ser Branco Puro (#FFFFFF) no topo em degradê suave para cinza-azulado super claro (#EBF1F6) na base, com textos em Azul Marinho Noturno (#001424) e destaque em Dourado Kav (#EEB730).
+4. PROIBIÇÃO ABSOLUTA DE 'ARRASTA PRA ENTENDER' E CARROSSEL:
+   - REPROVE IMEDIATAMENTE (pontuação <= 4, precisa_refino=true) se a imagem contiver 'Arrasta pra entender', 'Arraste para o lado', 'Passe para o lado' ou setas duplas (>>).
+5. TOPO LIMPO:
    - REPROVE se o topo tiver caixa, tag ou selo escrito 'PERFORMANCE LOCAL'. O cabeçalho deve ser limpo e elegante.
-4. HIERARQUIA TIPOGRÁFICA E REGRA DE GOTHAM EM SENTENCE CASE:
-   - A tipografia DEVE usar estritamente a fonte Gotham em Sentence Case (primeira letra maiúscula e o resto em minúsculas normais, ex: 'Você não precisa abaixar o seu preço', 'Improviso não constrói empresa').
-   - REPROVE IMEDIATAMENTE (pontuação <= 5, precisa_refino=true) se o texto estiver em CAIXA ALTA / ALL CAPS (gritando em maiúsculas).
-   - REPROVE se textos estiverem embolados, com letras truncadas, ou sobrepondo caixas/cards.
-7. CORES OFICIAIS DA KAV (FUNDO NÃO PODE SER PRETO PURO):
-   - O background da peça DEVE ser em tons nobres de Azul Marinho Noturno Profundo da Kav (#001424 ou #001D32).
-   - REPROVE (pontuação <= 5, precisa_refino=true) se o fundo for preto puro (#000000). A marca Kav exige o azul petróleo/marinho com destaques em Dourado Kav (#EEB730).
-5. ESTRUTURA DO ARQUÉTIPO VISUAL:
-   - Se for Comparativo: deve haver dois blocos distintos (O Erro em card escuro/carmesim com ✕ vs A Solução Kav em card dourado com ✓).
-   - Se for Notificação WhatsApp: deve haver um card nítido simulando notificação de mensagem de celular.
-   - Se for Dashboard: deve haver o número gigante e o gráfico em linha ascendente.
-   - Se for Tweet Box: deve haver o card flutuante centralizado com avatar e @kav.mkt.
-   - Se for Manifesto: deve ser puramente tipográfico, sem caixas poluídas.
-6. PROIBIÇÃO DE CLICHÊS GENÉRICOS DE IA:
+6. ESTRUTURA DO ARQUÉTIPO VISUAL:
+   - Se for Manifesto Focus: 100% tipográfico, equilibrado, com palavra de destaque em dourado sublinhada e botão pill 'Leia a legenda' na base.
+   - Se for Tweet Box: card flutuante centralizado com avatar e @kav.mkt.
+   - Se for Metáfora 3D: objeto herói central realista em dourado.
+   - Se for Blueprint: micro-grade milimétrica técnica.
+7. PROIBIÇÃO DE CLICHÊS GENÉRICOS DE IA:
    - REPROVE se houver miniaturas de cidades 3D, radares, ou pins amarelos de GPS.
 
 Responda EXCLUSIVAMENTE com um objeto JSON, sem markdown ou texto antes/depois:
@@ -56,7 +56,7 @@ Responda EXCLUSIVAMENTE com um objeto JSON, sem markdown ou texto antes/depois:
   "pontuacao": 8,
   "diagnostico": "Resumo crítico e direto da avaliação em 1 ou 2 frases em português",
   "precisa_refino": false,
-  "instrucoes_de_correcao": "Instruções cirúrgicas em inglês para a IA de edição caso precisa_refino seja true. Especifique com clareza: (1) O que PRESERVAR e (2) O que CORRIGIR (ex: separar o logotipo Kav do título dando respiro no topo, remover o botão 'Arrasta pra entender', etc.). Se aprovado, deixe string vazia."
+  "instrucoes_de_correcao": "Instruções cirúrgicas em inglês para a IA de edição caso precisa_refino seja true. Especifique com clareza: (1) O que PRESERVAR e (2) O que CORRIGIR (ex: ajustar proporção do logo KAV para 1:1 sem distorção, reduzir tamanho da headline para deixar 25% de margem lateral, etc.). Se aprovado, deixe string vazia."
 }
 """
 
@@ -75,21 +75,14 @@ CHECKLIST CRÍTICO DE AVALIAÇÃO:
 2. COERÊNCIA GASTRONÔMICA OBRIGATÓRIA (PRATO vs IMAGEM):
    - A chamada e a comida devem ser rigorosamente condizentes com o prato informado.
    - REPROVE IMEDIATAMENTE se a peça for sobre um prato (ex: Frango ao Molho) e a imagem estiver mostrando outro prato incompatível.
-   - REGRA DA FEIJOADA: Feijoada é servida EXCLUSIVAMENTE às quartas-feiras e aos sábados. Se não for dia de feijoada e a imagem mostrar feijoada, REPROVE.
 3. PROIBIÇÃO DE "ALMOÇO DO DIA", "EXECUTIVO" E RODAPÉ POLUÍDO:
-   - REPROVE (pontuação <= 5, precisa_refino=true) se a imagem contiver a palavra "EXECUTIVO", "ALMOÇO DO DIA" ou termos presos estritamente ao almoço na headline ou selo. O restaurante publica posts à tarde/noite para alcançar mais pessoas.
-   - REPROVE IMEDIATAMENTE se houver frases pequenas no rodapé (ex: "Boa comida faz bons encontros") ou barras de ícones com texto minúsculo na parte inferior. O rodapé deve ser 100% limpo.
-   - Se houver selo, deve conter a frase menor "Qualidade Garantida".
+   - REPROVE (pontuação <= 5, precisa_refino=true) se a imagem contiver a palavra "EXECUTIVO", "ALMOÇO DO DIA" ou termos presos estritamente ao almoço na headline ou selo.
+   - REPROVE IMEDIATAMENTE se houver frases pequenas no rodapé (ex: "Boa comida faz bons encontros").
 4. LOGO OFICIAL DA MARCA:
    - O logo oficial do cliente deve estar presente, nítido e legível no cabeçalho/topo.
-   - REPROVE se o logo estiver ausente, distorcido ou trocado por ícone genérico.
-5. TIPOGRAFIA & CONTRASTE (ANTI-AMADORISMO):
-   - A headline deve estar perfeitamente legível, elegante e com hierarquia clara (Playfair Display).
-   - REPROVE se o texto tiver contorno branco grosso (stroke), glow branco esfumado ou sombra difusa artificial (WordArt amador).
-6. PROIBIÇÃO DE ELIPSE / CARIMBO CLICHÊ:
-   - REPROVE se houver carimbos redondos, elipses com garfo/faca ou selos amadores colados nos cantos.
-7. AMBIENTAÇÃO & RECORTE DO PRATO:
-   - O prato real com a comida autêntica do cliente deve estar bem integrado sobre a mesa de madeira rústica, com visual apetitoso e limpo.
+5. TIPOGRAFIA & CONTRASTE:
+   - A headline deve estar perfeitamente legível, elegante e com hierarquia clara.
+   - REPROVE se o texto tiver contorno branco grosso (stroke), glow branco esfumado ou sombra difusa artificial.
 
 Responda EXCLUSIVAMENTE com um objeto JSON, sem markdown ou texto antes/depois:
 {
@@ -126,23 +119,24 @@ def revisar_e_aprovar_layout(
     slug = cliente.get("slug", "")
     eh_kav = (slug == "kav" or modo == "estatico_kav")
 
-    avisar("🎨 [Diretor de Arte]: Inspecionando layout, proporções e alinhamento visual...")
+    avisar("🎨 [Diretor de Arte]: Inspecionando proporção do logo, contenção de fonte e paleta...")
 
     if eh_kav:
         system = SYSTEM_PROMPT_DIRETOR_KAV.replace("__SKILL__", cliente.get("skill", ""))
+        tema = imagem_dict.get("tema_fundo", "escuro")
         prompt = (
-            f"Avalie esta peça criada para a agência 'Kav Marketing & Performance' (@kav.mkt).\n"
-            f"Modo de produção: {modo}\n"
-            f"Headline esperada na peça: \"{copy.get('headline_imagem')}\"\n"
-            f"Frase de apoio / dados esperados: \"{copy.get('headline_apoio') or copy.get('texto_card') or ''}\"\n"
-            f"Arquétipo de layout aplicado: {imagem_dict.get('estilo_nome', 'Padrão Kav')}\n\n"
-            f"CHECKLIST DE INSPEÇÃO VISUAL:\n"
-            f"1. O logo oficial KAV está visível e com RESPIRO? Ele NUNCA pode sobrepor o título ou colidir com textos!\n"
-            f"2. Há algum botão ou texto 'Arrasta pra entender'? Se houver, REPROVE IMEDIATAMENTE (é post estático individual)!\n"
-            f"3. O topo está limpo, sem caixas de 'PERFORMANCE LOCAL'?\n"
-            f"4. A hierarquia tipográfica está nítida e profissional em Gotham Sentence Case (SEM CAIXA ALTA)?\n"
-            f"5. O fundo respeita as cores da Kav (Azul Marinho Noturno #001424) e NÃO é preto puro (#000000)?\n\n"
-            f"Inspecione a imagem fornecida com olhar crítico e devolva o JSON de avaliação."
+            f"Avalie esta peça criada para a agência 'Kav Marketing & Performance' (@kav.mkt).\\n"
+            f"Modo de produção: {modo}\\n"
+            f"Tema esperado: {tema.upper()}\\n"
+            f"Headline esperada: \\\"{copy.get('headline_imagem')}\\\"\\n"
+            f"Arquétipo de layout aplicado: {imagem_dict.get('estilo_nome', 'Padrão Kav')}\\n\\n"
+            f"CHECKLIST DE INSPEÇÃO VISUAL:\\n"
+            f"1. O logo oficial KAV está 100% RETO e SEM DISTORÇÃO (sem esticar, sem achatar) e com pelo menos 60px de respiro?\\n"
+            f"2. A tipografia está em tamanho MODERADO e CONTIDO (estilo Focus), com ampla margem de respiro lateral (20-25%), SEM letras monstruosas e SEM CAIXA ALTA?\\n"
+            f"3. O fundo é Azul Marinho Noturno (#001424) para tema escuro OU Branco com degradê cinza-azulado super claro para tema claro invertido?\\n"
+            f"4. Há ausência total de 'Arrasta pra entender' e setas de deslizar?\\n"
+            f"5. O cabeçalho está limpo sem badges de 'PERFORMANCE LOCAL'?\\n\\n"
+            f"Inspecione com olhar crítico e devolva o JSON de avaliação."
         )
     else:
         nome_prato = foto.get("nome") if foto else "Prato do Dia"
@@ -151,15 +145,10 @@ def revisar_e_aprovar_layout(
             .replace("__MODO__", modo)
         )
         prompt = (
-            f"Avalie esta peça criada para o cliente '{cliente.get('nome')}'.\n"
-            f"Modo de produção: {modo}\n"
-            f"Headline esperada na peça: \"{copy.get('headline_imagem')}\"\n"
-            f"Selo/tag esperado (se houver): \"{copy.get('selo_produto') or 'nenhum'}\"\n"
-            f"Prato/Foto base: {nome_prato}\n"
-            f"Estilo de layout aplicado: {imagem_dict.get('estilo_nome', 'Padrão Editorial')}\n\n"
-            f"DIRETRIZES DO ESTILO:\n"
-            f"- Se for estilo Marmita Delivery: A comida deve estar em marmita redonda de isopor de entrega e NÃO pode ter talheres em volta (sem garfos/facas).\n"
-            f"- Se for estilo Minimalista: Foco na fotografia da comida com texto enxuto e logo discreto. Não reprove por concisão.\n\n"
+            f"Avalie esta peça criada para o cliente '{cliente.get('nome')}'.\\n"
+            f"Modo de produção: {modo}\\n"
+            f"Headline esperada na peça: \\\"{copy.get('headline_imagem')}\\\"\\n"
+            f"Prato/Foto base: {nome_prato}\\n\\n"
             f"Inspecione a imagem fornecida com olhar crítico e devolva o JSON de avaliação."
         )
 
@@ -182,7 +171,6 @@ def revisar_e_aprovar_layout(
     precisa_refino = avaliacao.get("precisa_refino", False)
     instrucoes = avaliacao.get("instrucoes_de_correcao", "")
 
-    # Se aprovado com nota alta (>= 8) sem necessidade crítica de refino:
     if not precisa_refino or pontuacao >= 8 or not instrucoes.strip():
         avisar(f"✅ [Diretor de Arte]: Layout aprovado! Nota {pontuacao}/10 — {diagnostico}")
         imagem_dict["diretor_arte"] = {
@@ -193,7 +181,6 @@ def revisar_e_aprovar_layout(
         }
         return imagem_dict
 
-    # 2. Refino de Arte solicitado pelo Diretor de Arte
     avisar(f"🔧 [Diretor de Arte]: Layout reprovado (Nota {pontuacao}/10). Refinando arte: {diagnostico}")
 
     try:
@@ -212,58 +199,24 @@ def revisar_e_aprovar_layout(
             if logo_arquivo and logo_arquivo.exists():
                 referencias_refino.append((
                     logo_arquivo.read_bytes(),
-                    f"the official BRAND LOGO of Kav Marketing & Performance ('KAV'). Correctly position this exact logo in the {area_logo} with generous margins and breathing room, without overlapping any text.",
+                    f"the official BRAND LOGO of Kav Marketing & Performance ('KAV'). Correctly position this exact logo in the {area_logo} with strict 1:1 aspect ratio lock (ZERO DISTORTION) and generous margins.",
                 ))
             prompt_refino = (
                 "You are executing an art direction revision on this post design for Kav Marketing & Performance. Apply ONLY the following corrections:\n"
                 f"{instrucoes}\n\n"
                 "STRICT KAV BRAND DIRECTIVES:\n"
-                "- Ensure the official Kav logo ('KAV') is seamlessly integrated with generous breathing room and safe padding. NEVER collide with, touch, or overlap any headline or text box!\n"
-                "- ABSOLUTELY ELIMINATE and DO NOT write 'Arrasta pra entender', 'Arraste para o lado', or any carousel/swipe instruction. This is a single static feed post (1080x1350).\n"
-                "- TYPOGRAPHY: STRICTLY use Gotham font in Sentence Case (NO ALL CAPS!).\n"
-                "- COLOR PALETTE: Deep nocturnal navy background (#001424). PROHIBITED PURE BLACK (#000000). Highlights in Kav Gold (#EEB730).\n"
-                "- Keep the top area clean: NO 'PERFORMANCE LOCAL' boxes or badges.\n"
-                "- Deliver a polished, high-contrast, razor-sharp masterpiece in 1080x1350 vertical format."
+                "- ZERO LOGO DISTORTION: Ensure the official Kav logo ('KAV') is mathematically level with strict 1:1 aspect ratio lock. Never stretch or flatten it!\n"
+                "- FONT SIZE RESTRAINT: Scale down headlines to restrained, refined proportions (~55% width with 20-25% breathing margins on the sides, following the FOCUS benchmark). NO SCREEN-FILLING LETTERS!\n"
+                "- TYPOGRAPHY: STRICTLY Gotham font in Sentence Case (NO ALL CAPS!).\n"
+                "- COLOR PALETTE: Respect the theme. If dark: deep nocturnal navy (#001424). If light: white with soft bluish-gray (#EBF1F6) gradient and navy text.\n"
+                "- ELIMINATE all swipe/carousel text ('Arrasta pra entender'). This is a single static feed post (1080x1350)."
             )
         else:
-            # Fluxo Restaurante / Fotos reais
-            if foto and foto.get("arquivo") and hasattr(foto["arquivo"], "read_bytes"):
-                try:
-                    referencias_refino.append((
-                        foto["arquivo"].read_bytes(),
-                        "the authentic client camera photograph of the real dish. Use this to restore genuine food textures and eliminate artificial waxy AI appearance.",
-                    ))
-                except Exception:
-                    pass
-
-            from agents.agente_design_fotos import _logo
-            logo_arquivo, posicao_logo = _logo(cliente, referencia)
-            if logo_arquivo:
-                guia_logo = image_overlay.guia_posicao_logo(logo_arquivo, posicao_logo)
-                referencias_refino.append((
-                    guia_logo,
-                    "the official client logo guide template. Reproduce the client's official logo exactly from this template at this scale and position.",
-                ))
-
-            if modo == "campanha":
-                try:
-                    guia_cta = image_overlay.guia_zona_cta()
-                    referencias_refino.append((
-                        guia_cta,
-                        "the exact rectangular area reserved for the call-to-action bar.",
-                    ))
-                except Exception:
-                    pass
-
             prompt_refino = (
                 "You are executing an art direction revision on this post design. Apply ONLY the following corrections:\n"
                 f"{instrucoes}\n\n"
                 "STRICT RULES:\n"
-                "- Restore and keep the authentic real food textures from the real camera photo, eliminating any artificial 3D CGI gloss, waxy skin, or silicone sheen.\n"
-                "- Ensure the official client logo is clearly and cleanly reproduced from the logo guide template in the header.\n"
-                "- Never use the word 'EXECUTIVO' or 'ALMOÇO EXECUTIVO'; replace with 'ALMOÇO DO DIA' or 'COMIDA CASEIRA'.\n"
-                "- NEVER add white glow, blurry white outlines, or diffuse halos around text letters.\n"
-                "- Do NOT add circular stamp badges, fork/knife ellipses, or amateur clutter.\n"
+                "- Restore authentic real food textures from the real camera photo.\n"
                 "- Deliver a polished, crisp, photographic piece in 1080x1440 portrait format."
             )
 

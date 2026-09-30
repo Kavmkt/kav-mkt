@@ -2,7 +2,7 @@
   "nome": "Kav (@kav.mkt)",
   "tipo": "estatico",
   "formato": "1080x1350",
-  "logo_posicao": "inferior-direito",
-  "dias_sem_repetir_pauta": 30,
-  "dias_sem_repetir_layout": 15
+  "logo_posicao": "superior-centro",
+  "dias_sem_repetir_pauta": 120,
+  "dias_sem_repetir_layout": 120
 }
